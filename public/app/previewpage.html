@@ -1,9 +1,21 @@
-<div *ngIf="uiService.state.community" style="height:90%">
-  <div id="ENPhead" modal-draggable class="modalHeader">Preview text in page "{{page.attrs.name}}" in document "{{uiService.state.document.attrs.name}}" for Community "{{uiService.state.community.attrs.name}}"
-<button type="button" (click)="closeModalPP()" class="close"
-    data-dismiss="modal"
-    style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;
-  </button>
+<div *ngIf="uiService.state.community" style="height:90%; width:100%">
+  <div id="ENPhead" modal-draggable class="modalHeader container" style="width:100%">
+    <div class="row" style="width:100%">
+      <div class="col-sm-1">
+        <button *ngIf="prevpage" type="button" class="btn btn-default btn-xs"
+        (click)="previewPrev(page, document)" style="position:relative; top:-3px">&lt;{{prevpage}}</button></div>
+      <div class="col-sm-9">
+        Preview {{page.attrs.name}} in {{uiService.state.document.attrs.name}} in {{uiService.state.community.attrs.name}}
+     </div>
+     <div class="col-sm-1">
+       <button *ngIf="nextpage" type="button" class="btn btn-default btn-xs"
+       (click)="previewNext(page, document)" style="position:relative; top:-3px">{{nextpage}}&gt;</button></div>
+     <div class="col-sm-1 text-right">
+        <button type="button" (click)="closeModalPP()" class="close"
+        data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:20px; top:-3px;">&times;
+        </button>
+    </div>
+  </div>
 </div>
     <div *ngIf="error.length>0" class="alert alert-danger" style="margin-bottom: 10px">
       <div *ngFor="#nerror of error">

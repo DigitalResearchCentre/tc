@@ -34,6 +34,7 @@ var ViewerComponent = ng.core.Component({
     this.state=uiService.state;
     this.state.doNotParse=false;
     this.isVerticalSplit=true;
+    this.isPreviewText=false;
     this.pageStatus={status:"NONE",access:"NONE"};
     if (this.state.authUser._id) {
       for (var i=0; i<this.state.authUser.attrs.memberships.length; i++) {
@@ -63,6 +64,14 @@ var ViewerComponent = ng.core.Component({
       }
       if (chosen==="submitTranscript") {
           self.doSubmitTranscript();
+      }
+      if (chosen==="previewPrev") {
+        self.isPreviewText=true;
+        self.showPrev(self.page, self.document);
+      }
+      if (chosen==="previewNext") {
+        self.isPreviewText=true;
+        self.showNext(self.page, self.document);
       }
     });
     this._uiService.changeMessage$.subscribe(function(message){
@@ -340,7 +349,12 @@ var ViewerComponent = ng.core.Component({
 //        self._uiService.sendCommand$.emit("commitTranscript");
       });
     } else {
+      //send this to preview window if this is where we are coming from
       this.contentText = contentText;
+      if (this.isPreviewText) {
+        sendPreviewText (contentText, this, this.page);
+        this.isPreviewText=false;
+      }
     }
     //here we check the links
     try {
@@ -421,21 +435,7 @@ var ViewerComponent = ng.core.Component({
     });
   },
   preview: function() {     //parse first!
-    var self = this
-      , page = this.page
-      , contentText = this.state.editor.getValue();
-    ;
-    $.post(config.BACKEND_URL+'validate?'+'id='+this.state.community.getId(), {
-      xml: "<TEI><teiHeader><fileDesc><titleStmt><title>dummy</title></titleStmt><publicationStmt><p>dummy</p></publicationStmt><sourceDesc><p>dummy</p></sourceDesc></fileDesc></teiHeader>\r"+contentText+"</TEI>",
-    }, function(res) {
-      self._uiService.manageModal$.emit({
-          type: 'preview-page',
-          page: page,
-          error: res.error,
-          content: contentText,
-          lines: contentText.split("\n")
-        });
-    });
+    sendPreviewText (this.state.editor.getValue(), this, this.page);
   },
   submitTranscript() {
     var self=this;
@@ -740,5 +740,24 @@ function prettyTei(teiRoot) {
   });
   return teiRoot;
 }
+
+function sendPreviewText (contentText, context, page) {
+  $.post(config.BACKEND_URL+'validate?'+'id='+context.state.community.getId(), {
+    xml: "<TEI><teiHeader><fileDesc><titleStmt><title>dummy</title></titleStmt><publicationStmt><p>dummy</p></publicationStmt><sourceDesc><p>dummy</p></sourceDesc></fileDesc></teiHeader>\r"+contentText+"</TEI>",
+  }, function(res) {
+    context._uiService.manageModal$.emit({
+        type: 'preview-page',
+        document: context.document,
+        prevpage: (context.isPrevPage) ? context.prevPage:false,
+        nextpage: (context.isNextPage) ? context.nextPage:false,
+        page: page,
+        error: res.error,
+        content: contentText,
+        lines: contentText.split("\n")
+      });
+  });
+}
+
+
 
 module.exports = ViewerComponent;
