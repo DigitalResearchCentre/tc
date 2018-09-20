@@ -30,7 +30,7 @@ var InviteMemberComponent = ng.core.Component({
     }],
   ngOnInit: function() {
       this.letter = "I am writing to invite you to join the '"+this.community.attrs.name+"' textual community. You have been set up with a user account, linked to our community:</p>"
-      this.letter += "<ul><li>Follow the link to <a href='"+config.host_url+"'>"+config.host_url+"</a></li><li>Click the <button style='color:white; background-color: #F19136'>Start</button> button</li><li>Choose 'Log in by email/password', and then log in with: "
+      this.letter += "<ul><li>Follow the link to <a href='"+config.host_url+"'>"+config.host_url+"</a></li><li>Click the <img height='30' src='../../images/login.png'> (production version) or the <button style='color:white; background-color: #F19136'>Start</button> button (sandbox)</li><li>Choose 'Log in by email/password', and then log in with: "
       this.letter += "<br/>&nbsp;&nbsp;&nbsp;<i>log in</i>: your email address (as above)<br/>&nbsp;&nbsp;&nbsp;<i>password</i>: default</li></ul><p style='margin-left:15px'>You should change this password after logging in."
   },
   submit: function(){

@@ -149,6 +149,9 @@ var ManageModalComponent = ng.core.Component({
       }  else if (event.type === 'preview-page') {
           self.choice = event.type;
           self.page = event.page;
+          self.document = event.document;
+          self.prevpage = event.prevpage;
+          self.nextpage = event.nextpage;
           self.error = event.error;
           self.content = event.content;
           self.lines = event.lines;

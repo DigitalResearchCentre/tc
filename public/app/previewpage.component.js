@@ -6,6 +6,7 @@ var $ = require('jquery')
 
 var self;
 var uploaded=false;
+var startX, startY, startWidth, startHeight;
 
 var PreviewPageComponent = ng.core.Component({
   selector: 'tc-managemodal-preview-page',
@@ -15,7 +16,7 @@ var PreviewPageComponent = ng.core.Component({
     require('./directives/modalresizable'),
   ],
   inputs: [
-    'page', 'error', 'lines', 'content',
+    'page', 'error', 'lines', 'content','document', 'prevpage', 'nextpage'
   ],
 }).Class({
   constructor: [UIService, DocService, RESTService, function(uiService, docService, restService) {
@@ -37,8 +38,15 @@ var PreviewPageComponent = ng.core.Component({
     this.message=this.success="";
     $('#MMADdiv').css("margin-top", "30px");
     $('#MMADbutton').css("margin-top", "20px");
+//    $('#manageModal').css({"resize":""})
     $('#manageModal').modal('hide');
     //force reload of iframe by removing and restoring it
+  },
+  previewPrev: function(page, document) {
+    this.uiService.sendCommand$.emit("previewPrev");
+  },
+  previewNext: function(page, document) {
+    this.uiService.sendCommand$.emit("previewNext");
   }
 });
 
@@ -63,5 +71,7 @@ window.uploadDone=function(){
       });
    });
  }
+
+
 
 module.exports = PreviewPageComponent;
