@@ -52,7 +52,7 @@ router.post('/login', function(req, res, next) {
   //      console.log("config.host_url "+config.host_url);
 //        console.log("req.protocol "+req.protocol);
 //        console.log("req.get('host') "+req.get('host'));
-        authenticateUser (user.local.email, user, config.host_url + '://' + req.get('host'));
+        authenticateUser (user.local.email, user, req);
         res.render('authenticate.ejs', {context:"email", user: user});
         req.logout();
         return;
@@ -130,7 +130,7 @@ router.post('/signup', function(req, res) {
       newUser.save(function(err) {
         if (err) {}
 //        console.log("inside authentication local 2 "+config.host_url);
-        authenticateUser (newUser.local.email, newUser, config.host_url!= ''? config.host_url : req.protocol + '://' + '://' + req.get('host'));
+        authenticateUser (newUser.local.email, newUser, req);
         res.render('authenticate.ejs', {context:"email", user: newUser})
         req.logout();
         return;
@@ -146,7 +146,7 @@ router.post('/signup', function(req, res) {
 router.get('/sendauthenticate', function(req, res) {
   var user=req.user;
 //  console.log("inside authentication local 3")
-  authenticateUser (req.user.local.email, req.user, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+  authenticateUser (req.user.local.email, req.user, req);
   // render the page and pass in any flash data if it exists
   res.render('authenticate.ejs', {user: user, context: req.query.context} );
   req.logout();
@@ -440,7 +440,7 @@ router.post('/facebooklinkemail', function(req, res) {
         });
         if (!isValidProfile(existingUser)) {
 //          console.log("inside authentication local 4")
-          authenticateUser (existingUser.local.email, existingUser, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+          authenticateUser (existingUser.local.email, existingUser, req);
           res.render('authenticate.ejs', {context:"email", user: existingUser})
           req.logout();
           return;
@@ -488,7 +488,7 @@ router.get('/facebooknew', function(req, res) {
   thisUser.save(function(err) {
     if (err) {}
 //    console.log("inside authentication local 5")
-    authenticateUser (thisUser.local.email, thisUser, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+    authenticateUser (thisUser.local.email, thisUser, req);
     res.render('authenticate.ejs', {context:"facebook", user: thisUser});
     req.logout();
   });
@@ -567,7 +567,7 @@ router.get('/twitter/callback', passport.authenticate('twitter', {
     else {
       if (req.user.local.authenticated=="0") {
 //        console.log("inside authentication local 6")
-        authenticateUser (req.user.local.email, req.user, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+        authenticateUser (req.user.local.email, req.user, req);
         res.redirect('/app?prompt=sendauthenticate&context=twitter');
       }
     }
@@ -600,7 +600,7 @@ router.post('/twitterlinklocal', function(req, res) {
       existingUser.save();
       if (existingUser.local.authenticated=="0") {
 //        console.log("inside authentication local 7")
-        authenticateUser (existingUser.local.email, existingUser, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+        authenticateUser (existingUser.local.email, existingUser, req);
         res.render('authenticate.ejs', {user: existingUser, context: "twitter"} );
         req.logout();
       } else {
@@ -789,7 +789,7 @@ router.post('/googlelinkemail', function(req, res) {
         });
         if (!isValidProfile(existingUser)) {
 //          console.log("inside authentication local 8")
-          authenticateUser (existingUser.local.email, existingUser, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+          authenticateUser (existingUser.local.email, existingUser, req);
           res.render('authenticate.ejs', {context:"google", user: existingUser})
           req.logout();
           return;
@@ -913,7 +913,7 @@ router.get('/googlenew', function(req, res) {
   thisUser.save(function(err) {
     if (err) {}
 //    console.log("inside authentication local 9")
-    authenticateUser (thisUser.local.email, thisUser, config.host_url!= ''? config.host_url : req.protocol + '://' + req.get('host'));
+    authenticateUser (thisUser.local.email, thisUser, req);
     res.render('authenticate.ejs', {context:"google", user: thisUser});
     req.logout();
   });
@@ -1035,7 +1035,10 @@ function randomStringAsBase64Url(size) {
   return base64url(crypto.randomBytes(size));
 }
 
-function authenticateUser (email, user, thisUrl) {
+function authenticateUser (email, user, req) {
+  //lets get the url right here, ignore what is coming in...
+  var thisUrl=req.protocol + '://'+req.get('host');
+  console.log(thisUrl);
   var ejs = require('ejs'), fs = require('fs'), str = fs.readFileSync(__dirname + '/../views/authenticatemail.ejs', 'utf8');
   var hash=randomStringAsBase64Url(20);
 //  console.log("url "+thisUrl)
