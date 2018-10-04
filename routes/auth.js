@@ -7,6 +7,7 @@ var express = require('express')
   , config=require('../config')
 ;
 
+// console.log(config);
 if (config.localDevel) TCMailer = require('../TCMailer');
 var TCModalState = {state:0};
 // =====================================
@@ -1037,7 +1038,7 @@ function randomStringAsBase64Url(size) {
 
 function authenticateUser (email, user, req) {
   //lets get the url right here, ignore what is coming in...
-  var thisUrl=req.protocol + '://'+req.get('host');
+  var thisUrl=config.host_url;
   console.log(thisUrl);
   var ejs = require('ejs'), fs = require('fs'), str = fs.readFileSync(__dirname + '/../views/authenticatemail.ejs', 'utf8');
   var hash=randomStringAsBase64Url(20);
