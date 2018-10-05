@@ -1,4 +1,4 @@
-//note: due to synchronization problems, include another javascript file in this file using the routine here given
+//note: due to synchronization problems, include another javascript file in this file using the routine here given peter
 //console.log("loading")
 var prepareMe = function(){
 
@@ -273,7 +273,7 @@ function doFrame() {
 					else $('#previewdiv').contents().find('#TCPContainer').before(TCtmdiv);
 					var thisdiv=TCtmdiv;
 					break;
-				} else var thisdiv=$('#previewdiv').contents().find('#TCtm');
+				} else var thisdiv=$('#previewdiv').contents().find('#TCtm')[0];
 				break;
 			case 'bm':
 			case 'bl':
@@ -287,7 +287,7 @@ function doFrame() {
 					else $('#previewdiv').contents().find('#TCPContainer').after(TCbmdiv);
 					var thisdiv=TCbmdiv;
 					break;
-				} else var thisdiv=$('#previewdiv').contents().find('#TCbm')
+				} else var thisdiv=$('#previewdiv').contents().find('#TCbm')[0];
 		}
 	    if ($('#'+rendval).length==0) {
 				var innerdiv=document.createElement('div');
