@@ -2,6 +2,7 @@ var CommunityService = require('../services/community')
   , UIService = require('../services/ui')
   , RESTService = require('../services/rest')
   , DocService = require('../services/doc')
+  , config = require('../config')
 ;
 
 var UploadFileComponent = ng.core.Component({
@@ -10,6 +11,7 @@ var UploadFileComponent = ng.core.Component({
   directives: [
     require('../directives/modaldraggable'),
     require('../directives/filereader'),
+    require('../directives/modalresizable'),
   ],
   inputs: [
     'community','filetype', 'text', 'doc',
@@ -43,16 +45,7 @@ var UploadFileComponent = ng.core.Component({
     if (this.filetype=="css") this.title="CSS";
     if (this.filetype=="js") this.title="JavaScript";
     if (this.filetype=="dtd") this.title="DTD";
-    if (this.filetype=="json") {
-      this.title="Collation editor configuration";
-      this.text=JSON.stringify(this.text);
-    }
     if (this.filetype=="teiHeader") this.title="teiHeader";
-  },
-  initEdit: function(community) {
-      this.edit = _.clone(community.toJSON());
-      this.edit.entities=_.clone(community.attrs.entities);  //for some reason, that one is NOT copied in cloning
-      this.community = community;
   },
   closeModalUPLC: function() {
     this.message=this.success="";
@@ -72,37 +65,41 @@ var UploadFileComponent = ng.core.Component({
    if (this.filetype=='dtd') {
      self.restService.http.get('/app/data/default.dtd').subscribe(function(dtdfile) {self.text=dtdfile._body;});
    }
-   if (this.filetype=='json') {
-     self.restService.http.get('/app/data/CollEditorConfig.json').subscribe(function(colledfile) {self.text=colledfile._body;});
-   }
 },
  submit: function() {
     //is there a community with this name?
-    this.message=this.success="";
-    if (this.filetype=="css") this.edit.css=this.text;
-    if (this.filetype=="js") this.edit.js=this.text;
-    if (this.filetype=="dtd") this.edit.dtd=this.text;
-    var jsontxt=this.text;
-//    console.log(jsontxt);
-    if (this.filetype=="teiHeader") {
-      return; //do nothing yet
-    }
-    if (this.filetype=="json")  {
-      var stringConstructor = "test".constructor;
-      this.edit.ceconfig=JSON.parse(jsontxt);
-      if (this.edit.ceconfig.constructor=== stringConstructor)
-        this.edit.ceconfig=JSON.parse(this.edit.ceconfig);  //something of a hack, yet again
-    }
     var self=this;
-    this._communityService.save(this.edit).subscribe(function(community) {
-      self.success=self.filetype+' document for community "'+self.edit.name+'" saved';
-      self.initEdit(community);
-//      self._uiService.setCommunity(community);
-      document.getElementById("ECSuccess").scrollIntoView(true);
-    }, function(err) {
-      self.message = err.message;
-      document.getElementById("ECMessage").scrollIntoView(true);
-    });
+    this.message=this.success="";
+    if (this.filetype=="css" || this.filetype=="js" || this.filetype=="dtd") {
+      $.ajax({
+        url: config.BACKEND_URL+'saveCommunityAuxFile?'+'community='+self.community._id+'&filetype='+this.filetype,
+        type: 'POST',
+        contentType:"text/plain",
+        dataType: "text",
+        data:  this.text,
+      }).done(function(data) {
+        self.success=self.filetype+' document for community "'+self.community.attrs.name+'" saved';
+        document.getElementById("ECSuccess").scrollIntoView(true);
+        self._uiService.state.community.attrs[self.filetype]=self.text;
+      }).fail(function( jqXHR, textStatus, errorThrown) {
+        self.message ="error" + errorThrown;
+      });
+    }
+    if (this.filetype=="teiHeader") {
+      $.ajax({
+        url: config.BACKEND_URL+'saveCommunityAuxFile?'+'document='+self.doc._id+'&filetype='+this.filetype,
+        type: 'POST',
+        contentType:"text/plain",
+        dataType: "text",
+        data:  this.text,
+      }).done(function(data) {
+        self.success=self.filetype+' for document "'+self.doc.attrs.name+'" saved';
+        document.getElementById("ECSuccess").scrollIntoView(true);
+        self.doc.attrs.teiHeader=self.text;
+      }).fail(function( jqXHR, textStatus, errorThrown) {
+        self.message ="error" + errorThrown;
+      });
+    }
   },
 });
 

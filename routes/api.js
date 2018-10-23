@@ -1537,6 +1537,26 @@ function saveAP (addAP, callback) {
   });
 }
 
+router.post('/saveCommunityAuxFile', function (req, res, next){
+  var filetype=req.query.filetype;
+  var set ={};
+  set[filetype]=req.body;
+  console.log("saving filetype"+filetype);
+  if (filetype=="css"||filetype=="js"||filetype=="dtd") {
+    var communityId=req.query.community;
+    Community.collection.update({_id:ObjectId(communityId)}, {$set: set}, function (err) {
+      res.json({result:err});
+    });
+  } else if (filetype=="teiHeader") {
+    var documentId=req.query.document;
+    console.log("saving doc"+documentId);
+    Doc.update({_id:ObjectId(documentId)}, {$set: set}, function (err, result) {
+      console.log("what changed"+result)
+      res.json({result:err});
+    });
+  }
+});
+
 router.post('/sendTranscriberMessages', function(req, res, next){
   var communityId=req.body.communityId;
   var name=req.body.name;
