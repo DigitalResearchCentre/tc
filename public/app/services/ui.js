@@ -26,6 +26,7 @@ var UIService = ng.core.Class({
     this.choosePage$ = new EventEmitter();
     this.showDocument$ = new EventEmitter();
     this.changeMessage$ = new EventEmitter();
+    this.getCSS$ = new EventEmitter();
     this.community = null;
     window.state = this.state;
   }],
