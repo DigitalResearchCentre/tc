@@ -1146,7 +1146,7 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
 //  console.log("community "+communityId+" user "+userId+" page "+pageId);
   async.parallel([
         function(cb1) {
-          Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":userId}, {$set: {"tasks.$.status":status}}, function(err, result){
+          Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":userId}, {$set: {"tasks.$.status":status,"tasks.$.date":new Date()}}, function(err, result){
             if (result.result.n==0) { //no page task.. page not assigned, changed by leader eg.. make a task
               var witname, username, memberid;
               async.waterfall([
@@ -1199,16 +1199,18 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
             //so: go through tasks, check each membership
             if (!err) {
               Doc.findOne({_id: ObjectId(pageId)}, function(err, myDoc){
-//                console.log(myDoc);
+                console.log(myDoc);
                 async.map(myDoc.tasks, function(task, callback){
                   if (task.userId!=userId) {
                     //find the user for this task
-//                    console.log(userId)
-//                    console.log(task)
-//                    console.log(task.userId)
+                    console.log(userId)
+                    console.log(task)
+                    console.log(task.userId)
                     User.findOne({_id:ObjectId(task.userId)}, function(err, myUser){
                       //is there a membership for this user which has the current user as approver?
+                      console.log("within memberships")
                       for (var i=0; i<myUser.memberships.length; i++) {
+                        console.log(myUser.memberships[i]);
                         if (myUser.memberships[i].approverid==userId) assignedUser=task.userId;
                       }
                       callback(err,[]);
@@ -1216,9 +1218,11 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
                   } else callback(null, []);
                 }, function(err, results){
                   //got the assignedUser... so write appropriate values to the page task for assigned user and update numbers for approver and User
+                  //we need to update the date here so it shows the date now
                   async.waterfall([
                     function(cb2){
-                      Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":assignedUser}, {$set: {"tasks.$.status":status}}, function(err, result){
+                      console.log("about to update with status "+status)
+                      Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":assignedUser}, {$set: {"tasks.$.status":status, "tasks.$.date":new Date()}}, function(err, result){
                         cb2(err);
                       });
                     },
