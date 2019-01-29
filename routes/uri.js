@@ -131,7 +131,21 @@ router.get('**', function(req, res, next) {
                         }
                       }
                     });
-                  } else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
+                  } else if (req.query.type=="IIIF") {
+                    if (!foundDoc.image) res.json([]);
+                    else {
+                      if (foundDoc.image.startsWith("http")) var url=foundDoc.image+'/info.json';
+                      else var url=config.IIIF_URL + foundDoc.image +'/info.json';
+                      if (req.query.format=="url") {
+                        res.json([{url:url}]);
+                      } else if (req.query.format=="json") {
+                        $.get(url, function(source) {
+                          res.json([{source:source}]);
+                        });
+                      } else res.status(400).send( "Cannot deal with IIIF request format '"+req.query.format+"'");
+                    }
+                  }
+                  else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
                 }
               })
             }

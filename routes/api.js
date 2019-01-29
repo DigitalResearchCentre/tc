@@ -1146,7 +1146,7 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
 //  console.log("community "+communityId+" user "+userId+" page "+pageId);
   async.parallel([
         function(cb1) {
-          Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":userId}, {$set: {"tasks.$.status":status,"tasks.$.date":new Date()}}, function(err, result){
+          Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":userId}, {$set: {"tasks.$.status":status, "tasks.$.date":new Date()}}, function(err, result){
             if (result.result.n==0) { //no page task.. page not assigned, changed by leader eg.. make a task
               var witname, username, memberid;
               async.waterfall([
