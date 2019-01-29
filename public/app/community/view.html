@@ -130,6 +130,30 @@
                               {{subSubSubDocEntity.name}}
                             </a>
                           </div>
+                          <ul>
+                            <li *ngFor="#subSubSubSubDocEntity of subSubSubDocEntity.entities"
+                              [class.collapse-node]="!subSubSubSubDocEntity.expand">
+                              <div>
+                                <span *ngIf="subSubSubSubDocEntity.hasChild" class="icon" aria-hidden="true"
+                                  (click)="toggleDocEntities(subSubSubSubDocEntity)"></span>
+                                <a (click)="selectDocEntity(doc, subSubSubSubDocEntity)">
+                                  {{subSubSubSubDocEntity.name}}
+                                </a>
+                              </div>
+                              <ul>
+                                <li *ngFor="#subSubSubSubSubDocEntity of subSubSubSubDocEntity.entities"
+                                  [class.collapse-node]="!subSubSubSubSubDocEntity.expand">
+                                  <div>
+                                    <span *ngIf="subSubSubSubSubDocEntity.hasChild" class="icon" aria-hidden="true"
+                                      (click)="toggleDocEntities(subSubSubSubSubDocEntity)"></span>
+                                    <a (click)="selectDocEntity(doc, subSubSubSubSubDocEntity)">
+                                      {{subSubSubSubSubDocEntity.name}}
+                                    </a>
+                                  </div>
+                                </li>
+                              </ul>
+                            </li>
+                          </ul>
                         </li>
                       </ul>
                     </li>
@@ -194,6 +218,37 @@
                           {{subSubSubEntity.name}}
                         </a></span>
                       </div>
+                      <ul>
+                        <li *ngFor="#subSubSubSubEntity of subSubSubEntity.entities"
+                          [class.collapse-node]="!subSubSubSubEntity.expand">
+                          <div>
+                            <span *ngIf="!subSubSubSubEntity.isTerminal" class="icon" aria-hidden="true"
+                              (click)="toggleEntities(subSubSubSubEntity)">
+                              <span class="collationMenu">{{subSubSubSubEntity.name}}</span>
+                            </span>
+                            <span *ngIf="subSubSubSubEntity.isTerminal">
+                            <a (click)="selectEntity(subSubSubSubEntity)">
+                              {{subSubSubSubEntity.name}}
+                            </a></span>
+                          </div>
+                          <ul>
+                            <li *ngFor="#subSubSubSubSubEntity of subSubSubSubEntity.entities"
+                              [class.collapse-node]="!subSubSubSubSubEntity.expand">
+                              <div>
+                                <span *ngIf="!subSubSubSubSubEntity.isTerminal" class="icon" aria-hidden="true"
+                                  (click)="toggleEntities(subSubSubSubSubEntity)">
+                                  <span class="collationMenu">{{subSubSubSubSubEntity.name}}</span>
+                                </span>
+                                <span *ngIf="subSubSubSubSubEntity.isTerminal">
+                                <a (click)="selectEntity(subSubSubSubSubEntity)">
+                                  {{subSubSubSubSubEntity.name}}
+                                </a></span>
+                              </div>
+                            </li>
+                          </ul>
+
+                        </li>
+                      </ul>
                     </li>
                   </ul>
                 </li>
