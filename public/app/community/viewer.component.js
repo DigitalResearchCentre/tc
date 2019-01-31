@@ -7,6 +7,8 @@ var ElementRef = ng.core.ElementRef
   , config = require('../config')
 ;
 
+var prevSpHeight2;
+
 var ViewerComponent = ng.core.Component({
   selector: 'tc-viewer',
   templateUrl: '/app/community/viewer.html',
@@ -614,6 +616,11 @@ var ViewerComponent = ng.core.Component({
     });
   },
   toggleTop: function() {
+/*    if (this.state.showTop) prevSpHeight2=$('#TCSplitterTOC').height();
+    else {
+      prevSpHeight2-=260;
+      $('#TCSplitterTOC').height(prevSpHeight2+"px");
+    } */
     this.state.showTop=!this.state.showTop;
   },
   toggleSide: function() {
