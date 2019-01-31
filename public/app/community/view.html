@@ -1,5 +1,5 @@
-<tc-splitter class="content" (resize)="onResize($event)" *ngIf="state.community">
-  <tc-pane [ngClass]="{true:'sidebar', false:'nodisplay'}[state.showSide]">
+<tc-splitter class="content" (resize)="onResize($event)" id="TCSplitterTOC" *ngIf="state.community">
+  <tc-pane id='TCsidebar' [ngClass]="{true:'sidebar', false:'nodisplay'}[state.showSide]">
     <ul class="nav nav-tabs">
       <li id="docTabHead" class="center active" (click)="active('Documents')"><a>Documents</a></li>
       <li id="collationTabHead" class="center" (click)="active('Collation')"><a>Collation</a></li>

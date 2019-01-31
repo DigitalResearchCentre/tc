@@ -26,6 +26,7 @@ var _ = require('lodash')
   , ObjectId = mongoose.Types.ObjectId
   , FunctionService = require('../services/functions')
   , config=require('../config')
+  , $ = require('jquery')
 ;
 
 const jsdom = require("jsdom");
