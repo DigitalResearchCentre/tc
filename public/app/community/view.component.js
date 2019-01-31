@@ -9,6 +9,8 @@ var CommunityService = require('../services/community')
   , $ = require('jquery')
 ;
 
+var prevHeight;
+
 var ViewComponent = ng.core.Component({
   selector: 'tc-community-view',
   templateUrl: '/app/community/view.html',
@@ -56,6 +58,11 @@ var ViewComponent = ng.core.Component({
       var tcHeight=$('#tcPaneViewer').height();
       $('#CXcontainer').width(tcWidth);
       $('#tcVersions').height(tcHeight);
+      var thisHeight=$(window).height();
+      var prevSpHeight=$('#TCSplitterTOC').height();
+      var tcHeight2=prevSpHeight+thisHeight-prevHeight;
+      prevHeight=thisHeight;
+      $('#TCSplitterTOC').height(tcHeight2+"px");
     });
   }],
   ngOnInit: function() {
@@ -66,6 +73,12 @@ var ViewComponent = ng.core.Component({
       }
     } else this.role="NONE";
     if (this.state.authUser.attrs.local && this.state.authUser.attrs.local.email=="peter.robinson@usask.ca") this.role="LEADER";
+//    $('#TCsidebar').height(tcheight);
+  },
+  ngAfterViewChecked: function(){
+    var tcheight=$("tc-community-view")[0].clientHeight+"px";
+    $('#TCSplitterTOC').height(tcheight);
+    prevHeight=$(window).height();
   },
   ngOnChanges: function() {
     var docEl=document.getElementsByClassName("selected")[0];
@@ -76,10 +89,8 @@ var ViewComponent = ng.core.Component({
     var tcHeight=$('#tcPaneViewer').height();
     $('#CXcontainer').width(tcWidth);
     $('#tcVersions').height(tcHeight);
-    if (this.viewer) {
-      this.viewer.onResize();
-    }
-  },
+    var tcheight=$("tc-community-view")[0].clientHeight+"px";
+    },
   toggleDoc: function(doc) {
     doc.expand = !doc.expand;
     if (doc.expand) {
