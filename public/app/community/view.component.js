@@ -59,8 +59,7 @@ var ViewComponent = ng.core.Component({
       $('#CXcontainer').width(tcWidth);
       $('#tcVersions').height(tcHeight);
       var thisHeight=$(window).height();
-      var prevSpHeight=$('#TCSplitterTOC').height();
-      var tcHeight2=prevSpHeight+thisHeight-prevHeight;
+      var tcHeight2=$('#TCSplitterTOC').height()+thisHeight-prevHeight;
       prevHeight=thisHeight;
       $('#TCSplitterTOC').height(tcHeight2+"px");
     });
@@ -76,7 +75,7 @@ var ViewComponent = ng.core.Component({
 //    $('#TCsidebar').height(tcheight);
   },
   ngAfterViewChecked: function(){
-    var tcheight=$("tc-community-view")[0].clientHeight+"px";
+    var tcheight=$(window).height()-$("tc-header").height()-$("tc-manage-community").height()-$("nav").height();
     $('#TCSplitterTOC').height(tcheight);
     prevHeight=$(window).height();
   },
