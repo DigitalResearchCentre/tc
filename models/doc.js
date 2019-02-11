@@ -59,12 +59,12 @@ var DocSchema = extendNodeSchema('Doc', {
       } else {
         docEl = {name: self.label, attrs: {n: self.name}};
       }
-//      console.log("we are putting a doc in here");
+     console.log("starting oit");
 //      console.log(communityAbbr);
 //      console.log(docEl)
       globalDoc=docRoot;
       globalCommAbbr=communityAbbr;
-//      console.log("teiroot")
+//     console.log(teiRoot.children[0].children[1].children[0].children);
 //      console.log(teiRoot);
       if (_.isEmpty(teiRoot)) {
         let loop = true;
@@ -117,6 +117,8 @@ var DocSchema = extendNodeSchema('Doc', {
 
       _.dfs([teiRoot], function(el) {
         let cur = TEI.clean(el);
+        console.log("cur: "+cur);
+
         if (!el.children) {
           el.children = [];
         }
@@ -124,7 +126,7 @@ var DocSchema = extendNodeSchema('Doc', {
           cur.docs = docsMap[el.doc].ancestors.concat(new ObjectId(el.doc));
         }
         cur.children = TEI._loadChildren(cur);
-//        console.log("teichildren: "+cur.children);
+  //      console.log("teichildren: "+cur.children);
         if (el._bound) {
           let item = boundsMap[el._id.toString()];
           if (item.el) {
@@ -162,8 +164,8 @@ var DocSchema = extendNodeSchema('Doc', {
       var fromVFile=false;
       //this one to pick up bug in routine for identifying teis-- when doc has only one page
       //deleteTeis is always blank, but everything has to go!
-//       console.log("starting our teis")
-//      console.log(insertTeis)
+      console.log("starting our teis")
+      console.log(insertTeis)
 //      console.log("starting load "+communityAbbr)
       if (_.isEmpty(deleteTeis) && String(docRoot.label)=="pb") {
         fromVFile=true;
@@ -564,12 +566,17 @@ var DocSchema = extendNodeSchema('Doc', {
           const cb = _.last(arguments)
           if (!_.isEmpty(teiRoot)) {
             _.dfs([teiRoot], function(el) {
-              el.children = _.filter(el.children, function(child) {
-                return !(
+  //            console.log("element"); console.log(el);
+              if (el.children.length>0) { // changed.. blank space between elements matters!
+                if (el.children[0].name=== '#text' && (el.children[0].text || '').trim() === '') {  el.children.shift();}
+                if (el.children.length>0)  {if (el.children[el.children.length-1].name=== '#text' && (el.children[el.children.length-1].text || '').trim() === '') el.children.pop()};
+              }
+/*              el.children = _.filter(el.children, function(child) {
+                  return !(   // hmmm.. BAD!!! this is removing genuine cases where the space is meaningful
                   child.name === '#text' &&
                   (child.text || '').trim() === ''
                 );
-              });
+              }); */
             });
           } else {inProcess=false}
           self._commit(
