@@ -373,6 +373,7 @@ var FunctionService = {
   },
   loadTEIContent: function(version, content) {
     var deferred = defer();
+    console.log("in loadteicontent"); console.log(version.children)
     if (version.children.length) {
       async.map(version.children, procTEIs, function (err, results) {
           var newContent="";
