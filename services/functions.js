@@ -373,11 +373,20 @@ var FunctionService = {
   },
   loadTEIContent: function(version, content) {
     var deferred = defer();
-    console.log("in loadteicontent"); console.log(version.children)
+//    console.log("in loadteicontent"); console.log(version.children)
     if (version.children.length) {
       async.map(version.children, procTEIs, function (err, results) {
           var newContent="";
-          for (var i=0; i<results.length; i++) {newContent+=results[i];}
+          for (var i=0; i<results.length; i++) {
+            //ok... if content is <<NOBREAK>> then remove it and trim preceding string
+            if (results[i]=="<<NOBREAK>>") {
+              for (var j=newContent.length-1; newContent.charCodeAt(j) <=32 &&  j>0 ; j--) {
+                    newContent=newContent.slice(0, -1);
+              }
+            }
+            else newContent+=results[i];
+            //at this point: we have to intervene if our element is a lb pb cb with break=no to remove
+          }
           content.content=newContent;
           deferred.resolve();
       })
@@ -400,6 +409,10 @@ var FunctionService = {
           if (version.name=="lb" || version.name=="cb" || version.name=="pb") {
             if (!version.attrs || !version.attrs.break || version.attrs.break!="no") {
               content.content=" ";
+            } else {
+              //trim content if there is no break -- needed because of the horrid crud which oxygen sticks up
+              console.log(content.content)  //ok, this is a hack -- processor up stream realizes we have a <nobreak> elemeent and trims preceding content
+              content.content="<<NOBREAK>>"
             }
           }
         }
@@ -441,7 +454,7 @@ var FunctionService = {
     }
   //  console.log(myWitRdgs);
     //ok, process into an array with word and  elements
-    for (var j=0; j<myWitRdgs.length; j++) {
+      for (var j=0; j<myWitRdgs.length; j++) {
       thistext+='{"id":"'+myWitRdgs[j].witness+'","tokens":[';
   //    console.log("about to call CE array :"+thistext);
       var myWords=FunctionService.makeCeArray(myWitRdgs[j].content);
