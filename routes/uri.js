@@ -364,8 +364,14 @@ function docRequest(req, res, documents, name, docparts, i, callback) {
 function processText(req, res, next, community, seekEntity, seekDocument, detString, entityparts, docparts) {
   //presently, only support: listing of docs with a particular entity; text of an entity in a doc returned in various formats including colledtior
   //return all documents containing a particular entity
-  if (docparts[docparts.length-1].value=="*" && docparts.length==1) { //looking for documents holding this text
-      getEntityDocs(community, seekEntity, req, res, docparts, function (result){
+  //need to support: find all entities present in a document..
+  if (entityparts[entityparts.length-1].value=="*" && docparts.length>0) {
+    console.log("here");
+      getDocEntities(community, seekDocument, seekEntity,  entityparts, docparts, function (result){
+          res.json({message: "hello"});
+      });
+  } else if (docparts[docparts.length-1].value=="*" && docparts.length==1) { //looking for documents holding this text
+      getEntityDocs(community, seekEntity, req, res, entityparts, docparts, function (result){
         res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length==2) {//this is looking for a page range: pages holding this entity
@@ -386,6 +392,20 @@ function processText(req, res, next, community, seekEntity, seekDocument, detStr
 
       });
   }
+}
+
+//we return a list of entities present in a document, or document part. Sp final entity must be *:* or maybe x:*
+function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docparts, callback){
+  console.log("in process text"); console.log(community); console.log(docparts); console.log(entityparts); console.log(seekEntity); console.log(seekDocument);
+  //first find the doc.  We are only going to look down to the page level, not lower\
+  Doc.findOne({name:docparts[0].value, community:community, ancestors: []}, function (err, myDoc){
+    if (!myDoc) callback({error:true, message:"Cannot find document "});
+    else {
+      if (docparts.length>3) { //we don't go more than 3 levels down -- ie doc quire page max ()
+
+      }
+    }
+  });
 }
 
 function getEntityDocs(community, seekEntity, req, res, docparts, callback) {
