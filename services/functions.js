@@ -36,6 +36,7 @@ var FunctionService = {
     //ok, coz we have unicode this is NOT reliable...
     //so rebuild the string
     var myContent=[];
+    console.log("here we are  "+content)
     for (let myChar of content) {
       myContent.push(myChar);
     }
@@ -123,6 +124,7 @@ var FunctionService = {
        }
      }
       else if (myContent[i]=="<") {
+        console.log("we are in xml")
         var tag="<";
         var tagname="";
         var isEmpty=false;
@@ -142,7 +144,9 @@ var FunctionService = {
             tag+=myContent[i++];
           }
         }
-        if (myContent[i]=="/" && myContent[i+1]==">") {
+      console.log(tag);
+      if (myContent[i]=="/" && myContent[i+1]==">") {
+          console.log("we have an empty tag??");
           isEmpty=true;
           tag+="/>";
           i+=2;
@@ -167,6 +171,11 @@ var FunctionService = {
           }
           word+=tag;  //now word and expanword will differ. Note that empty tags are just ignored
                       //hence: " <pb/> " will NOT appear in our array
+                      //this is an error -- we want <gap> tags to appear
+        } else {//if the tag is pb lb cb we want to hide it! but otherwise write it out
+          console.log("got an empty tag "+tag)
+          word+=tag;
+          i--; //rewind 1 space
         }
       } else if (myContent[i]==" " || isNewWord) {
         //right, we have a word..
@@ -374,6 +383,7 @@ var FunctionService = {
   loadTEIContent: function(version, content) {
     var deferred = defer();
 //    console.log("in loadteicontent"); console.log(version.children)
+//now, if there is a next attribute on this version.. we need to do somethng about it... create a series of children for eacah
     if (version.children.length) {
       async.map(version.children, procTEIs, function (err, results) {
           var newContent="";
@@ -395,6 +405,7 @@ var FunctionService = {
           content.content+=version.text;
         } else {
           //no content, but an element -- pb or lb or similar, ignore
+          //but .. don't ignore other elements! write them in...
           //problem! if it is reading, we need this
           //if it is a lb: add a space, unless break
           if (version.name=="rdg") {
@@ -411,9 +422,19 @@ var FunctionService = {
               content.content=" ";
             } else {
               //trim content if there is no break -- needed because of the horrid crud which oxygen sticks up
-              console.log(content.content)  //ok, this is a hack -- processor up stream realizes we have a <nobreak> elemeent and trims preceding content
+//              console.log(content.content)  //ok, this is a hack -- processor up stream realizes we have a <nobreak> elemeent and trims preceding content
               content.content="<<NOBREAK>>"
             }
+          } else {
+            // we have another empty element.. what is it..add it...
+  //          console.log("ok, empty element I think"); console.log(version);
+            var attrs="";
+            if (version.attrs) {
+              for (var key in version.attrs) {
+                attrs+=" "+key+"=\""+version.attrs[key]+"\"";
+              }
+            }
+            content.content="<"+version.name+attrs+"/>"
           }
         }
         deferred.resolve();
@@ -421,6 +442,7 @@ var FunctionService = {
     return deferred.promise;
   },
   makeJsonList: function (content, witness) {
+    console.log("in "+witness+" for "+content);
     var thistext="";
     //remove line breaks,tabs, etc
   //  thistext+=content.replace(/(\r\n|\n|\r)/gm,"");

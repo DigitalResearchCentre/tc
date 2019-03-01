@@ -164,8 +164,8 @@ var DocSchema = extendNodeSchema('Doc', {
       var fromVFile=false;
       //this one to pick up bug in routine for identifying teis-- when doc has only one page
       //deleteTeis is always blank, but everything has to go!
-      console.log("starting our teis")
-      console.log(insertTeis)
+      if (config.localDevel)  console.log("starting our teis")
+//      if (config.localDevel)  console.log(insertTeis)
 //      console.log("starting load "+communityAbbr)
       if (_.isEmpty(deleteTeis) && String(docRoot.label)=="pb") {
         fromVFile=true;
@@ -246,7 +246,11 @@ var DocSchema = extendNodeSchema('Doc', {
             }
           } else { //from doc
             if (insertTeis.length>1) {
-              Doc.findOne({_id: insertTeis[1].docs[0]}, function(err, doc) {
+              console.log("checking insert TEIs "); console.log(docRoot.ancestors[0]);
+              //we need to find the first docs element in the insert teis...so go through TEIs to find the first one...
+              var thisDoc=null, i=0;
+              while (thisDoc==null && i<insertTeis.length) {if (insertTeis[i].docs) {thisDoc=insertTeis[i].docs[0]} else {i++}};
+              Doc.findOne({_id: thisDoc}, function(err, doc) {
                 if (err) throw err;
                 if (doc)  {
                   if (_.isEmpty(doc.entities)) {
@@ -567,9 +571,9 @@ var DocSchema = extendNodeSchema('Doc', {
           if (!_.isEmpty(teiRoot)) {
             _.dfs([teiRoot], function(el) {
   //            console.log("element"); console.log(el);
-              if (el.children.length>0) { // changed.. blank space between elements matters!
-                if (el.children[0].name=== '#text' && (el.children[0].text || '').trim() === '') {  el.children.shift();}
-                if (el.children.length>0)  {if (el.children[el.children.length-1].name=== '#text' && (el.children[el.children.length-1].text || '').trim() === '') el.children.pop()};
+              if (el.children.length>0) { // changed.. blank space between elements matters! reduce to single space at element ends
+                if (el.children[0].name=== '#text' && (el.children[0].text || '').trim() === '') {  el.children[0].text=" ";}
+                if (el.children.length>0)  {if (el.children[el.children.length-1].name=== '#text' && (el.children[el.children.length-1].text || '').trim() === '') el.children[el.children.length-1].text=" " };
               }
 /*              el.children = _.filter(el.children, function(child) {
                   return !(   // hmmm.. BAD!!! this is removing genuine cases where the space is meaningful

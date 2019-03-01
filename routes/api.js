@@ -2320,6 +2320,7 @@ function getCEWitness(witness, community, entity, callback) {
               var counter=0;
               async.mapSeries(teis, function(thisTei){
                 const cb2 = _.last(arguments);
+                //I think this is where search for the next tei if this block is split. Add the children of the next (or the whole) to thisTei
                 teiContent={"content":""};
                 FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
                   if (teiContent.content!="") {
@@ -2664,32 +2665,71 @@ router.get('/cewitness', function(req, res, next) {
               cb("no witness", []);
             } else {  //we have to deal with multiple texts for this witness
 //              console.log("number versions "+teis.length)
-                var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
-                var teiContent={"content":""}; //make this a loop if more than one wit here
+//put second line back
+              var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
+              var teiContent={"content":""}; //make this a loop if more than one wit here
+              //put third line back
               content+=',"witnesses":['
               var counter=0;
+              //ok this is where we check for next
+              //we need to make this a waterfall -- get this first
+//              console.log(counter+" "+thisTei)
               async.mapSeries(teis, function(thisTei){
                 const cb2 = _.last(arguments);
-//                console.log(counter+" "+thisTei)
-                teiContent={"content":""};
-                FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
-                  if (teiContent.content!="") {
-                    if (counter>0) {
-                      content+=","+FunctionService.makeJsonList(teiContent.content, req.query.witness+"("+counter+")")
-                    }
-                    else content+=FunctionService.makeJsonList(teiContent.content, req.query.witness);
-                    counter++;
-                    cb2(null);
-                  } else cb2(null);
+                //we have to do this
+                async.waterfall([
+                    function (cb3) {
+                      if (thisTei.attrs && thisTei.attrs.next) {//use async to find it, of course
+                         console.log("dealing with the tei now"); console.log(thisTei); console.log(thisTei.attrs.next)
+                         var nextTEI=thisTei.attrs.next;
+                         async.whilst (
+                           function () {return nextTEI!=null},
+                           function(callback) {
+                             //find the next tei and add it to children of thisTei
+                             TEI.findOne({"attrs.xml:id":nextTEI}, function (err, version) {
+
+                               console.log(err)
+                               console.log(version);
+                               thisTei.children.push(version.children );
+                               if (version.attrs.next)  nextTEI=version.attrs.next;
+                               else nextTEI=null;
+                               callback(null, null);
+                             });
+                           },
+                           function (err, nextTEI) {
+                             cb3(null, []);
+                             //add the teis we have won on to the children of thisTEI and go...
+                           }
+                         )
+                       } else { cb3(null, []);}
+                      //move through the next values here, appending them to the teis...
+                    },
+                    function (results, cb3) {
+                        teiContent={"content":""};
+                        FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
+                          if (teiContent.content!="") {
+                            if (counter>0) {
+                              content+=","+FunctionService.makeJsonList(teiContent.content, req.query.witness+"("+counter+")")
+                            }
+                            else content+=FunctionService.makeJsonList(teiContent.content, req.query.witness);
+                            counter++;
+                            cb3(null);
+                          } else cb3(null);
+                        });
+                      },
+                  ], function(err) {
+                        //put back content line below here
+                        content+=']}';
+                        cb2(null, content);
+                    });
+                }, function(err, result){
+                    console.log(result);
+                    cb(null, result);
                 });
-              }, function(err) {
-                content+=']}';
-                cb(null, content);
-              })
+              }
             }
-          }
         });
-    },
+      }
   ], function(err, result) {
     if (err=="no witness" || err) {
         res.sendStatus(404); //this feels like a hack but it gives the desired result
@@ -2698,11 +2738,16 @@ router.get('/cewitness', function(req, res, next) {
       //save it to the tei for this entity in this ms...
 //      console.log("to save it we need ms "+req.query.witness+" community "+req.query.community+" entity "+req.query.entity)
 //      console.log(result);
+      console.log("about to parse result");
+      console.log(result);
       res.json(JSON.parse(result));
     }
   });
 });
 
+//  content+=']}';
+//   var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
+// content+=',"witnesses":['
 //turns our content string into collation editor ready json
 
 router.post('/isAlreadyCommunity', function(req, res, next) {

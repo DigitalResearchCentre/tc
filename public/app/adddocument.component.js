@@ -25,6 +25,7 @@ var AddDocumentComponent = ng.core.Component({
     $('#manageModal').height("188px");
     this.message="";
     this.success="";
+    this.page="null";
     this.uiService = uiService;
     this.state= uiService.state;
     this._docService = docService;
@@ -60,7 +61,7 @@ var AddDocumentComponent = ng.core.Component({
           $('#MMADdiv').css("margin-top", "0px");
           $('#MMADbutton').css("margin-top", "10px");
           self.doc = {name:"", label: 'text'};
-          //tell the system we have this document as current
+          //tell the system we have this document as current.. throws an error when tryig to display the page which is not yet defined
           self._router.navigate(['Community', {
             id: community.getId(), route: 'view'
           }]);

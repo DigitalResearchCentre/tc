@@ -398,6 +398,21 @@ function processText(req, res, next, community, seekEntity, seekDocument, detStr
 function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docparts, callback){
   console.log("in process text"); console.log(community); console.log(docparts); console.log(entityparts); console.log(seekEntity); console.log(seekDocument);
   //first find the doc.  We are only going to look down to the page level, not lower\
+  var ancestors=[];  //inital search is going to be looking for docs with no ancestors.. work our day down the tree
+  var iteration=1;
+  async.mapSeries(docparts, function (docpart, cb1) {//do a deep div to find the document...
+    Doc.findOne({name:docpart.value, community:community, ancestors: ancestors}, function (err, myDoc){
+      if (!err && myDoc) {
+        console.log(myDoc);
+        ancestors.push(myDoc._id)
+        cb2(null, myDoc._id);
+      } else {
+        cb2(err, []);
+      }
+    })
+  }, function (err) {
+
+  });
   Doc.findOne({name:docparts[0].value, community:community, ancestors: []}, function (err, myDoc){
     if (!myDoc) callback({error:true, message:"Cannot find document "});
     else {
