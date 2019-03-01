@@ -179,7 +179,7 @@ var ViewerComponent = ng.core.Component({
     //there can be a problem of synchronicity: we could have loaded the document, then changed doc in view.html. BUT
     //call to load pages of document might not have finished, so the state.page points to a page in the previously chosen
     //document. So I think .. we have to do test if this page is among the document pages and delay until it is...
-
+    //ok, in case we have just added document which has no pages yet ... reset page to null to stop attempt to show the pages
     var foundPage=false;
     for (var i=0; i<this.document.attrs.children.length && !foundPage; i++) {
       if (this.document.attrs.children[i].attrs._id==this._uiService.state.page.attrs._id) foundPage=true;
@@ -187,6 +187,10 @@ var ViewerComponent = ng.core.Component({
     if (!foundPage) {  //this is a hack...we are still waiting for document pages to load so do it here
       //we might also have added a page, which we have not picked up...
       docService.refreshDocument(this.document).subscribe(function(doc) {
+        if (doc.attrs.children.length==0) {
+          self.page=null;
+          return;
+        }
         //look for the page again! if not found...
         for (var i=0; i<doc.attrs.children.length && !foundPage; i++) {
           if (doc.attrs.children[i].attrs._id==self._uiService.state.page.attrs._id) foundPage=true;
@@ -347,7 +351,7 @@ var ViewerComponent = ng.core.Component({
         self.revisions.unshift(revision);
         self.revision=revision;
         self.state.doNotParse=true;
-        self.commit();
+        self.commit('false');
 //        self._uiService.sendCommand$.emit("commitTranscript");
       });
     } else {
@@ -546,7 +550,7 @@ var ViewerComponent = ng.core.Component({
       }
     });
   },
-  commit: function() {
+  commit: function(parseState) {
       var docService = this._docService
       , page = this.page
       , revision = this.revision
@@ -554,11 +558,13 @@ var ViewerComponent = ng.core.Component({
       , community = this.community
       , state = this.state
     ;
+    if (parseState=='true') state.doNotParse=false;   //else we don't save when we should
     if (!state.doNotParse && (contentText !== revision.attrs.text)) {
       alert(`You haven't saved this revision yet.`);
       return;
     }
-    //parse first!
+    contentText=removeWhiteSpace(contentText);
+      //parse first!
     var self = this;
     this.commitFailed=false;
     $.post(config.BACKEND_URL+'validate?'+'id='+this.state.community.getId(), {
@@ -691,8 +697,9 @@ function processChanges(docService, page,self) {
   history.pushState(obj, obj.Title, obj.Url);
   //have to get the links first, else revision does not update links menu correctly
   self.pageStatus=isPageAssigned(page,self.state.authUser, self.role);
-  docService.getLinks(page).subscribe(function(links) {
-    self.prevs = links.prevs.slice(0, links.prevs.length-1);
+  docService.getLinks(page).subscribe(function(links) {//this could bring back white space or other such muck. Filter out the end of the links to catch only entities
+    if (links.prevs.length>0) while (links.prevs.length>0 && ((typeof links.prevs[links.prevs.length-1].isEntity=="undefined") || (!links.prevs[links.prevs.length-1].isEntity))) {links.prevs.pop()};
+    self.prevs = links.prevs;
     docService.getRevisions(page).subscribe(function(revisions) {
       //this is a temporary fix, in case where we inadvertently wiped out Barbara's user id
       for (var i=0; i<revisions.length; i++) {if (!revisions[i].attrs.user) revisions[i].attrs.user={local:{name:"Barbara Bordalejo"}}};
@@ -731,6 +738,41 @@ function isPageAssigned(page, user, role) {
   return({status: "NONE", access: "NONE"});  //default...nothing
 }
 
+function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound etc doesn't like the extra space
+//possibly because we changed his loader to preserve white space in some contexts (within content elements etc)
+  contentText=contentText.trim();
+  var stop=false;
+  var endString="", startString="", i=0, j=0;
+  //remove space from start
+  for (j=0; j<contentText.length && !stop; j++) {
+    if (contentText.charCodeAt(j) > 32) { //not white space...
+      if (contentText[j]=="<") {
+        var thisTag="";
+        while (contentText[j]!=">") thisTag=thisTag+contentText[j++];
+        thisTag=thisTag+">";
+        startString=startString+thisTag;
+        if (thisTag[1]=="/") stop=true;
+      } else {
+        stop=true;
+      }
+    }
+  }
+  stop=false;
+  for (i=contentText.length; i>0 && !stop; i-- ) {
+    if (contentText.charCodeAt(i) > 32) { //not white space...
+        if (contentText[i]==">") {
+          var thisTag="";
+          while (contentText[i]!="<") thisTag=contentText[i--]+thisTag;
+          thisTag="<"+thisTag;
+          endString=thisTag+endString;
+          if (thisTag[1]!="/") stop=true;
+        } else {
+          stop=true;
+        }
+    }
+  }
+  return (startString+contentText.slice(j-1, i+2)+endString);
+}
 function prettyTei(teiRoot) {
   _.dfs([teiRoot], function(el) {
     var children = [];

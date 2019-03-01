@@ -73,7 +73,7 @@
               <button  *ngIf="(role=='LEADER'||role=='CREATOR'||role=='APPROVER')&&pageStatus.access=='ASSIGNED'&&pageStatus.status=='SUBMITTED'" type="button" class="btn btn-default btn-xs"
                 (click)="approve()">Approve</button>
               <button  *ngIf="role=='LEADER'||role=='CREATOR'" type="button" class="btn btn-default btn-xs"
-              (click)="commit()">Commit</button>
+              (click)="commit('true')">Commit</button>
             <button type="button" class="btn btn-default btn-xs"
               (click)="preview()">Preview</button>
             <button *ngIf="!isText&&(role=='LEADER'||role=='CREATOR')" type="button" class="btn btn-default btn-xs"
