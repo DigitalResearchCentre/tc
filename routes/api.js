@@ -1199,18 +1199,13 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
             //so: go through tasks, check each membership
             if (!err) {
               Doc.findOne({_id: ObjectId(pageId)}, function(err, myDoc){
-                console.log(myDoc);
+      //          console.log(myDoc);
                 async.map(myDoc.tasks, function(task, callback){
                   if (task.userId!=userId) {
                     //find the user for this task
-                    console.log(userId)
-                    console.log(task)
-                    console.log(task.userId)
-                    User.findOne({_id:ObjectId(task.userId)}, function(err, myUser){
+                      User.findOne({_id:ObjectId(task.userId)}, function(err, myUser){
                       //is there a membership for this user which has the current user as approver?
-                      console.log("within memberships")
                       for (var i=0; i<myUser.memberships.length; i++) {
-                        console.log(myUser.memberships[i]);
                         if (myUser.memberships[i].approverid==userId) assignedUser=task.userId;
                       }
                       callback(err,[]);
@@ -1221,7 +1216,6 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
                   //we need to update the date here so it shows the date now
                   async.waterfall([
                     function(cb2){
-                      console.log("about to update with status "+status)
                       Doc.collection.update({_id:ObjectId(pageId), "tasks.userId":assignedUser}, {$set: {"tasks.$.status":status, "tasks.$.date":new Date()}}, function(err, result){
                         cb2(err);
                       });
@@ -1545,7 +1539,6 @@ router.post('/saveCommunityAuxFile', function (req, res, next){
   var filetype=req.query.filetype;
   var set ={};
   set[filetype]=req.body;
-  console.log("saving filetype"+filetype);
   if (filetype=="css"||filetype=="js"||filetype=="dtd") {
     var communityId=req.query.community;
     Community.collection.update({_id:ObjectId(communityId)}, {$set: set}, function (err) {
@@ -1553,9 +1546,7 @@ router.post('/saveCommunityAuxFile', function (req, res, next){
     });
   } else if (filetype=="teiHeader") {
     var documentId=req.query.document;
-    console.log("saving doc"+documentId);
     Doc.update({_id:ObjectId(documentId)}, {$set: set}, function (err, result) {
-      console.log("what changed"+result)
       res.json({result:err});
     });
   }
@@ -2221,136 +2212,7 @@ router.use(function(err, req, res, next) {
   }
 });
 
-//load all the witnesses in one operation
-router.post('/getCEWitnesses', function(req, res, next) {
-//   console.log(req.query.community);
-//  console.log(req.body.witnesses);
-//  console.log(req.body.base);
-//  console.log(req.body.entity);
-  var witnesses=req.body.witnesses;
-  var community=req.query.community;
-  var base=req.body.base;
-  var entity=req.body.entity;
-  async.mapSeries(witnesses, function(witness, callback){
-/*    getCEWitness(witness, community, entity, function (err, result){
-      if (result=={}) console.log(witness+" empty");
-      callback(err, result)
-    }) */
-//    console.log("looking for witness "+witness);
-    async.waterfall([
-      function(cb) {
-        Doc.findOne({community: community, name: witness, ancestors:{$size:0}}, function (err, myDoc) {
-          if (err) {
-//            console.log("can't find witness "+witness)
-            cb(err, {});
-          }
-          else {
-            cb(null, myDoc);
-          }
-        });
-      },
-      function (myDoc, cb) {
-        TEI.find({docs: myDoc._id, entityName: entity}, function(err, teis){
-          if (err) cb(err, []);
-          else {  //have to deal with case where this entity is absent from the document
-            if (teis.length==0) {
-              cb("no witness", {});
-            } else {  //we have to deal with multiple texts for this witness
-//              console.log("number versions "+teis.length)
-              var content='{"_id": "'+witness+'_'+entity+'", "context": "'+entity+'","tei":"", "transcription_id": "'+witness+'","transcription_siglum": "'+witness+'","siglum": "'+witness+'"';
-              var teiContent={"content":""}; //make this a loop if more than one wit here
-              content+=',"witnesses":['
-              var counter=0;
-              async.mapSeries(teis, function(thisTei){
-                const cb2 = _.last(arguments);
-                teiContent={"content":""};
-                FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
-                  if (teiContent.content!="") {
-                    if (counter>0) {
-                      content+=","+FunctionService.makeJsonList(teiContent.content, witness+"("+counter+")")
-                    }
-                    else content+=FunctionService.makeJsonList(teiContent.content, witness);
-                    counter++;
-                    cb2(null);
-                  } else cb2(null);
-                });
-              }, function(err) {
-                content+=']}';
-                cb(null, content);
-              })
-            }
-          }
-        });
-      }
-    ], function (err, result){
-      if (err=="no witness") {
-//        console.log("no text found for "+witness)
-        callback(null, {})
-      }
-      else callback(err, result);
-    })
-  }, function(err, results) {
-//    console.log(results);
-    if (err) res.json({baseHasText: true, result: [], success:false})
-    else res.json({baseHasText: true, result: results, success:true})
-  });
-});
 
-function getCEWitness(witness, community, entity, callback) {
-    async.waterfall([
-      function(cb) {
-        Doc.findOne({community: community, name: witness, ancestors:{$size:0}}, function (err, myDoc) {
-          if (err) cb(err, {});
-          else {
-            cb(null, myDoc);
-          }
-        });
-      },
-      function (myDoc, cb) {
-        TEI.find({docs: myDoc._id, entityName: entity}, function(err, teis){
-          if (err) cb(err, []);
-          else {  //have to deal with case where this entity is absent from the document
-            if (teis.length==0) {
-              cb("no witness", {});
-            } else {  //we have to deal with multiple texts for this witness
-//              console.log("number versions "+teis.length)
-              var content='{"_id": "'+witness+'_'+entity+'", "context": "'+entity+'","tei":"", "transcription_id": "'+witness+'","transcription_siglum": "'+witness+'","siglum": "'+witness+'"';
-              var teiContent={"content":""}; //make this a loop if more than one wit here
-              content+=',"witnesses":['
-              var counter=0;
-              async.mapSeries(teis, function(thisTei){
-                const cb2 = _.last(arguments);
-                //I think this is where search for the next tei if this block is split. Add the children of the next (or the whole) to thisTei
-                teiContent={"content":""};
-                FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
-                  if (teiContent.content!="") {
-                    if (counter>0) {
-                      content+=","+FunctionService.makeJsonList(teiContent.content, witness+"("+counter+")")
-                    }
-                    else content+=FunctionService.makeJsonList(teiContent.content, witness);
-                    counter++;
-                    cb2(null);
-                  } else cb2(null);
-                });
-              }, function(err) {
-                content+=']}';
-                cb(null, content);
-              })
-            }
-          }
-        });
-      }
-    ], function (err, result){
-      if (err=="no witness") {
-//        //("no text found for "+witness)
-        callback(null, {})
-      }
-      else {
-  //      console.log(result);
-        callback(err, result);
-      }
-    })
-}
 
 router.get('/getTranscriberRecord', function(req, res, next){
   var community=req.query.community;
@@ -2664,32 +2526,30 @@ router.get('/cewitness', function(req, res, next) {
             if (teis.length==0) {
               cb("no witness", []);
             } else {  //we have to deal with multiple texts for this witness
-//              console.log("number versions "+teis.length)
 //put second line back
               var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
               var teiContent={"content":""}; //make this a loop if more than one wit here
+              console.log("versions "+teis.length)
               //put third line back
               content+=',"witnesses":['
-              var counter=0;
+              var counter=1, thisWitness="";
               //ok this is where we check for next
               //we need to make this a waterfall -- get this first
 //              console.log(counter+" "+thisTei)
               async.mapSeries(teis, function(thisTei){
                 const cb2 = _.last(arguments);
+                thisWitness="";
                 //we have to do this
                 async.waterfall([
                     function (cb3) {
                       if (thisTei.attrs && thisTei.attrs.next) {//use async to find it, of course
-                         console.log("dealing with the tei now"); console.log(thisTei); console.log(thisTei.attrs.next)
+//                         console.log("dealing with the tei now"); console.log(thisTei); console.log(thisTei.attrs.next)
                          var nextTEI=thisTei.attrs.next;
                          async.whilst (
                            function () {return nextTEI!=null},
                            function(callback) {
                              //find the next tei and add it to children of thisTei
                              TEI.findOne({"attrs.xml:id":nextTEI}, function (err, version) {
-
-                               console.log(err)
-                               console.log(version);
                                thisTei.children.push(version.children );
                                if (version.attrs.next)  nextTEI=version.attrs.next;
                                else nextTEI=null;
@@ -2704,14 +2564,56 @@ router.get('/cewitness', function(req, res, next) {
                        } else { cb3(null, []);}
                       //move through the next values here, appending them to the teis...
                     },
+                    function (results, cb3) {//what page are we on in this tei?
+  //                    console.log("counter "+counter);
+  //                    console.log(thisTei);
+                      if (teis.length==1) {
+                        thisWitness=req.query.witness;
+                        cb3(null, []);
+                      } else {
+                        //assuming that page is always a direct child of document
+                        //bad idea... better start at highest level doc and work our way down...
+                        //a job for async.whilst!!!
+                        var nextDocId=thisTei.docs[1];
+                        var depth=1, lastDoc;
+                        async.whilst (
+                          function () {return nextDocId!=null},
+                          function(callback) {
+                              Doc.findOne({_id: nextDocId}, function(err, thisDoc) {
+                                if (depth==1) thisWitness=req.query.witness+"("+thisDoc.name;
+                                else {
+                                  if (typeof thisDoc.name!= "undefined") {
+                                    thisWitness+="."+thisDoc.label[0]+thisDoc.name;
+                                  } else { //just count the columns or numbers
+                                    console.log("looking for "+nextDocId+" in "+lastDoc.children)
+                                    var k=0;
+                                    while (String(lastDoc.children[k])!=String(nextDocId) && k<lastDoc.children.length) {k++};
+                                    thisWitness+="."+thisDoc.label[0]+k;
+                                  }
+                                }
+                                if (++depth<thisTei.docs.length) {
+                                  nextDocId=thisTei.docs[depth];
+                                } else {nextDocId=null}
+                                lastDoc=thisDoc;
+                                callback(null, null);
+                              });
+                          },
+                          function (err, nextTEI) {
+                            thisWitness+=")";
+                            cb3(null, []);
+                            //add the teis we have won on to the children of thisTEI and go...
+                          }
+                        )
+                      }
+                    },
                     function (results, cb3) {
-                        teiContent={"content":""};
+                        teiContent.content="";
                         FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
                           if (teiContent.content!="") {
-                            if (counter>0) {
-                              content+=","+FunctionService.makeJsonList(teiContent.content, req.query.witness+"("+counter+")")
+                            if (counter>1) {
+                              content+=","+FunctionService.makeJsonList(teiContent.content, thisWitness)
                             }
-                            else content+=FunctionService.makeJsonList(teiContent.content, req.query.witness);
+                            else content+=FunctionService.makeJsonList(teiContent.content, thisWitness);
                             counter++;
                             cb3(null);
                           } else cb3(null);
@@ -2719,12 +2621,12 @@ router.get('/cewitness', function(req, res, next) {
                       },
                   ], function(err) {
                         //put back content line below here
-                        content+=']}';
-                        cb2(null, content);
+                          cb2(null, content);
                     });
                 }, function(err, result){
-                    console.log(result);
-                    cb(null, result);
+//                    console.log(result);
+                    content+=']}';
+                    cb(null, content);
                 });
               }
             }
@@ -2737,9 +2639,8 @@ router.get('/cewitness', function(req, res, next) {
 //      console.log("ms is"+result);
       //save it to the tei for this entity in this ms...
 //      console.log("to save it we need ms "+req.query.witness+" community "+req.query.community+" entity "+req.query.entity)
-//      console.log(result);
-      console.log("about to parse result");
-      console.log(result);
+        console.log(result);
+//      console.log("about to parse result");
       res.json(JSON.parse(result));
     }
   });
