@@ -2532,14 +2532,14 @@ router.get('/cewitness', function(req, res, next) {
               console.log("versions "+teis.length)
               //put third line back
               content+=',"witnesses":['
-              var counter=1, thisWitness="";
+              var counter=1, thisWitness="", witnesses=[];
               //ok this is where we check for next
               //we need to make this a waterfall -- get this first
 //              console.log(counter+" "+thisTei)
               async.mapSeries(teis, function(thisTei){
                 const cb2 = _.last(arguments);
                 thisWitness="";
-                //we have to do this
+                    //we have to do this
                 async.waterfall([
                     function (cb3) {
                       if (thisTei.attrs && thisTei.attrs.next) {//use async to find it, of course
@@ -2585,7 +2585,6 @@ router.get('/cewitness', function(req, res, next) {
                                   if (typeof thisDoc.name!= "undefined") {
                                     thisWitness+="."+thisDoc.label[0]+thisDoc.name;
                                   } else { //just count the columns or numbers
-                                    console.log("looking for "+nextDocId+" in "+lastDoc.children)
                                     var k=0;
                                     while (String(lastDoc.children[k])!=String(nextDocId) && k<lastDoc.children.length) {k++};
                                     thisWitness+="."+thisDoc.label[0]+k;
@@ -2599,6 +2598,13 @@ router.get('/cewitness', function(req, res, next) {
                               });
                           },
                           function (err, nextTEI) {
+                            //got this sigil already.. make sure we do NOT duplicate
+                            console.log("witnesses "+witnesses+" this "+thisWitness)
+                            if (_.includes(witnesses, thisWitness)) {
+                              thisWitness+="-"+counter;
+                            }
+                            witnesses.push(thisWitness);
+                            console.log("witnesses2 "+witnesses)
                             thisWitness+=")";
                             cb3(null, []);
                             //add the teis we have won on to the children of thisTEI and go...
