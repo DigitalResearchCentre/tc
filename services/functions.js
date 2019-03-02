@@ -36,7 +36,7 @@ var FunctionService = {
     //ok, coz we have unicode this is NOT reliable...
     //so rebuild the string
     var myContent=[];
-    console.log("here we are  "+content)
+//    console.log("here we are  "+content)
     for (let myChar of content) {
       myContent.push(myChar);
     }
@@ -124,7 +124,6 @@ var FunctionService = {
        }
      }
       else if (myContent[i]=="<") {
-        console.log("we are in xml")
         var tag="<";
         var tagname="";
         var isEmpty=false;
@@ -144,9 +143,7 @@ var FunctionService = {
             tag+=myContent[i++];
           }
         }
-      console.log(tag);
       if (myContent[i]=="/" && myContent[i+1]==">") {
-          console.log("we have an empty tag??");
           isEmpty=true;
           tag+="/>";
           i+=2;
@@ -171,9 +168,9 @@ var FunctionService = {
           }
           word+=tag;  //now word and expanword will differ. Note that empty tags are just ignored
                       //hence: " <pb/> " will NOT appear in our array
-                      //this is an error -- we want <gap> tags to appear
+                      //this is an error -- we want <gap> tags to appear.. and pb lb cb..
         } else {//if the tag is pb lb cb we want to hide it! but otherwise write it out
-          console.log("got an empty tag "+tag)
+//          console.log("got an empty tag "+tag)
           word+=tag;
           i--; //rewind 1 space
         }
@@ -371,14 +368,9 @@ var FunctionService = {
 //          console.log("content after adding end of string:"+rdgContent);
           rdgsContent.push({type:myRdgTypes[i], content:rdgContent})
         }
-//        console.log("appstart now is "+appStart);
       }
-//      console.log("for type "+myRdgTypes[i]+" content is "+rdgContent);
     }
-//console.log("we have readings "); console.log(rdgsContent);
     return(rdgsContent);
-      //here we add to the rest of our string...
-    //let's see what we have!
   },
   loadTEIContent: function(version, content) {
     var deferred = defer();
@@ -388,13 +380,36 @@ var FunctionService = {
       async.map(version.children, procTEIs, function (err, results) {
           var newContent="";
           for (var i=0; i<results.length; i++) {
-            //ok... if content is <<NOBREAK>> then remove it and trim preceding string
-            if (results[i]=="<<NOBREAK>>") {
+            //if break==no: trim space before/after
+           if (results[i].indexOf('break="no"')!=-1)  {
               for (var j=newContent.length-1; newContent.charCodeAt(j) <=32 &&  j>0 ; j--) {
                     newContent=newContent.slice(0, -1);
+              }  //remove space from start next element.. if there is one
+              if (i<results.length-1) {
+                for (var j=0; j<results[i+1].length && results[i+1].charCodeAt(j)<=32; j++)  {
+                  results[i+1] = results[i+1].substring(1);
+                }
               }
             }
-            else newContent+=results[i];
+            //ok... If speace before and after empty element: add to preceding/next word
+            if (results[i].slice(-2)=="/>") {  //start of string...
+              if (i==0 && results.length>1 && results[1].charCodeAt(0)<=32) {
+                for (var j=0; j<results[1].length && results[1].charCodeAt(j)<=32; j++)  {
+                  results[1] = results[1].substring(1);
+                }
+              } else if (newContent!="" && i<results.length-2) {  //in middle of results. check before and after do not ennd/be
+                if (newContent.charCodeAt(-1)<=32 && results[i+1].charCodeAt(0)<=32) {
+                  for (var j=0; j<results[i+1].length && results[i+1].charCodeAt(j)<=32; j++)  {
+                    results[i+1] = results[i+1].substring(1);
+                  }
+                }
+              } else {
+                if (i==results.length-1 && newContent.charCodeAt(newContent.length-1)<=32) { // after last word
+                  while (newContent.charCodeAt(newContent.length-1)<=32) {newContent = newContent.slice(0, -1);}
+                }
+              }
+            }
+            newContent+=results[i];
             //at this point: we have to intervene if our element is a lb pb cb with break=no to remove
           }
           content.content=newContent;
@@ -416,18 +431,7 @@ var FunctionService = {
               }
             }
             content.content="<rdg"+attrs+"></rdg>";
-          }
-          if (version.name=="lb" || version.name=="cb" || version.name=="pb") {
-            if (!version.attrs || !version.attrs.break || version.attrs.break!="no") {
-              content.content=" ";
-            } else {
-              //trim content if there is no break -- needed because of the horrid crud which oxygen sticks up
-//              console.log(content.content)  //ok, this is a hack -- processor up stream realizes we have a <nobreak> elemeent and trims preceding content
-              content.content="<<NOBREAK>>"
-            }
-          } else {
-            // we have another empty element.. what is it..add it...
-  //          console.log("ok, empty element I think"); console.log(version);
+          } else  {
             var attrs="";
             if (version.attrs) {
               for (var key in version.attrs) {
@@ -442,7 +446,7 @@ var FunctionService = {
     return deferred.promise;
   },
   makeJsonList: function (content, witness) {
-    console.log("in "+witness+" for "+content);
+//    console.log("in "+witness+" for "+content);
     var thistext="";
     //remove line breaks,tabs, etc
   //  thistext+=content.replace(/(\r\n|\n|\r)/gm,"");
