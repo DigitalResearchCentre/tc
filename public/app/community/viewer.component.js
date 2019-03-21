@@ -771,7 +771,7 @@ function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound 
         }
     }
   }
-  return (startString+contentText.slice(j-1, i+2)+endString);
+  return (startString+contentText.slice(j-1, i+1)+endString);
 }
 function prettyTei(teiRoot) {
   _.dfs([teiRoot], function(el) {
