@@ -19,11 +19,11 @@ var globalDoc;
 var globalCommAbbr;
 var origUpdateTeis;
 
-var sourceTeisAA=new Object();
-var updateTeiElsAA=new Object();
-var otherAncestorTeisAA= new Object();
+var sourceTeisAA=new Map();
+var updateTeiElsAA=new Map();
+var otherAncestorTeisAA= new Map();
 var inProcess=false;
-
+var calledBack=false;
 
 var DocSchema = extendNodeSchema('Doc', {
   name: { type: String, index: true },
@@ -39,7 +39,7 @@ var DocSchema = extendNodeSchema('Doc', {
 }, {
   methods: {
     _commit: function(
-      teiRoot, docRoot, leftBound, rightBound, callback
+      teiRoot, docRoot, leftBound, rightBound, masterCallback, callback
     ) {
       let self = this
         , docsMap = {}
@@ -59,11 +59,15 @@ var DocSchema = extendNodeSchema('Doc', {
       } else {
         docEl = {name: self.label, attrs: {n: self.name}};
       }
-     console.log("starting oit");
+     if (config.localDevel)  console.log("starting oit");
 //      console.log(communityAbbr);
 //      console.log(docEl)
       globalDoc=docRoot;
       globalCommAbbr=communityAbbr;
+      sourceTeisAA.clear();
+      updateTeiElsAA.clear();
+      otherAncestorTeisAA.clear();
+
 //     console.log(teiRoot.children[0].children[1].children[0].children);
 //      console.log(teiRoot);
       if (_.isEmpty(teiRoot)) {
@@ -117,7 +121,7 @@ var DocSchema = extendNodeSchema('Doc', {
 
       _.dfs([teiRoot], function(el) {
         let cur = TEI.clean(el);
-        console.log("cur: "+cur);
+//        if (config.localDevel)  console.log("cur: "+cur);
 
         if (!el.children) {
           el.children = [];
@@ -155,9 +159,6 @@ var DocSchema = extendNodeSchema('Doc', {
       var uniqueEntities = [];
       var deleteEntitiesList=[];
       var updateTeiEls=[];
-      sourceTeisAA=[];
-      updateTeiElsAA=[];
-      otherAncestorTeisAA=[];
       if (config.localDevel)  console.log("function 0c")
         //convert tei references to toplevel entities to entity ids from the database, write to entities
       var elInfo = {"currAncestor": {}, "curPath": [] };
@@ -173,7 +174,7 @@ var DocSchema = extendNodeSchema('Doc', {
       async.waterfall([
         function (cb1) {
           if (config.localDevel)  console.log("function 1");
-          filterEntities(docRoot, insertTeis, updateTeis, communityAbbr, elInfo, function(updateTeiElements, err) {
+          filterEntities(docRoot, insertTeis, updateTeis, communityAbbr, elInfo, masterCallback, function(updateTeiElements, err) {
             topEntities=filterLiveEntities(insertTeis, insertEntities, communityAbbr);
 //            console.log("my entities"); console.log(topEntities);
             uniqueEntities = _.uniqBy(insertEntities, "entityName");
@@ -542,6 +543,7 @@ var DocSchema = extendNodeSchema('Doc', {
       ], function (err) {
           if (config.localDevel) console.log("at the end of it all..")
           inProcess=false;
+          calledBack=false;
           callback(null);
         }
        );
@@ -557,8 +559,9 @@ var DocSchema = extendNodeSchema('Doc', {
 //      console.log(docRoot);
       if (inProcess) { //can happen with browser resending call
         //
-        callback({error:true, message:"Error: likely because you are loading a very largcdocument. It is possible the document loaded correctly, but there may be an empty duplicate. Check and delete any empty duplicate"})
-        return;
+        if (config.localDevel) console.log("we should never get here...I think..");
+//        callback({error:true, message:"Error: likely because you are loading a very large document. It is possible the document loaded correctly, but there may be an empty duplicate. Check and delete any empty duplicate"})
+//       return;
       }
       inProcess=true;
 
@@ -584,7 +587,7 @@ var DocSchema = extendNodeSchema('Doc', {
             });
           } else {inProcess=false}
           self._commit(
-            teiRoot, docRoot, leftBound, rightBound,
+            teiRoot, docRoot, leftBound, rightBound, callback,
             function(err) {
               return cb(err, self);
             }
@@ -937,7 +940,7 @@ function _parseBound(boundsMap) {
   };
 }
 
-function filterEntities(docRoot, sourceTeis, updateTeis, community, elInfo, callback) {
+function filterEntities(docRoot, sourceTeis, updateTeis, community, elInfo, masterCallback, callback) {
   var entities=[];
   var  updateTeiEls=[];
   var updateAncestors=[];
@@ -997,7 +1000,10 @@ function filterEntities(docRoot, sourceTeis, updateTeis, community, elInfo, call
           elInfo.currAncestor=inInsUpsAncs(sourceTeis[i].ancestors[0],sourceTeis, updateTeiEls, updateAncestors);
 //          console.log(sourceTeis.length);
           for (i; i<sourceTeis.length; i++) {
-            if (config.localDevel && i % 1000 == 0) console.log("processing TEI "+i);
+            if (config.localDevel && i % 1000 == 0) {
+              console.log("processing TEI "+i);
+              //danger of time out when processing long document, we are going to call the browser back but carry on till we have processed the document
+            }
             processTei(elInfo, sourceTeis[i], sourceTeis, updateTeiEls, updateAncestors, i, community);
           }
           cb1(null, updateTeiEls);
@@ -1015,7 +1021,12 @@ function filterEntities(docRoot, sourceTeis, updateTeis, community, elInfo, call
         childEl.isEntity= true;
         childEl.entityChildren=[];
         for (++i; i<sourceTeis.length; i++) {
-          if (config.localDevel && i % 1000 == 0) console.log("processing TEI "+i);
+          if (config.localDevel && i % 1000 == 0) {
+            console.log("processing TEI "+i);
+//            console.log("processing calledback ");
+  //          if (!calledBack) masterCallback({error:true, message:"Long document loading. We will send an email when it is fully loaded"})
+            calledBack=true;
+          }
           processTei(elInfo, sourceTeis[i], sourceTeis, [], [], i, community);
         }
         callback(updateTeiEls);
@@ -1040,14 +1051,14 @@ function getTEIUpdates (teiID, callback) {
 //first time in, create the arrays
 function inInsUpsAncs(soughtAncestor, sourceTeis, updateTeiEls, otherAncestorTeis) {
 
-//  console.log("seeking "+soughtAncestor);
+//    console.log("seeking "+soughtAncestor+" length "+ sourceTeisAA.size);
   var foundAncestor=null;
-  if (Object.keys(sourceTeisAA).length==0) {
+  if (sourceTeisAA.size==0) {
     for (var i=0; i<sourceTeis.length; i++) {
-      sourceTeisAA[sourceTeis[i]._id]=i;
+      sourceTeisAA.set(sourceTeis[i]._id,i);
     }
   }
-  foundAncestor=sourceTeis[sourceTeisAA[soughtAncestor]];     //should be WAY faster...
+  foundAncestor=sourceTeis[sourceTeisAA.get(soughtAncestor)];     //should be WAY faster...
 //  if (foundAncestor && foundAncestor._id!=soughtAncestor) {
 //    console.log("WTF?");
 //    console.log(sourceTeisAA);
@@ -1056,29 +1067,32 @@ function inInsUpsAncs(soughtAncestor, sourceTeis, updateTeiEls, otherAncestorTei
 //  for (var i = sourceTeis.length-1; i >= 0 && !foundAncestor; i--) {
 //    if (String(soughtAncestor)==String(sourceTeis[i]._id)) foundAncestor=sourceTeis[i];  }
 //  var foundAncestor = sourceTeis.filter(function (obj){return String(obj._id) == String(soughtAncestor);})[0];
+//  console.log(foundAncestor);
   if (foundAncestor) return(foundAncestor);
-  if (Object.keys(updateTeiElsAA).length==0) {
+
+//  console.log("should not be here")
+  if (Object.keys(updateTeiElsAA).size==0) {
     for (var i=0; i<updateTeiEls.length; i++) {
-      updateTeiElsAA[updateTeiEls[i]._id]=i;
+      updateTeiElsAA.set(updateTeiEls[i]._id, i);
     }
   }
-  foundAncestor=updateTeiEls[updateTeiElsAA[soughtAncestor]];
+  foundAncestor=updateTeiEls[updateTeiElsAA.get(soughtAncestor)];
 //  console.log("update: "); console.log(foundAncestor);
   if (foundAncestor) return(foundAncestor);
 //  foundAncestor = updateTeiEls.filter(function (obj){return String(obj._id) == String(soughtAncestor);})[0];
 //  if (foundAncestor) return(foundAncestor);
 //  foundAncestor = otherAncestorTeis.filter(function (obj){return String(obj._id) == String(soughtAncestor);})[0];
-  if (Object.keys(otherAncestorTeisAA).length==0) {
+  if (otherAncestorTeisAA.size==0) {
     for (var i=0; i<otherAncestorTeis.length; i++) {
-      otherAncestorTeisAA[otherAncestorTeis[i]._id]=i;
+      otherAncestorTeisAA.set(otherAncestorTeis[i]._id, i);
     }
   }
 //  console.log("others: "+foundAncestor);
-  foundAncestor=otherAncestorTeis[otherAncestorTeisAA[soughtAncestor]];
+  foundAncestor=otherAncestorTeis[otherAncestorTeisAA.get(soughtAncestor)];
   if (!foundAncestor) {
       for (var i=0; i<sourceTeis.length; i++) {
         if (String(soughtAncestor)==String(sourceTeis[i]._id)) {
-            sourceTeisAA[sourceTeis[i]._id]=i;
+            sourceTeisAA.set(sourceTeis[i]._id, i);
             return(sourceTeis[i]);
         }
       }
@@ -1086,7 +1100,7 @@ function inInsUpsAncs(soughtAncestor, sourceTeis, updateTeiEls, otherAncestorTei
   if (!foundAncestor) {
       for (var i=0; i<updateTeiEls.length; i++) {
         if (String(soughtAncestor)==String(updateTeiEls[i]._id)) {
-            updateTeiElsAA[updateTeiEls[i]._id]=i;
+            updateTeiElsAA.set(updateTeiEls[i]._id,i);
             return(updateTeiEls[i]);
         }
       }
@@ -1094,7 +1108,7 @@ function inInsUpsAncs(soughtAncestor, sourceTeis, updateTeiEls, otherAncestorTei
   if (!foundAncestor) {
       for (var i=0; i<otherAncestorTeis.length; i++) {
         if (String(soughtAncestor)==String(otherAncestorTeis[i]._id)) {
-            otherAncestorTeisAA[otherAncestorTeis[i]._id]=i;
+            otherAncestorTeisAA.set(otherAncestorTeis[i]._id, i);
             return(otherAncestorTeis[i]);
         }
       }
