@@ -44,6 +44,7 @@ router.use(function(req, res, next) {
 
 router.get('**', function(req, res, next) {
   //ok, what do we have...
+//  console.log(req.user);
   var detparts=req.params[0].slice(1).split("/");
   var authparts=detparts[0].split(":");
   var nameparts=detparts[1].split(":");
@@ -52,7 +53,8 @@ router.get('**', function(req, res, next) {
   var inentity=false;
   var indoc=false;
   var errfound=false;
-  if (authparts[0]!='urn') res.status(400).send('URI protocol "'+authparts[0]+'" not recognized. "urn" expected');
+  if (!req.user) res.status(400).send('You have to be logged into Textual Communities to use the URI interface');  //may relax this later
+  else if (authparts[0]!='urn') res.status(400).send('URI protocol "'+authparts[0]+'" not recognized. "urn" expected');
   else if (authparts[1]!='det') res.status(400).send('URN Namespace Identifier "'+authparts[1]+'" not recognized. "det" expected');
   else if (authparts[2]!='tc') res.status(400).send('URN det naming authority prefix "'+authparts[2]+'" not recognized. "tc" expected');
   else if (authparts[3]!='usask') res.status(400).send('URN det naming authority organization "'+authparts[3]+'" not recognized. "usask" expected');
@@ -211,14 +213,14 @@ function formatXML(texts, isXML) {
 function entityRequest(req, res, entities, name, entityparts, i, community, callback) {
     if (entityparts[i].value=="*") { //wild card for docs at this level
       if (req.query.type=="count") {res.json({count: entities.length})}
-      else if (req.query.type!="list") {res.status(400).send("Error in query string '"+JSON.stringify(req.query)+"'. Only types count and list accepted in this context")}
+      else if (req.query.type!="list" && req.query.type!="apparatus") {res.status(400).send("Error in query string '"+JSON.stringify(req.query)+"'. Only types count, list and apparatus                                                                                        accepted in this context")}
       else {
         if (entityparts[i].property=="*"|| (i==0 && entityparts[i].property=="entity")) {
-          async.mapSeries(entities, function(myEntity, cb){ //how many children does each one have
-            var thisEntityProperty=myEntity.entityName.slice(myEntity.entityName.lastIndexOf(":")+1,myEntity.entityName.lastIndexOf("="));
-            Entity.find({ancestorName:myEntity.entityName}, function(err, myentities){
-              cb(err, {name:myEntity.name, label:thisEntityProperty, nparts: myentities.length})
-            });
+          async.mapSeries(entities, function(myEntity, cb){ //how many children does each one have. Also.. here is where we extract the collaton
+              var thisEntityProperty=myEntity.entityName.slice(myEntity.entityName.lastIndexOf(":")+1,myEntity.entityName.lastIndexOf("="));
+              Entity.find({ancestorName:myEntity.entityName}, function(err, myentities){
+                cb(err, {name:myEntity.name, label:thisEntityProperty, nparts: myentities.length})
+              });
           }, function (err, results) {
             if (err) {res.status(400).send("Database error")}
             else {
@@ -228,22 +230,55 @@ function entityRequest(req, res, entities, name, entityparts, i, community, call
         } else {//find by property value
           //no need to search for entities, we got them already...just return the entities matching this property value
           async.mapSeries(entities, function(myEntity, cb) {
-            var thisEntityProperty=myEntity.entityName.slice(myEntity.entityName.lastIndexOf(":")+1,myEntity.entityName.lastIndexOf("="));
-            if (thisEntityProperty==entityparts[i].property) {
-              Entity.find({ancestorName:myEntity.entityName}, function(err, myentities){
-                cb(err, {name:myEntity.name, label:thisEntityProperty, nparts: myentities.length})
-              });
-            } else cb(null, null);
+            if (req.query.type=="apparatus") {
+                if (myEntity.isTerminal) {
+                  var format=req.query.format;
+                  if (format=="NEXUS") format="xml/positive"
+                  Collation.findOne({id:community+"/"+myEntity.entityName+"/"+format}, function (err, myCollation){
+                    if (!myCollation) cb(err, {name: myEntity.entityName, collation:"NONE"})
+                    else cb(err, {name: myEntity.entityName, collation: myCollation.ce})
+                  });
+                }
+            } else {
+              var thisEntityProperty=myEntity.entityName.slice(myEntity.entityName.lastIndexOf(":")+1,myEntity.entityName.lastIndexOf("="));
+              if (thisEntityProperty==entityparts[i].property) {
+                Entity.find({ancestorName:myEntity.entityName}, function(err, myentities){
+                  cb(err, {name:myEntity.name, label:thisEntityProperty, nparts: myentities.length})
+                });
+              } else cb(null, null);
+            }
           }, function (err, results) {
               for (var j=0; j<results.length; j++){ if (!results[j]) results.splice(j--,1)};
-              if (!err) res.json(results);
-              else res.send(err);
+              if (err) res.send(err);
+              else if (req.query.type=="apparatus") {
+                  var content="", missing=""
+                  for (var j=0; j<results.length; j++) {
+                //    console.log()
+                    if (results[j].collation=="NONE") {
+                      missing+=results[j].name+" ";
+                    } else {
+                        results[j].collation=results[j].collation.replace("<?xml version='1.0' encoding='utf-8'?>","").replace('<TEI xmlns="http://www.tei-c.org/ns/1.0">',"").replace('</TEI>',"").replace('xml:id',"n");
+                        content+="<br/>"+results[j].collation.replace(/</gi, "&lt;").replace(/&lt;app/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;app").replace(/&lt;lem/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;lem").replace(/&lt;rdg/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;rdg").replace(/&lt;\/app/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/app").replace(/&lt;\/ab/gi, "<br/>&lt;/ab");
+                    }
+                  }
+                  makeCollatedWitList(community, function(witlist) {
+                    var today = new Date().toLocaleString('en-GB',{  day : 'numeric',month : 'long',year : 'numeric', hour: '2-digit', minute:'2-digit'})
+                    var startXML="<?xml version='1.0' encoding='utf-8'?>"+'<TEI xmlns="http://www.tei-c.org/ns/1.0">'+"<teiHeader><fileDesc><titleStmt><title>";
+                    var endXML="</div></body></text></TEI>".replace(/</gi, "&lt;");
+                    startXML+="Collation for "+name+", output for "+req.user.local.name+" ("+req.user.local.email+"), generated at "+today+'</title></titleStmt><publicationStmt><p rend="ital">dummy</p></publicationStmt><sourceDesc>'+witlist+'</sourceDesc></fileDesc></teiHeader><text><body><div>'
+                    content=startXML.replace(/</gi, "&lt;")+content+"<br/>"+endXML;
+                    if (req.query.format=="NEXUS") content=FunctionService.makeNEXUS(content);
+                    if (missing) content="No collation found for "+missing+"<br/>"+content;
+                    res.send(content);
+                  });
+              }
+              else res.json(results);
+
           });
        }
     }
   } else {//recurse till we hit end, or hit *
     //construct the entity name to this point..are we matching up to now?
-
     var thisEnt=community;
     var foundEnt=false;
     for (var k=0; k<entityparts.length && k<=i; k++) {thisEnt+=":"+entityparts[k].property+"="+entityparts[k].value}
@@ -260,7 +295,18 @@ function entityRequest(req, res, entities, name, entityparts, i, community, call
               callback(err, {name: thisEntity.name, nparts:myentities.length, ancestorName: ("ancestorName" in entities[j])?thisEntity.ancestorName:"", entityName:thisEntity.entityName, label:thisEntityProperty});
             });
           }
-          else callback(null, {name: entities[j].name, nparts:0, ancestorName: ("ancestorName" in entities[j])?entities[j].ancestorName:"", entityName:entities[j].entityName, label:thisEntityProperty});
+          else {  //terminal! now we could be looking for an apparatus...
+            if (req.query.type=="apparatus") {  //we are looking only for the apparatus for one unit
+                Collation.findOne({id:community+"/"+entities[j].entityName+"/"+req.query.format}, function (err, myCollation){
+                  if (err || !myCollation) {
+                    {res.status(400).send("Error finding collation of block '"+entities[j].entityName+"'. There may be no collation of this block")}
+                  }
+                  else res.send(myCollation.ce.replace(/</gi, "&lt;"));
+                })
+            } else {
+              callback(null, {name: entities[j].name, nparts:0, ancestorName: ("ancestorName" in entities[j])?entities[j].ancestorName:"", entityName:entities[j].entityName, label:thisEntityProperty});
+            }
+          }
         } else { //go round again
             //but... only go if this entity has children... else error
             Entity.find({ancestorName:thisEnt}, function(err, myentities){
@@ -423,6 +469,31 @@ function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docp
   });
 }
 
+function makeCollatedWitList(community, callback) {
+  Community.findOne({abbr:community}, function(err, myCommunity) {
+    if (typeof myCommunity.ceconfig.witnesses != "undefined") {
+      var listWit="<listWit>";
+      for (var i=0; i<myCommunity.ceconfig.witnesses.length; i++) {
+        listWit+="<witness>"+myCommunity.ceconfig.witnesses[i]+"</witness>";
+      }
+      listWit+="</listWit>"
+      callback(listWit);
+    } else {
+      async.map(myCommunity.documents, function(myDoc, cb){
+        Doc.findOne({_id: myDoc}, function (err, thisDoc){
+          cb(err, thisDoc.name);
+        });
+      }, function (err, results) {
+        var listWit="<listWit>";
+        for (var i=0; i<results.length; i++) {
+          listWit+="<witness>"+results[i]+"</witness>";
+        }
+        listWit+="</listWit>"
+        callback(listWit);
+      });
+    }
+  });
+}
 function getEntityDocs(community, seekEntity, req, res, docparts, callback) {
   //bring back the number of documents holding this entity, the names of the documents, or the page range of the document
   //we are either searching for documents holding this entity...

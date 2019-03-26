@@ -27,6 +27,7 @@ var ManageCommunityComponent = ng.core.Component({
     else if (which=='collationeditor-choosebase') this._uiService.manageModal$.emit({type: "choosebase-community", community: this.community});
     else if (which=='collationeditor-choosewitnesses') this._uiService.manageModal$.emit({type: "choosebase-choosewitnesses", community: this.community});
     else if (which=='collationeditor-retrievecollation') this._uiService.manageModal$.emit({type: "retrievecollation", community: this.community});
+    else if (which=='collationeditor-makenexuscollation') this._uiService.manageModal$.emit({type: "makenexuscollation", community: this.community});
     else this._uiService.manageModal$.emit(which);
   },
   isLeader: function() {

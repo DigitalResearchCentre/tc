@@ -177,7 +177,7 @@
             <span *ngIf="entity.isTerminal">
             <a (click)="selectEntity(entity)">
               {{entity.attrs.name}}
-            </a></span>
+            </a></span><span data-toggle="tooltip" title="Collation recorded" style="font-weight: bold; color: red" *ngIf="entity.hasCollation">C</span>
           </div>
           <ul>
             <li *ngFor="#subEntity of entity.entities"
@@ -190,7 +190,7 @@
                 <span *ngIf="subEntity.isTerminal">
                 <a (click)="selectEntity(subEntity)">
                   {{subEntity.name}}
-                </a></span>
+                </a></span><span data-toggle="tooltip" title="Collation recorded" style="font-weight: bold; color: red" *ngIf="subEntity.hasCollation">C</span>
               </div>
               <ul>
                 <li *ngFor="#subSubEntity of subEntity.entities"
@@ -216,7 +216,7 @@
                         <span *ngIf="subSubSubEntity.isTerminal">
                         <a (click)="selectEntity(subSubSubEntity)">
                           {{subSubSubEntity.name}}
-                        </a></span>
+                        </a></span><span data-toggle="tooltip" title="Collation recorded" style="font-weight: bold; color: red" *ngIf="subSubSubEntity.hasCollation">C</span>
                       </div>
                       <ul>
                         <li *ngFor="#subSubSubSubEntity of subSubSubEntity.entities"
@@ -229,7 +229,7 @@
                             <span *ngIf="subSubSubSubEntity.isTerminal">
                             <a (click)="selectEntity(subSubSubSubEntity)">
                               {{subSubSubSubEntity.name}}
-                            </a></span>
+                            </a></span><span data-toggle="tooltip" title="Collation recorded" style="font-weight: bold; color: red" *ngIf="subSubSubSubEntity.hasCollation">C</span>
                           </div>
                           <ul>
                             <li *ngFor="#subSubSubSubSubEntity of subSubSubSubEntity.entities"
@@ -242,11 +242,10 @@
                                 <span *ngIf="subSubSubSubSubEntity.isTerminal">
                                 <a (click)="selectEntity(subSubSubSubSubEntity)">
                                   {{subSubSubSubSubEntity.name}}
-                                </a></span>
+                                </a></span><span data-toggle="tooltip" title="Collation recorded" style="font-weight: bold; color: red" *ngIf="subSubSubSubSubEntity.hasCollation">C</span>
                               </div>
                             </li>
                           </ul>
-
                         </li>
                       </ul>
                     </li>

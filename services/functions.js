@@ -5,6 +5,7 @@ var $ = require('jquery')
     , config = require('../config')
     , models = require('../models')
     , TEI = models.TEI
+    , DOMParser = require('xmldom').DOMParser;
 ;
 
 var punctuation=".,:-/&@¶§;·⸫▽?!'"+'"';
@@ -538,7 +539,102 @@ var FunctionService = {
     }
   //  console.log(thistext);
     return(thistext);
+  },
+  makeNEXUS: function(source) {
+    var converted="#NEXUS<br/>BEGIN DATA;<br/>";
+    source=source.replace(/&lt;/gi, "<").replace(/&nbsp;/gi," ");
+    var myXMLDOM = new DOMParser().parseFromString(source, "text/xml");
+    var apps=myXMLDOM.getElementsByTagName("app");
+    var wits=myXMLDOM.getElementsByTagName("witness");
+    var taxlabels="TAXLABELS<br/>";
+    var matrix="MATRIX<br/>";
+    var witsMap= new Map();
+    var varnums=[0,1,2,3,4,5,6,7,8,9,"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+    for (var i=0; i<wits.length; i++) {
+      taxlabels+="&nbsp;&nbsp;&nbsp;&nbsp;["+i+"] "+wits[i].childNodes[0].nodeValue+"<br/>";
+      witsMap.set(wits[i].childNodes[0].nodeValue, i);
+    }
+    converted+="<br/>DIMENSIONS<br/>&nbsp;&nbsp;&nbsp;&nbsp;NTAX="+wits.length+"<br/>&nbsp;&nbsp;&nbsp;&nbsp;NCHAR="+apps.length+"<br/>;<br/>"
+    converted+='FORMAT<br/>&nbsp;&nbsp;&nbsp;&nbsp;respectcase SYMBOLS="0~9 a~z A~Z"<br/>&nbsp;&nbsp;&nbsp;&nbsp;MISSING=?<br/>&nbsp;&nbsp;&nbsp;&nbsp;GAP=-<br/>&nbsp;&nbsp;&nbsp;&nbsp;TRANSPOSE<br/>;<br/><br/>'
+    converted+="STATELABELS<br/>";
+    //do all the variants..
+    for (var i=0; i<apps.length; i++) {
+      var label=apps[i].getAttribute("n");
+      var vartype=apps[i].getAttribute("type");
+      var from=apps[i].getAttribute("from");
+      var to=apps[i].getAttribute("to");
+      if (vartype=="main") label+="_"+from+"_"+to; else label+="_whole";
+      label=label.replace(/ /gi, "_").replace(/:/gi, "_").replace(/=/gi, "_");;
+      converted+="&nbsp;&nbsp;&nbsp;&nbsp;"+(i+1)+" "+label;
+//build the matrix now too
+//first deal with wits which have or do not have this verse
+      if (vartype=="main") {
+        var matrixrow = new Array(wits.length)
+        matrixrow.fill("?");
+      }
+      else {
+        var matrixrow = new Array(wits.length)
+        matrixrow.fill("0");
+      }
+  //    console.log(matrixrow);
+      var rdgs=apps[i].getElementsByTagName("rdg");
+      if (vartype=="lac") { //there are no witnesses missing this entity
+        converted+=" whole"
+        if (!rdgs[0])
+          matrix+="&nbsp;&nbsp;&nbsp;&nbsp;["+(i+1)+"] "+label+" "+matrixrow.join("")+"<br/>";
+        else {
+          converted+=" lacuna"
+          var lacwits=rdgs[0].getElementsByTagName("idno");
+          for (var j=0; j<lacwits.length; j++) {
+            var thisWit=lacwits[j].childNodes[0].nodeValue;
+            var indexWit=witsMap.get(thisWit);
+            matrixrow[indexWit]=1;
+          }
+          matrix+="&nbsp;&nbsp;&nbsp;&nbsp;["+(i+1)+"] "+label+" "+matrixrow.join("")+"<br/>";
+        }
+      } else { //not dealing with whole block variants...
+          //no variants -- ie only one reading --
+          if (rdgs.length==1) {
+            var rdgwits=rdgs[0].getElementsByTagName("idno");
+            converted+=" "+standardChar(rdgs[0].childNodes[0].nodeValue.replace(/ /gi,"_"));
+            for (j=0; j<rdgwits.length; j++) {
+              var thisWit=rdgwits[j].childNodes[0].nodeValue;
+              var indexWit=witsMap.get(thisWit);
+              matrixrow[indexWit]=0;
+            }
+            matrix+="&nbsp;&nbsp;&nbsp;&nbsp;["+(i+1)+"] "+label+" "+matrixrow.join("")+"<br/>";
+          } else {//deal with multiple readings here
+            for (var j=0; j<rdgs.length; j++) {
+              var rdgwits=rdgs[j].getElementsByTagName("idno");
+              converted+=" "+standardChar(rdgs[j].childNodes[0].nodeValue.replace(/ /gi,"_"));
+              for (var k=0; k<rdgwits.length; k++) {
+                var thisWit=rdgwits[k].childNodes[0].nodeValue;
+                var indexWit=witsMap.get(thisWit);
+                matrixrow[indexWit]=varnums[j];
+              }
+            }
+            matrix+="&nbsp;&nbsp;&nbsp;&nbsp;["+(i+1)+"] "+label+" "+matrixrow.join("")+"<br/>";
+          }
+      }
+      converted+="<br/>"
+    }
+    converted+=";<br/><br/>"
+    converted+=taxlabels+";<br/><br/>";
+    converted+=matrix+";<br/>";
+    converted+="endblock;<br/><br/>BEGIN ASSUMPTIONS;<br/>&nbsp;&nbsp;&nbsp;&nbsp;ancstates archetype=0: all;<br/>;<br/>endblock;"
+    return(converted);
   }
+}
+
+function standardChar(source) {
+  var target=new Array(source.length)
+//  console.log("x"+source+"x");
+  for (var i=0; i<source.length; i++) {
+    if (source.charCodeAt(i)>127) {
+      target[i]="x";
+    } else target[i]=source[i];
+  }
+  return(target.join(""));
 }
 
 function procTEIs (teiID, callback) {
