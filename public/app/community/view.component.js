@@ -65,6 +65,27 @@ var ViewComponent = ng.core.Component({
     });
   }],
   ngOnInit: function() {
+    if (this.state.community.attrs.entities.length>0 && this.state.community.attrs.entities[0].attrs.name=="") {
+      var self=this;
+      if (confirm('The entity list in the "'+this.state.community.attrs.name+'" commmunity has been corrupted. Click OK to repair it.')) {
+        //do the repair here...
+        $.get(config.BACKEND_URL+'repairEntities/?community='+this.state.community.attrs.abbr, function(res) {
+            var i=0;
+            for (i=0; i<res.foundEntities.length; i++) {
+              if (i<self.state.community.attrs.entities.length) {
+                self.state.community.attrs.entities[i].attrs.name=res.foundEntities[i].name;
+                self.state.community.attrs.entities[i].attrs.entityName=res.foundEntities[i].entityName;
+              } else self.state.community.attrs.entities.push({name:res.foundEntities[i].name, entityName:res.foundEntities[i].entityName});
+            }
+            if (i<self.state.community.attrs.entities.length) {
+              while (i<self.state.community.attrs.entities.length) {
+                self.state.community.attrs.entities.pop();
+              }
+            }
+            alert("Entity list repaired.")
+        });
+      }
+    }
     if (this.state.authUser._id) {
       for (var i=0; i<this.state.authUser.attrs.memberships.length; i++) {
         if (this.state.authUser.attrs.memberships[i].community.attrs._id==this.state.community.attrs._id)

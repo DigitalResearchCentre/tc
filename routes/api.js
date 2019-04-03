@@ -2830,6 +2830,26 @@ router.post('/putCERuleSet', function(req, res, next) {
 //  })
 });
 
+router.get('/repairEntities', function(req, res, next) {
+  //grab all the entities which have no ancestor but belong to this community
+  var foundEntities=[];
+  Entity.find({community:req.query.community, ancestorName:""}, function(err, entities){
+    if (err) {
+      res.json({error:"Problem in database search"})
+    } else {
+      foundEntities=entities;
+      //write the entities back to the community
+      Community.update({abbr:req.query.community}, {$set: {entities: entities}}, function(err, result){
+          if (err) {
+            res.json({error:"Problem in database search"})
+          } else {
+            res.json({foundEntities});
+          }
+      })
+    }
+  })
+});
+
 // wrinkle: populate witnesses field from documents array...
 //now: use what is in ceconfig witnesses
 //NOTE if we get an error here it is because there is a document in the witness list which no longer exists
