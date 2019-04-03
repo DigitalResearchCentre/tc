@@ -158,11 +158,12 @@ function makeNEXUS(source) {
         } else {//deal with multiple readings here
           for (var j=0; j<rdgs.length; j++) {
             var rdgwits=rdgs[j].getElementsByTagName("idno");
+            var rdgindex=varnums[rdgs[j].getAttribute("varSeq")-1];
             converted+=" "+standardChar(rdgs[j].childNodes[0].nodeValue.replace(/ /gi,"_"));
             for (var k=0; k<rdgwits.length; k++) {
               var thisWit=rdgwits[k].childNodes[0].nodeValue;
               var indexWit=witsMap.get(thisWit);
-              matrixrow[indexWit]=varnums[j];
+              matrixrow[indexWit]=rdgindex;
             }
           }
           matrix+="    ["+(i+1)+"] "+label+" "+matrixrow.join("")+"\r";

@@ -261,7 +261,7 @@ function entityRequest(req, res, entities, name, entityparts, i, community, call
                         content+="<br/>"+results[j].collation.replace(/</gi, "&lt;").replace(/&lt;app/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;app").replace(/&lt;lem/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;lem").replace(/&lt;rdg/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;rdg").replace(/&lt;\/app/gi, "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/app").replace(/&lt;\/ab/gi, "<br/>&lt;/ab");
                     }
                   }
-                  makeCollatedWitList(community, function(witlist) {
+                  makeCollatedWitList(community, entityparts, function(witlist) {
                     var today = new Date().toLocaleString('en-GB',{  day : 'numeric',month : 'long',year : 'numeric', hour: '2-digit', minute:'2-digit'})
                     var startXML="<?xml version='1.0' encoding='utf-8'?>"+'<TEI xmlns="http://www.tei-c.org/ns/1.0">'+"<teiHeader><fileDesc><titleStmt><title>";
                     var endXML="</div></body></text></TEI>".replace(/</gi, "&lt;");
@@ -469,7 +469,13 @@ function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docp
   });
 }
 
-function makeCollatedWitList(community, callback) {
+function makeCollatedWitList(community, entityparts, callback) {
+  console.log(entityparts);
+  var entitySought=community;
+  for (var i=0; i<entityparts.length-1; i++) {
+    entitySought+=":"+entityparts[i].property+"="+entityparts[i].value;
+  }
+  console.log("looking for "+entitySought);
   Community.findOne({abbr:community}, function(err, myCommunity) {
     if (typeof myCommunity.ceconfig.witnesses != "undefined") {
       var listWit="<listWit>";
@@ -481,12 +487,17 @@ function makeCollatedWitList(community, callback) {
     } else {
       async.map(myCommunity.documents, function(myDoc, cb){
         Doc.findOne({_id: myDoc}, function (err, thisDoc){
-          cb(err, thisDoc.name);
+          //test here if this wit has this entity in it...
+          TEI.findOne({entityAncestor:entitySought, "docs.0":ObjectId(myDoc)}, function (err, isTEI) {
+            if (isTEI)  cb(err, thisDoc.name);
+            else (cb(err, ""));
+          })
         });
       }, function (err, results) {
         var listWit="<listWit>";
         for (var i=0; i<results.length; i++) {
-          listWit+="<witness>"+results[i]+"</witness>";
+          if (results[i]!="")
+            listWit+="<witness>"+results[i]+"</witness>";
         }
         listWit+="</listWit>"
         callback(listWit);

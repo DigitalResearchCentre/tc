@@ -603,14 +603,16 @@ var FunctionService = {
               matrixrow[indexWit]=0;
             }
             matrix+="&nbsp;&nbsp;&nbsp;&nbsp;["+(i+1)+"] "+label+" "+matrixrow.join("")+"<br/>";
-          } else {//deal with multiple readings here
+          } else {//deal with multiple readings here. We get the indexValue the variant from varSeq. convert to NEXUS value
             for (var j=0; j<rdgs.length; j++) {
               var rdgwits=rdgs[j].getElementsByTagName("idno");
+              var rdgindex=varnums[rdgs[j].getAttribute("varSeq")-1];  //looks after subreadings too
+              //flatten subreadings...
               converted+=" "+standardChar(rdgs[j].childNodes[0].nodeValue.replace(/ /gi,"_"));
               for (var k=0; k<rdgwits.length; k++) {
                 var thisWit=rdgwits[k].childNodes[0].nodeValue;
                 var indexWit=witsMap.get(thisWit);
-                matrixrow[indexWit]=varnums[j];
+                matrixrow[indexWit]=rdgindex;
               }
             }
             matrix+="&nbsp;&nbsp;&nbsp;&nbsp;["+(i+1)+"] "+label+" "+matrixrow.join("")+"<br/>";
