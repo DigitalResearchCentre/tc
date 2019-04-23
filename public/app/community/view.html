@@ -20,6 +20,9 @@
             <a (click)="toggleDoc(doc)">
               {{doc.attrs.name}}
             </a>&nbsp;
+            <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="restoreDoc(doc)" data-toggle="tooltip" title="Rebuild this document">
+              <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/restore-doc.png">
+            </a>
             <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="addIIIFImages(doc)" data-toggle="tooltip" title="Add images from IIIF manifest">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/logo-iiif-34x30.png">
             </a>
@@ -38,10 +41,10 @@
             <a target="_blank" *ngIf="role=='LEADER'||role=='CREATOR'" (click)="reorderDocument(doc)" data-toggle="tooltip" title="Reorder or rename pages">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/reorderdoc.png">
             </a>
-            <a target="_blank" *ngIf="role=='LEADER'||role=='CREATOR'" data-toggle="tooltip" title="Remove document text"
+            <!-- a target="_blank" *ngIf="role=='LEADER'||role=='CREATOR'" data-toggle="tooltip" title="Remove document text"
               (click)="removeDocumentText(doc)">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/deletedoctext.png">
-            </a>
+            </a-->
             <a target="_blank" *ngIf="role=='LEADER'||role=='CREATOR'" data-toggle="tooltip" title="Delete document"
               (click)="deleteDocument(doc)">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/deletedoc.png">

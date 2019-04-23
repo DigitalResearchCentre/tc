@@ -2,6 +2,7 @@ var $ = require('jquery')
   , CommunityService = require('./services/community')
   , UIService = require('./services/ui')
   , config = require('./config')
+  , BrowserFunctionService = require('./services/functions')
 ;
 
 var makeNexusCollationComponent = ng.core.Component({
@@ -65,7 +66,7 @@ var makeNexusCollationComponent = ng.core.Component({
             self.message=result.error;
             self.success="";
           } else {
-            download(result.result, self.community.attrs.abbr+"-NEXUS", "text/plain");
+            BrowserFunctionService.download(result.result, self.community.attrs.abbr+"-NEXUS", "text/plain");
             self.message="";
             self.success="Converted to NEXUS. Check your downloads folder.";
             $('#manageModal').height("220px");
@@ -75,15 +76,6 @@ var makeNexusCollationComponent = ng.core.Component({
   }
 });
 
-function download(content, filename, contentType)
-{
-    if(!contentType) contentType = 'application/octet-stream';
-    var a = document.createElement('a');
-    var blob = new Blob([content], {'type':contentType});
-    a.href = window.URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-}
 
 //duplicates serverside function
 function makeNEXUS(source) {
@@ -116,7 +108,7 @@ function makeNEXUS(source) {
     var from=apps[i].getAttribute("from");
     var to=apps[i].getAttribute("to");
     if (vartype=="main") label+="_"+from+"_"+to; else label+="_whole";
-    label=label.replace(/ /gi, "_").replace(/:/gi, "_").replace(/=/gi, "_");;
+    label=label.replace(/ /gi, "_").replace(/:/gi, "_").replace(/=/gi, "_").replace(/-/gi, "_");;
     converted+="    "+(i+1)+" "+label;
 //build the matrix now too
 //first deal with wits which have or do not have this verse

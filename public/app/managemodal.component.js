@@ -47,7 +47,8 @@ var ManageModalComponent = ng.core.Component({
     require('./community/getdocinf.component'),
     require('./createdefaulttranscripts.component'),
     require('./retrievecollation.component'),
-    require('./makenexuscollation.component')
+    require('./makenexuscollation.component'),
+    require('./restoredocument.component')
   ]
 }).Class({
   constructor: [CommunityService, UIService, RESTService, function(communityService, uiService, restService) {
@@ -254,8 +255,13 @@ var ManageModalComponent = ng.core.Component({
       else if (event.type ==='makenexuscollation'){
         self.choice=event.type;
         self.community=event.community;
-      }
-      else if (event.type ==='getdocinf'){
+      } else if (event.type ==='restoredocument') {
+        self.choice=event.type;
+        self.document=event.document;
+        self.community=event.community;
+        self.docid=event.docid;
+        self.docname=event.docname;
+      } else if (event.type ==='getdocinf'){
         self.choice=event.type;
         self.document=event.document;
         self.community=event.community;

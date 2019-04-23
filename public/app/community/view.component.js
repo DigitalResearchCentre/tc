@@ -7,6 +7,7 @@ var CommunityService = require('../services/community')
   , config = require('../config')
   , async = require('async')
   , $ = require('jquery')
+  , BrowserFunctionService = require('../services/functions')
 ;
 
 var prevHeight;
@@ -126,6 +127,11 @@ var ViewComponent = ng.core.Component({
   },
   showAddFirstPage: function(doc) {
     return doc &&  _.isEmpty(_.get(doc, 'attrs.children'));
+  },
+  restoreDoc(doc) {
+    this._uiService.manageModal$.emit({
+      type:'restoredocument', document:doc, docid: doc._id, community: this.state.community.attrs.name, docname: doc.attrs.name
+    });
   },
   showAddPage: function(page, doc) {
     return (page._id==doc.attrs.children[doc.attrs.children.length-1]._id)
@@ -367,7 +373,8 @@ var ViewComponent = ng.core.Component({
      });
   },
   removeDocumentText: function(doc) {
-    this._uiService.manageModal$.emit({
+    // removed..use the restore document tools to achiever the same resilt, much better
+/*    this._uiService.manageModal$.emit({
        type: 'confirm-message',
        page: "",
        docname: doc._id,
@@ -375,7 +382,7 @@ var ViewComponent = ng.core.Component({
        header: "Delete all text from document "+doc.attrs.name+" in community "+this.state.community.attrs.name,
        warning: "Are you sure? This will delete the text of all transcripts for this document,while leaving pages and images. It cannot be undone.",
        action: 'deleteDocumentText'
-     });
+     }); */
   },
   editTEIHeader: function(doc) {
     this._uiService.manageModal$.emit({type: "uploadfile-community", community: this.state.community, document: doc, filetype:"teiHeader"});
@@ -389,8 +396,10 @@ var ViewComponent = ng.core.Component({
     self._uiService.manageModal$.emit({type: "extract-xml-doc", document: doc});
     docService.getTextTree(doc).subscribe(function(teiRoot) {
 //      console.log(teiRoot);
-      var teiText=docService.json2xml(prettyTei(teiRoot));
+      var teiText=docService.json2xml(BrowserFunctionService.prettyTei(teiRoot));
       teiText="<TEI>\r"+doc.attrs.teiHeader+"\r"+teiText+"\r</TEI>";
+      //download this text too...
+      BrowserFunctionService.download(teiText, doc.attrs.name+"-"+self._uiService.state.community.attrs.abbr+".xml", "text/xml");
       self._uiService.sendXMLData$.emit(teiText);
     });
   }
@@ -401,21 +410,5 @@ function removeAllSelected(self, page) {
   this.state.pageSelected=page;
 }
 
-function prettyTei(teiRoot) {
-  _.dfs([teiRoot], function(el) {
-    var children = [];
-    _.each(el.children, function(childEl) {
-      if (['pb', 'cb', 'lb', 'div','body','/div'].indexOf(childEl.name) !== -1) {
-        children.push({
-          name: '#text',
-          text: '\n',
-        });
-      }
-      children.push(childEl);
-    });
-    el.children = children;
-  });
-  return teiRoot;
-}
 
 module.exports = ViewComponent;

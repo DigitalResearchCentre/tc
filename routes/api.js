@@ -2086,6 +2086,20 @@ function getPagesInDocs (pageID, callback) {
   });
 }
 
+//part of document restore...
+router.post('/deleteDocDocsTEIs', function(req, res, next) {
+  var nDocs=0, nTEIs=0;
+  Doc.collection.remove({"ancestors.0": ObjectId(req.query.docid)}, function (err, remove) {
+    nDocs=remove.result.n;
+    TEI.collection.remove({"docs.0": ObjectId(req.query.docid)}, function (err, remove) {
+      nTEIs=remove.result.n;
+      Doc.collection.remove({_id:ObjectId(req.query.docid)}, function (err, remove){
+        res.json({message:nDocs+" document elements and "+nTEIs+" text elements removed."});
+      })
+    });
+  });
+});
+
 router.post('/deletePage', function(req, res, next) {
   //this one just eliminates page from docs and teis and as a child of text and document
   //only called when we are deleting a page in order to add it back in by docservice
@@ -2139,16 +2153,17 @@ var globalTextEl=null;
 
 router.post('/updateDbJson', function(req, res, next) {
   var collection=req.query.collection;
-//  console.log("changing json1")
+  console.log("changing json1")
   var param1=req.body[0];
   var param2=req.body[1];
 //  console.log("changing json")
-//  console.log(param1._id);
+  console.log(param1._id);
   if (param1.hasOwnProperty('_id')) {
 //    console.log("updating");
 //    param1={_id:}
     param1._id=ObjectId(param1._id);
-//    console.log(param1);
+    console.log(param1);
+    console.log(param2);
   }
   if (collection=="Community") {
       Community.collection.update(param1, param2, function(err, result){
@@ -2158,17 +2173,23 @@ router.post('/updateDbJson', function(req, res, next) {
   }
   if (collection=="Document") {
     Doc.collection.update(param1, param2, function(err, result){
-  //    console.log(param1);
-  //    console.log(param2);
-  //    console.log(result);
-      if (err) res.json("fail");
-      else res.json("success");
+      console.log(result.result);
+      if (err) res.json({success:false});
+      else res.json({success:true});
     })
   }
 });
 
 router.post('/validate', function(req, res, next) {
-  var xmlDoc, errors;
+  var xmlDoc, parseDoc, errors;
+  parseDoc=req.body.xml;
+  //if there is no body.. then add one...
+  if (parseDoc.includes("<front") && !parseDoc.includes("<body")) {
+    parseDoc=parseDoc.replace("</front>", "</front><body><div></div></body>")
+  }
+  if (parseDoc.includes("<back") && !parseDoc.includes("<body")) {
+    parseDoc=parseDoc.replace("<back", "<body><div></div></body><back")
+  }
   Community.findOne({_id: req.query.id}, function(err, community) {
     if (err) return next(err);
     let dtdPath = community.getDTDPath();
@@ -2178,7 +2199,7 @@ router.post('/validate', function(req, res, next) {
       dtdPath = './data/TEI-transcr-TC.dtd';
     }
     try {
-      xmlDoc = libxml.parseXml(req.body.xml);
+      xmlDoc = libxml.parseXml(parseDoc);
       xmlDoc.setDtd('TEI', 'TEI-TC', dtdPath);
       xmlDoc = libxml.parseXml(xmlDoc.toString(), {
         dtdvalid: true,
@@ -2212,7 +2233,27 @@ router.use(function(err, req, res, next) {
   }
 });
 
+router.get('/getBasicRestore', function(req, res, next){
+    Doc.findOne({_id: req.query.docid}, function(err, document) {
+      var docinf=[];
+      if (!document) res.json({error:err})
+      else {
+        docinf.push({name:document.name, _id:document._id, teiHeader: document.teiHeader, meta: document.meta})
+        async.mapSeries(document.children, function(page, callback) {
+          Doc.findOne({ _id: page}, function(err, pageinf){
 
+  //          if (pageinf.facs) var facs={facs: pageinf.facs} else var facs=""
+            if (pageinf.tasks && pageinf.tasks.length>0)
+              callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, tasks: pageinf.tasks, _id: pageinf._id});
+            else callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, _id: pageinf._id});
+          });
+        }, function(err, results) {
+          docinf.push({pages:results});
+          res.json(docinf);
+        });
+      }
+    });
+});
 
 router.get('/getTranscriberRecord', function(req, res, next){
   var community=req.query.community;
@@ -2652,10 +2693,34 @@ router.get('/cewitness', function(req, res, next) {
   });
 });
 
-//  content+=']}';
-//   var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
-// content+=',"witnesses":['
-//turns our content string into collation editor ready json
+router.post('/adjustRestorePage',function(req, res, next) {
+  var page=req.body;
+//  console.log(page);
+//  console.log(page.name+" "+page.facs);
+  if (page.tasks) {
+    for (var i=0; i<page.tasks.length; i++) {
+      page.tasks[i].date=new Date(page.tasks[i].date);
+    }
+  }
+  var docid=req.query.docid;
+  Doc.collection.update({"ancestors.0":ObjectId(docid), name:page.name}, {$set: {facs: page.facs, image: page.image, tasks: page.tasks}}, function(err, result){
+    Doc.findOne({"ancestors.0":ObjectId(docid), name:page.name}, function(err, myDoc){
+      Revision.collection.update({doc:ObjectId(page._id)}, {$set: {doc: ObjectId(myDoc._id)}}, {multi: true}, function(err, result){
+        res.json({success:true})
+      });
+    })
+  })
+});
+
+//swaps old id for new one; pops last element
+router.post('/restoreCommDocs', function(req, res, next) {
+  Community.collection.update({_id: ObjectId(req.query.community), documents: ObjectId(req.query.oldid)}, {$set:{"documents.$": ObjectId(req.query.newid)}}, function(err, result) {
+      Community.collection.update({_id: ObjectId(req.query.community)}, {$pop:{documents:1}}, function(err, result) {
+        res.json({success:true})
+      });
+  })
+});
+
 
 router.post('/isAlreadyCommunity', function(req, res, next) {
   Community.findOne({$or: [{abbr: req.query.abbr}, {name: req.query.name}]}, function(err, community) {

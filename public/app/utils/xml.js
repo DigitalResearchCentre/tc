@@ -95,7 +95,7 @@ function xml2json(xml) {
 }
 
 function json2xml(obj) {
-  return new XMLSerializer().serializeToString(json2xmlDoc(obj));
+  return new XMLSerializer().serializeToString(json2xmlDoc(obj)).replace(/\n\s*\n/g, '\n');
 }
 
 function json2xmlDoc(obj) {
@@ -207,5 +207,3 @@ function parseTEI(text) {
   });
   return xmlDoc;
 }
-
-
