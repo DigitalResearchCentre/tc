@@ -1,6 +1,7 @@
 var $ = require('jquery')
   , CommunityService = require('./services/community')
   , config = require('./config')
+  , BrowserFunctionService = require('./services/functions')
 ;
 
 var RetrieveCollationComponent = ng.core.Component({
@@ -37,20 +38,11 @@ var RetrieveCollationComponent = ng.core.Component({
       $.get(config.BACKEND_URL+'getCollations/?community='+this.community.attrs.abbr, function(res) {
           var bill=res;
           self.success="Collation for "+res.length+" block(s) found. Now downloading..Check your downloads folder; close this window when it is downloaded"
-          download("["+res+"]", self.community.attrs.abbr+"-COLLATION", "application/json")
+          BrowserFunctionService.download("["+res+"]", self.community.attrs.abbr+"-COLLATION", "application/json")
       });
   }
 });
 
-function download(content, filename, contentType)
-{
-    if(!contentType) contentType = 'application/octet-stream';
-    var a = document.createElement('a');
-    var blob = new Blob([content], {'type':contentType});
-    a.href = window.URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-}
 
 
 module.exports = RetrieveCollationComponent;

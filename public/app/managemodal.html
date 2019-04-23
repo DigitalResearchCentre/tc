@@ -72,7 +72,10 @@
     </tc-managemodal-export-tc1dbversion>
     <tc-managemodal-create-defaulttranscripts *ngSwitchWhen="'create-defaulttranscripts'">
       </tc-managemodal-create-defaulttranscripts>
-    <tc-community-getdocinf *ngSwitchWhen="'getdocinf'" [document]="document" [community]="community">
+    <tc-managemodal-restoredocument *ngSwitchWhen="'restoredocument'" [document]="document" [community]="community" [docid]="docid" [docname]="docname">
+        </tc-managemodal-restoredocument>
+    <tc-community-getdocinf *ngSwitchWhen="'getdocinf'" [document]="document" [community]="community" [docid]="docid" [docname]="docname">
     </tc-community-getdocinf>
+
 </div>
 </div>

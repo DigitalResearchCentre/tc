@@ -53,8 +53,9 @@ router.get('**', function(req, res, next) {
   var inentity=false;
   var indoc=false;
   var errfound=false;
-  if (!req.user) res.status(400).send('You have to be logged into Textual Communities to use the URI interface');  //may relax this later
-  else if (authparts[0]!='urn') res.status(400).send('URI protocol "'+authparts[0]+'" not recognized. "urn" expected');
+/*  if (!req.user) res.status(400).send('You have to be logged into Textual Communities to use the URI interface');  //may relax this later
+  else */
+  if (authparts[0]!='urn') res.status(400).send('URI protocol "'+authparts[0]+'" not recognized. "urn" expected');
   else if (authparts[1]!='det') res.status(400).send('URN Namespace Identifier "'+authparts[1]+'" not recognized. "det" expected');
   else if (authparts[2]!='tc') res.status(400).send('URN det naming authority prefix "'+authparts[2]+'" not recognized. "tc" expected');
   else if (authparts[3]!='usask') res.status(400).send('URN det naming authority organization "'+authparts[3]+'" not recognized. "usask" expected');

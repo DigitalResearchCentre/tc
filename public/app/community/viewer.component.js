@@ -5,6 +5,7 @@ var ElementRef = ng.core.ElementRef
   , $ = require('jquery')
   , OpenSeadragon = require('openseadragon')
   , config = require('../config')
+  , BrowserFunctionService = require('../services/functions')
 ;
 
 var prevSpHeight2;
@@ -268,7 +269,7 @@ var ViewerComponent = ng.core.Component({
       //update base database version
       docService.getTextTree(page).subscribe(function(teiRoot) {
         var isDefault=false;
-        var dbRevision = self.json2xml(prettyTei(teiRoot));
+        var dbRevision = self.json2xml(BrowserFunctionService.prettyTei(teiRoot));
         //now, we only add this to the revision database if we are a leader or CREATOR or member. Else, just throw it in the window and carry on
         if (self.role=="NONE")
           self.setContentText(dbRevision);
@@ -772,22 +773,6 @@ function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound 
     }
   }
   return (startString+contentText.slice(j-1, i+1)+endString);
-}
-function prettyTei(teiRoot) {
-  _.dfs([teiRoot], function(el) {
-    var children = [];
-    _.each(el.children, function(childEl) {
-      if (['pb', 'cb', 'lb', 'div','body', '/div'].indexOf(childEl.name) !== -1) {
-        children.push({
-          name: '#text',
-          text: '\n',
-        });
-      }
-      children.push(childEl);
-    });
-    el.children = children;
-  });
-  return teiRoot;
 }
 
 function sendPreviewText (contentText, context, page) {

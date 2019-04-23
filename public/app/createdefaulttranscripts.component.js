@@ -5,6 +5,7 @@ var UIService = require('./services/ui')
   , config = require('./config')
   , Router = ng.router.Router
   , async = require('async')
+  , BrowserFunctionService = require('./services/functions')
 ;
 
 var CreateDefaultTranscriptsComponent = ng.core.Component({
@@ -59,7 +60,7 @@ var CreateDefaultTranscriptsComponent = ng.core.Component({
         if (counter%5==0) self.success+=counter+" ";
         self.docService.getTextTree(page).subscribe(function(teiRoot) {
           var isDefault=false;
-          var dbRevision = self.json2xml(prettyTei(teiRoot));
+          var dbRevision = self.json2xml(BrowserFunctionService.prettyTei(teiRoot));
             self.docService.addRevision({
             doc: page.getId(),
             text: dbRevision,
@@ -87,23 +88,6 @@ var CreateDefaultTranscriptsComponent = ng.core.Component({
     $('#manageModal').modal('hide');
   },
 });
-
-function prettyTei(teiRoot) {
-  _.dfs([teiRoot], function(el) {
-    var children = [];
-    _.each(el.children, function(childEl) {
-      if (['pb', 'cb', 'lb', 'div','body', '/div'].indexOf(childEl.name) !== -1) {
-        children.push({
-          name: '#text',
-          text: '\n',
-        });
-      }
-      children.push(childEl);
-    });
-    el.children = children;
-  });
-  return teiRoot;
-}
 
 
 module.exports = CreateDefaultTranscriptsComponent;

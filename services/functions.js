@@ -564,7 +564,7 @@ var FunctionService = {
       var from=apps[i].getAttribute("from");
       var to=apps[i].getAttribute("to");
       if (vartype=="main") label+="_"+from+"_"+to; else label+="_whole";
-      label=label.replace(/ /gi, "_").replace(/:/gi, "_").replace(/=/gi, "_");;
+      label=label.replace(/ /gi, "_").replace(/:/gi, "_").replace(/=/gi, "_").replace(/-/gi, "_");;
       converted+="&nbsp;&nbsp;&nbsp;&nbsp;"+(i+1)+" "+label;
 //build the matrix now too
 //first deal with wits which have or do not have this verse

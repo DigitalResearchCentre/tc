@@ -6,6 +6,7 @@ var URI = require('urijs')
   , config = require('./config')
   , UpdateDbService = require('./services/updatedb')
   , async = require('async')
+  , BrowserFunctionService = require('./services/functions')
 ;
 
 
@@ -158,21 +159,5 @@ var AddDocumentXMLComponent = ng.core.Component({
   }
 });
 
-function prettyTei(teiRoot) {
-  _.dfs([teiRoot], function(el) {
-    var children = [];
-    _.each(el.children, function(childEl) {
-      if (['pb', 'cb', 'lb', 'div','body', '/div'].indexOf(childEl.name) !== -1) {
-        children.push({
-          name: '#text',
-          text: '\n',
-        });
-      }
-      children.push(childEl);
-    });
-    el.children = children;
-  });
-  return teiRoot;
-}
 
 module.exports = AddDocumentXMLComponent;

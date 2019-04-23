@@ -1,0 +1,63 @@
+<div style="font-size: 110%; height:100%;">
+  <div modal-draggable class="modalHeader">Rebuild Document "{{docname}}" in Community "{{uiService.state.community.attrs.name}}"
+    <button type="button" (click)="closeModalRD()" class="close" data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;</button>
+  </div>
+
+  <p style="margin-top: 20px; margin-left: 20px">There are two steps to rebuilding a corrupted document:</p>
+    <ol>
+      <li>Create or load a basic restore document.
+        This contains information about the existing document (its images, all transcripts), in order to integrate the restored document with existing database records.</li>
+      <li>Create or load the document itself. This can be made from the existing database record for the document.
+        If this is not possible, you can load an existing XML document. If that is not possible, you can use the basic restore document. </li>
+    </ol>
+  <p style="margin-top: 10px; margin-left: 20px">Note that you can use this tool to load new versions of the document (with added/deleted/reordered pages, or without any text).</p>
+<hr style="border: 1px solid grey; margin-bottom: 5px; margin-top:0px"/>
+<div style="width:100%; margin-top: 15px;"><p style="text-align: center "><b>Step One</b></p></div>
+<div class="container" style="margin-left:10px; width:100%;">
+  <div class="row">
+    <div class="col-sm-9"><font color="red"><b>EITHER</b></font> make a new basic restore file. (It will also be downloaded to use later.) </div>
+    <div class="col-sm-3" style="text-align: center"><button type="button" class="btn btn-primary" (click)="makeBasic()">Make Basic Restore File</button></div>
+  </div>
+  <div class="row" style="margin-top: 5px">
+    <div class="col-sm-9"><font color="red"><b>OR</b></font> load basic restore file you made earlier. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <tc-filereader (filechange)="filechange($event)" style="display:inline-block"></tc-filereader></div>
+    <div class="col-sm-3" style="text-align: center"><button type="button" class="btn btn-primary" (click)="loadBasic()">Load Basic Restore File</button></div>
+  </div>
+</div>
+<div id="Step2">
+  <div style="width:100%; margin-top: 25px;"><p style="text-align: center " [ngClass]="{true:'active', false:'disabled'}[!disabled]"><b>Step Two</b></p></div>
+  <div class="container" style="margin-left:10px; width:100%;" >
+    <div class="row">
+      <div class="col-sm-9" [ngClass]="{true:'active', false:'disabled'}[!disabled]"><font [ngClass]="{true:'activered', false:'disabled'}[!disabled]"><b>EITHER</b></font> re-create the document from the database. </div>
+      <div class="col-sm-3" style="text-align: center">
+        <button type="button" *ngIf="disabled" class="btn btn-primary" (click)="extractDocDb()" disabled>Recreate from Database</button>
+        <button type="button" *ngIf="!disabled" class="btn btn-primary" (click)="extractDocDb()">Recreate from Database</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+      <div class="col-sm-9" [ngClass]="{true:'active', false:'disabled'}[!disabled]"><font [ngClass]="{true:'activered', false:'disabled'}[!disabled]"><b>OR</b></font> load the document from a file. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <tc-filereader (filechange)="filechange($event)" [ngClass]="{true:'inline', false:'nodisplay'}[!disabled]"></tc-filereader></div>
+      <div class="col-sm-3" style="text-align: center">
+        <button *ngIf="disabled" type="button" class="btn btn-primary" (click)="loadBasic()" disabled>Load Document File</button>
+        <button *ngIf="!disabled" type="button" class="btn btn-primary" (click)="loadXMLDocument()">Load Document File</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+      <div class="col-sm-9" [ngClass]="{true:'active', false:'disabled'}[!disabled]"><font [ngClass]="{true:'activered', false:'disabled'}[!disabled]"><b>OR</b></font> recreate the document from the basic restore file. </div>
+      <div class="col-sm-3" style="text-align: center">
+        <button *ngIf="disabled" type="button" class="btn btn-primary"  disabled>Use Restore File</button>
+        <button *ngIf="!disabled" type="button" class="btn btn-primary" (click)="useRestore()">Use Restore File</button></div>
+    </div>
+</div>
+
+</div>
+
+  <form style="margin-top: 10px">
+    <div *ngIf="message.length>0" class="alert alert-danger" style="margin-bottom: 3px; margin-top: 3px">
+      {{message}}
+    </div>
+    <div *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 3px; margin-top: 3px">
+      {{success}}
+    </div>
+  </form>
+</div>
