@@ -79,7 +79,7 @@ var restoreDocumentComponent = ng.core.Component({
       this.success="";
       this.message="No Basic Restore Document found. Return to step one!";
       this.disabled=true;
-    } else if (!teiText.includes("<TEI>")) {
+    } else if (!teiText.includes("<TEI")) {
       this.success="";
       this.message = 'The file chosen is not a TEI document. Select a different file';
     } else {
@@ -160,6 +160,11 @@ var restoreDocumentComponent = ng.core.Component({
 
 function processRestoreFile(teiText, self, context, callback) {
   var count = (teiText.match(/<pb/g) || []).length;
+  if (!self.brf[0].teiHeader) {
+    alert("The TEIheader is empty. Supply a TEIheader, clicking on the Edit TEIheader icon beside the document name ");
+    callback({success: false, message: "No TEI header"});
+    return;
+  }
   if (confirm(count+" pages found in document \""+self.document.attrs.name+"\"; "+self.brf[1].pages.length+" pages referenced in the basic restore file (these numbers should be identical). Press OK to continue, Cancel to cancel." )) {
     //validate extracted document..
     $.post(config.BACKEND_URL+'validate?'+'id='+self.uiService.state.community.getId(), {xml:teiText}, function(res) {
@@ -179,7 +184,7 @@ function processRestoreFile(teiText, self, context, callback) {
               if (context=="REBUILD") self.success=res.message+" from document \""+self.brf[0].name+"\". Now reloading with version rebuilt from the restore file."
               if (context=="LOAD") self.success=res.message+" from document \""+self.brf[0].name+"\". Now reloading with version loaded from a file."
               if (context=="EXTRACT") self.success=res.message+" from document \""+self.brf[0].name+"\". Now reloading with version extracted from the database."
-                var comDoc={name:self.brf[0].name, community: self.community, text:"", label:"text"};
+                var comDoc={name:self.brf[0].name, community: self.uiService.state.community.attrs.abbr, text:"", label:"text"};
                 var comRes={error:[]};
                 var comtext=teiText.slice(teiText.indexOf("<text"),teiText.indexOf("</text"));
                 var comcommid=self.uiService.state.community._id;
@@ -201,7 +206,7 @@ function processRestoreFile(teiText, self, context, callback) {
 function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
   //adjust document list in the community; write the teiheader to the restored document; reconcile the pages with revisions tasks etc
   $.post(config.BACKEND_URL+'restoreCommDocs/?newid='+myDoc._id+'&oldid='+brf[0]._id+'&community='+comcommid, function (res) {
-    var jsoncall=JSON.parse(JSON.stringify('[{"_id":"'+myDoc._id+'"}, {"$set":{"teiHeader":"'+brf[0].teiHeader.replace(/\\\"/g,'"').replace(/"/g,"\\\"").replace(/\n/g,"").replace(/\t/g,"")+'", "meta":'+JSON.stringify(brf[0].meta)+'}}]'));
+    var jsoncall=JSON.parse(JSON.stringify('[{"_id":"'+myDoc._id+'"}, {"$set":{"teiHeader":"'+brf[0].teiHeader.replace(/\\\"/g,'"').replace(/"/g,"\\\"").replace(/(\r\n|\n|\r)/gm,"").replace(/\t/g,"")+'", "meta":'+JSON.stringify(brf[0].meta)+'}}]'));
     UpdateDbService("Document", jsoncall, function(result){
       async.mapSeries(brf[1].pages, function (page, cb){
         $.ajax({
