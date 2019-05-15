@@ -41,6 +41,8 @@ var userSchema = Schema({
     approverid: String,
     approvermail: String,
     created: {type: Date, default: Date.now},
+    interest: String,
+    accesses: [{type: Date, default: Date.now}],
     pages:{}
   }],
 });

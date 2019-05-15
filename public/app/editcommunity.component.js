@@ -40,11 +40,12 @@ var EditCommunityComponent = ng.core.Component({
   initEdit: function(community) {
     this._uiService.sendCommand$.emit("createChosen");
     if (community && community.attrs.abbr) {
-      this.edit = _.clone(community.toJSON());
+      this.edit = _.clone(community.attrs);
       this.community = community;
-      this.edit.entities=community.attrs.entities;
+//      this.edit.entities=community.attrs.entities;
       this.origname=community.attrs.name;
       this.created=community.attrs.created;
+      if (!community.attrs.hasOwnProperty('canrequestview')) community.attrs.canrequestview=true;
       var myPreview=$("#PreviewImg")[0];
       if (community.attrs.haspicture && !myPreview) {
         this.picFile.valid=true;
@@ -70,6 +71,8 @@ var EditCommunityComponent = ng.core.Component({
         haspicture: false,
         created:Date.now(),
         image: "",
+        control: {transcripts:"ALL", tmsg:"", images:"ALL", imsg:"", collations:"ALL", cmsg:""},
+        canrequestview: true
       };
       //load ceconfig. We don't do this now.
     /*   this._restService.http.get('/app/data/CollEditorConfig.json').subscribe(function(colledfile) {
@@ -86,12 +89,18 @@ var EditCommunityComponent = ng.core.Component({
     }
     else return false;
   },
+  canrequest: function(choice) {
+    this.edit.canrequestview=choice;
+  },
   fileTooHigh: function(){
     if (this.picFile.chosen) {
       if (this.picFile.height>this.picFile.maxHeight) return true;
       else return false;
     }
     else return false;
+  },
+  changeControl: function(type) {
+    this._uiService.manageModal$.emit({type: "changeControl", context: this, ctype: type, community: this._uiService.state.community, parent:"COMMUNITY"});
   },
   fileTooWide: function(){
     if (this.picFile.chosen) {
@@ -178,7 +187,6 @@ var EditCommunityComponent = ng.core.Component({
     //is it a new community? or update to existing community?
     //if editing existing: state community will be identical to this one. else it will be new
     if (this.community && (this.community._id==this._uiService.state.community._id)) {
-      var bill=1;
       communityService.createCommunity(this.edit).subscribe(function(community) {
         self.success='Community "'+self.edit.name+'" saved';
 //        if ($('#PreviewImg')) $('#PreviewImg').remove();

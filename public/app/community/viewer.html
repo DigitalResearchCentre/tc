@@ -2,8 +2,14 @@
   <tc-pane class="image-viewer" style="position:relative">
     <div [ngClass]="{'nodisplay':!image}" id="imageMap" class="image_map">
     </div>
-    <div [ngClass]="{'nodisplay':image}" >
-      <p style="position: absolute; top: 40%; left: 40%;">No image associated with this page<br/><br/>
+    <div *ngIf="!imageUnrestricted" style="position: absolute; top: 40%;  margin: 40px">
+      <p style="text-align: center"><img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{imsg}} {{community.attrs.canrequestview}}</p>
+      <p *ngIf="imsg.includes('Only registered viewers') && community.attrs.canrequestview"  style="text-align: center">
+        <button type="button" class="btn btn-primary" (click)="register(page)">Register as Viewer</button>
+      </p>
+    </div>
+    <div *ngIf="imageUnrestricted" [ngClass]="{'nodisplay':image}" style="position: absolute; top: 40%; left: 40%;">
+      <p>No image associated with this page<br/><br/>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button *ngIf="role=='LEADER'||role=='CREATOR'" type="button" class="btn btn-primary" (click)="addPageImage(page)">Add Image</button>
     </p>
@@ -30,7 +36,14 @@
   </div>
   </tc-pane>
   <tc-pane class="text-viewer">
-    <div class="transcript-header">
+    <div *ngIf="!pageUnrestricted" style="width:100%; height: 100%; display: table; text-align: center">
+      <p style="display: table-cell; vertical-align:middle">
+        <img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{tmsg}}<br>
+        <span *ngIf="tmsg.includes('Only registered viewers') && community.attrs.canrequestview" >
+          <button type="button" style="margin-top:10px" class="btn btn-primary" (click)="register(page)">Register as Viewer</button></span>
+        </p>
+    </div>
+    <div *ngIf="pageUnrestricted" class="transcript-header">
       <label *ngIf="prevs.length && isText">From previous page: </label>
       <select *ngIf="prevs.length && isText" [ngModel]="prevLink?._id" (change)="prevLinkChange($event)">
         <option *ngFor="#el of prevs" [value]="el._id">
@@ -54,13 +67,13 @@
         </option>
       </select-->
     </div>
-    <tc-codemirror class="transcript"
+    <tc-codemirror *ngIf="pageUnrestricted" class="transcript"
       [smartIndent]="smartIndent"
       [content]="contentText"
       [state]="state"
       (contentChange)="setContentText($event)">
     </tc-codemirror>
-    <div class="container" style="width:100%">
+    <div *ngIf="pageUnrestricted" class="container" style="width:100%">
       <div class="row" style="width:100%">
         <div class="col-sm-5" *ngIf="page">
           <div class="buttons" style="float:left; margin-top: 4px">

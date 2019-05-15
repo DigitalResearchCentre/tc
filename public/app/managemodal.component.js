@@ -48,7 +48,10 @@ var ManageModalComponent = ng.core.Component({
     require('./createdefaulttranscripts.component'),
     require('./retrievecollation.component'),
     require('./makenexuscollation.component'),
-    require('./restoredocument.component')
+    require('./restoredocument.component'),
+    require('./changecontrol.component'),
+    require('./choosechange.component'),
+    require('./registerviewer.component')
   ]
 }).Class({
   constructor: [CommunityService, UIService, RESTService, function(communityService, uiService, restService) {
@@ -218,7 +221,8 @@ var ManageModalComponent = ng.core.Component({
       } else if (event.type ==='invite-member'){
         self.choice=event.type,
         self.community=event.community,
-        self.inviter=event.inviter
+        self.inviter=event.inviter,
+        self.role=event.role
       } else if (event.type ==='message-transcriber'){
         self.choice=event.type,
         self.community=event.community,
@@ -264,6 +268,24 @@ var ManageModalComponent = ng.core.Component({
       } else if (event.type ==='getdocinf'){
         self.choice=event.type;
         self.document=event.document;
+        self.community=event.community;
+      } else if (event.type ==='changeControl'){
+        self.choice=event.type;
+        self.context=event.context;
+        self.ctype=event.ctype;
+        self.community=event.community;
+        self.parent=event.parent;
+        self.document=event.document;
+        self.docname=event.docname;
+      } else if (event.type ==='choosechange'){
+        self.choice=event.type;
+        self.context=event.context;
+        self.community=event.community;
+        self.parent=event.parent;
+        self.docname=event.docname;
+        self.document=event.document;
+      } else if (event.type ==='registerviewer'){
+        self.choice=event.type;
         self.community=event.community;
       }
       $('#manageModal').modal('show');

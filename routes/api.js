@@ -1591,11 +1591,99 @@ router.post('/sendTranscriberMessages', function(req, res, next){
   })
 });
 
+router.get('/getCommunityLeader', function(req, res, next) {
+  var communityId=req.query.community;
+  Community.findOne({_id: ObjectId(communityId)}, function(err, community) {
+    async.mapSeries(community.members, function(member, callback) {
+      User.findOne({ _id: member}, function(err, user){
+          var found=[];
+          //filter memberships till we find the one who is the creator or the leader of this community...
+          for (var i=0; i<user.memberships.length; i++) {
+            if (String(user.memberships[i].community)==String(communityId) && (user.memberships[i].role=="LEADER" || user.memberships[i].role=="CREATOR")) {
+                found = user.local.email;
+            }
+          }
+          callback(err, found);
+      });
+    }, function (err, results) {
+      res.json(results);
+    });
+  });
+});
+
+router.post('/registerViewer', function(req, res, next) {
+  var email=req.body.email;
+  var name=req.body.name;
+  var password=req.body.password;
+  var communityId=req.query.community;
+  var communityAbbr=req.query.communityAbbr;
+  var communityName=req.body.communityName;
+  var leaderEmail=req.body.leaderEmail;
+  var letter=req.body.letter;
+  var interest=req.body.interest;  //maybe already a viewer or otherwise of the community,, just forgot!
+  User.findOne({"local.email":email}, function(err, user){
+    if (user) {
+      var is_member=user.memberships.filter(function(obj){return String(obj.community) == communityId;})[0];
+      if (is_member) res.json({login: false, result: "You are already registered with the email "+email+" and you are already a "+is_member.role+" of this community. Log in with your email."})
+      else {
+        //add membership to user, and member to community
+        User.collection.update({_id: user._id}, {$push: {memberships:{community:ObjectId(communityId), role: "VIEWER", interest: interest, accesses: [new Date()], created: new Date(), _id: ObjectId()}}}, function(err, result){
+          if (!err) {
+              Community.collection.update({_id:ObjectId(communityId)}, {$push:{members:user._id}}, function(err, result){
+                if (!err) {
+                    res.json({login: false, result: " You are already registered in Textual Communities with the email "+email+", and you have been added to the membership of this community. Log in with your email."})
+                } else {res.json({error:err})}
+              })
+          } else {res.json({error: err})}
+        })
+      }
+    } else {
+      //make a new user, then send an email
+      var newUser= new User();
+      newUser.local.email = email;
+      newUser._id=ObjectId();
+      newUser.local.name =  name;
+      newUser.local.created= new Date();
+      newUser.local.password = newUser.generateHash(password);
+      newUser.memberships.push({community:ObjectId(communityId), role: "VIEWER", pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}, interest: interest, accesses: [new Date()], created: new Date(), _id: ObjectId()})
+      newUser.local.authenticated= "1";
+      newUser.save(function(err) {
+        if (!err) {
+          Community.collection.update({_id:ObjectId(communityId)}, {$push:{members:newUser._id}}, function(err, result){
+            if (!err) {
+              req.logIn(newUser, function (err) {
+                if (!err) {
+                  TCMailer.localmailer.sendMail({
+                    from: TCMailer.addresses.from,
+                    to: email,
+                    replyTo: leaderEmail,
+                    cc: leaderEmail,
+                    subject: "You have registered as a viewer in the "+communityName+" Textual Community",
+                    html: letter,
+                    text: letter.replace(/<[^>]*>/g, '')
+                  }, function (err, info) {
+                    if (!err) {
+                      res.json({login: true, result: "You are now registered in Textual Communities with the email "+email+", and added as a VIEWER of this community. You will be logged in when you close this window! Happy viewing."});
+                    } else {res.json({error: err})};
+                  });
+                }
+                else {res.json({error: err})};
+              });
+            } else {res.json({error: err})};
+          });
+        } else {res.json({error: err})};
+      });
+    }
+  })
+});
+
 router.post('/sendInvitation', function(req, res, next) {
   var email=req.body.email;
   var name=req.body.name;
   var communityId=req.query.community;
   var letter=req.body.letter;
+  var role=req.body.role;
+  var action=role=="MEMBER"?"join":"view"
   var communityName=req.body.communityName;
   var leaderEmail=req.body.leaderEmail;
   var leaderName=req.body.leaderName;
@@ -1608,7 +1696,7 @@ router.post('/sendInvitation', function(req, res, next) {
       if (is_member) res.json({result: name+" is registered with the email "+email+" and is already a member of this community."})
       else {
         //add membership to user, and member to community
-        User.collection.update({_id: user._id}, {$push: {memberships:{community:ObjectId(communityId), role: "MEMBER", pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}, created: new Date(), _id: ObjectId()}}}, function(err, result){
+        User.collection.update({_id: user._id}, {$push: {memberships:{community:ObjectId(communityId), role: role, pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}, created: new Date(), _id: ObjectId()}}}, function(err, result){
           if (!err) {
               Community.collection.update({_id:ObjectId(communityId)}, {$push:{members:user._id}}, function(err, result){
                 if (!err) {
@@ -1623,9 +1711,10 @@ router.post('/sendInvitation', function(req, res, next) {
       var newUser= new User();
       newUser.local.email = email;
       newUser._id=ObjectId();
+      newUser.local.created= new Date();
       newUser.local.name =  name;
       newUser.local.password = newUser.generateHash("default");
-      newUser.memberships.push({community:ObjectId(communityId), role: "MEMBER", pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}, created: new Date(), _id: ObjectId()})
+      newUser.memberships.push({community:ObjectId(communityId), role: role, pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}, created: new Date(), _id: ObjectId()})
       newUser.local.authenticated= "1";
       newUser.save(function(err) {
         if (!err) {
@@ -1637,12 +1726,12 @@ router.post('/sendInvitation', function(req, res, next) {
                 to: email,
                 replyTo: leaderEmail,
                 cc: leaderEmail,
-                subject: "Invitation from "+leaderName+" to join the "+communityName+" Textual Community",
+                subject: "Invitation from "+leaderName+" to "+action+" the "+communityName+" Textual Community",
                 html: letter,
                 text: letter.replace(/<[^>]*>/g, '')
               }, function (err, info) {
                 if (!err) {
-                  res.json({result: "An email has been sent to "+name+", who is now registered in Textual Communities with the email "+email+", and added to the membership of this community"});
+                  res.json({result: "An email has been sent to "+name+", who is now registered in Textual Communities with the email "+email+", and added as a "+role+" of this community"});
                 } else {res.json({error: err})};
               });
            } else {res.json({error: err})};

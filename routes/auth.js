@@ -282,6 +282,7 @@ router.get('/profile', isLoggedIn, function(req, res) {
 // =====================================
 // route for facebook authentication and login
 router.get('/callfacebook', function(req, res) {
+  console.log("about to call FB")
     TCModalState.state=1;
     res.redirect('/auth/facebook');
   }

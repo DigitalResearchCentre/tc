@@ -55,7 +55,7 @@
     </tc-managemodal-change-role>
     <tc-managemodal-assign-approver *ngSwitchWhen="'assign-approver'" [member]="member" [user]="user">
     </tc-managemodal-assign-approver>
-    <tc-managemodal-invite-member *ngSwitchWhen="'invite-member'" [community]="community" [inviter]="inviter">
+    <tc-managemodal-invite-member *ngSwitchWhen="'invite-member'" [community]="community" [inviter]="inviter" [role]="role">
     </tc-managemodal-invite-member>
     <tc-managemodal-message-transcriber *ngSwitchWhen="'message-transcriber'" [community]="community" [approver]="approver" [transcriberEmail]="transcriberEmail"
       [transcriberName]="transcriberName" [document]="document" [page]="page" [leaders]="leaders" [context]="context">
@@ -76,6 +76,12 @@
         </tc-managemodal-restoredocument>
     <tc-community-getdocinf *ngSwitchWhen="'getdocinf'" [document]="document" [community]="community" [docid]="docid" [docname]="docname">
     </tc-community-getdocinf>
+    <tc-community-changecontrol *ngSwitchWhen="'changeControl'" [document]="document" [community]="community" [parent]="parent" [context]="context" [ctype]="ctype" [docname]="docname">
+    </tc-community-changecontrol>
+    <tc-document-choosechangecontrol *ngSwitchWhen="'choosechange'" [document]="document" [community]="community" [parent]="parent" [context]="context" [docname]="docname">
+    </tc-document-choosechangecontrol>
+    <tc-managemodal-registerviewer *ngSwitchWhen="'registerviewer'" [community]="community">
+    </tc-managemodal-registerviewer>
 
 </div>
 </div>

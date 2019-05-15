@@ -7,8 +7,8 @@ var UIService = require('../services/ui')
 ;
 
 var CommunityMembersComponent = ng.core.Component({
-  selector: 'tc-community-members',
-  templateUrl: '/app/community/members.html',
+  selector: 'tc-community-viewers',
+  templateUrl: '/app/community/viewers.html',
   inputs: [
     'community',
   ],
@@ -16,38 +16,19 @@ var CommunityMembersComponent = ng.core.Component({
   constructor: [Router, UIService, function(router, uiService) {
     this.state = uiService.state;
     this._router = router;
+    this.viewers=[];
     this.uiService=uiService;
-    this.members=[];
   }],
   ngOnInit: function() {
     var self=this;
     $.post(config.BACKEND_URL+'community/'+this.community._id+'/members/', function(res) {
       for (var i=0; i<res.length; i++) {
           var thisMembership=res[i].memberships.filter(function (obj){return String(obj.community) == String(self.community._id);})[0];
-          if (thisMembership.role!="VIEWER") self.members.push({name:res[i].local.name, email: res[i].local.email, date:thisMembership.created, role:thisMembership.role, approvername: thisMembership.approvername, approvermail: thisMembership.approvermail, assigned:thisMembership.pages.assigned, inprogress:thisMembership.pages.inprogress, submitted:thisMembership.pages.submitted, approved:thisMembership.pages.approved, committed:thisMembership.pages.committed, _id:thisMembership._id, user:res[i], pageinstances: {assigned:[], inprogress:[], committed:[], submitted:[],approved:[], committed:[]}})
+          if (thisMembership.role=="VIEWER")
+            self.viewers.push({name:res[i].local.name, email: res[i].local.email, date:thisMembership.created, role:thisMembership.role, approvername: thisMembership.approvername, approvermail: thisMembership.approvermail, assigned:thisMembership.pages.assigned, inprogress:thisMembership.pages.inprogress, submitted:thisMembership.pages.submitted, approved:thisMembership.pages.approved, committed:thisMembership.pages.committed, _id:thisMembership._id, user:res[i], pageinstances: {assigned:[], inprogress:[], committed:[], submitted:[],approved:[], committed:[]}})
       }
-      //now, get the tasks for each member..
-      async.map(self.members, function(member, callback) {
-        $.post(config.BACKEND_URL+'getMemberTasks?'+'id='+member._id, function(result) {
-          if (result.assigned.length) {adjustNumbers((result.assigned)); sortBy(result.assigned, ['docName', 'sortable']);}
-          if (result.approved.length) {adjustNumbers((result.approved)); sortBy(result.approved, ['docName', 'sortable']);}
-          if (result.inprogress.length) {adjustNumbers((result.inprogress)); sortBy(result.inprogress, ['docName', 'sortable']);}
-          if (result.submitted.length) {adjustNumbers((result.submitted)); sortBy(result.submitted, ['docName', 'sortable']);}
-          if (result.committed.length) {adjustNumbers((result.committed)); sortBy(result.committed, ['docName', 'sortable']);}
-          member.pageinstances=result;
-          callback(null, res);
-        });
-      })
     });
-  },
-  assignApprover: function(member, user) {
-    this.uiService.manageModal$.emit({type:'assign-approver', member: member, user: user, community:this.community.attrs.name});
-  },
-  assignPages: function(memberId, user) {
-    this.uiService.manageModal$.emit ({type:'assign-pages', user: user, source: this, community: this.community, memberId:memberId});
-  },
-  getHistory: function(userid, username) {
-    this.uiService.manageModal$.emit ({type:'transcriber-history', userid: userid, username: username, community: this.community});
+      //now, get the tasks for each member..
   },
   formatDate: function(rawdate) {
     var date = new Date(rawdate);
@@ -69,7 +50,7 @@ var CommunityMembersComponent = ng.core.Component({
       type: 'invite-member',
       community:   community,
       inviter: this.state.authUser,
-      role: "MEMBER"
+      role: "VIEWER"
     });
   },
   toggleInstance: function(instance) {

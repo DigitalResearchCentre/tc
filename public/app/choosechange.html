@@ -1,0 +1,43 @@
+<div style="font-size: 110%">
+  <div modal-draggable class="modalHeader">{{header}}
+    <button type="button" (click)="closeModalCCo()" class="close" data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;</button>
+  </div>
+  <div *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 1px">
+    {{success}}
+  </div>
+  <div class="container-fluid formgroup" style="margin-bottom: 15px">
+    <label>Who can see what</label>
+    <div class="row">
+      <div class="col-sm-5 text-center" >
+        <span [ngSwitch]="edit.control.images">
+          <span *ngSwitchWhen="'ALL'">Everyone can view every image</span>
+          <span *ngSwitchWhen="'VIEWERS'">Only registered viewers and community members can see images</span>
+          <span *ngSwitchWhen="'MEMBERS'">Only community members and leaders can see images</span>
+          <span *ngSwitchWhen="'LEADERS'">Only community leaders can see images</span>
+          <span *ngSwitchWhen="'INHERITED'">
+              <span *ngIf="parent=='DOCUMENT'">Who can see what images in this document is inherited from the community.</span>
+              <span *ngIf="parent=='PAGE'">Who can see what images of this page is inherited from the document.</span>
+          </span>
+        </span>
+      </div>
+      <div class="col-sm-1 text-center" >
+        <a (click)="changeControl('images')" style="float:right">Edit</a>
+      </div>
+      <div class="col-sm-5 text-center">
+        <span [ngSwitch]="edit.control.transcripts">
+          <span *ngSwitchWhen="'ALL'">Everyone can view every transcript</span>
+          <span *ngSwitchWhen="'VIEWERS'">Only registered viewers and community members can see transcripts</span>
+          <span *ngSwitchWhen="'MEMBERS'">Only community members and leaders can see transcripts</span>
+          <span *ngSwitchWhen="'LEADERS'">Only community leaders can see transcripts</span>
+          <span *ngSwitchWhen="'INHERITED'">
+              <span *ngIf="parent=='DOCUMENT'">Who can see what transcripts in this document is inherited from the community.</span>
+              <span *ngIf="parent=='PAGE'">Who can see what transcripts of this page is inherited from the document.</span>
+          </span>
+        </span>
+      </div>
+      <div class="col-sm-1 text-center" >
+        <a (click)="changeControl('transcripts')" style="float:right">Edit</a>
+      </div>
+   </div>
+  </div>
+</div>

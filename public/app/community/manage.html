@@ -1,40 +1,53 @@
 <div x-auto-height class="manage" style="position:relative; top:-5px" *ngIf="state.showTop">
   <div class="headerManage" *ngIf="isLeader() || isCreator()">
     <nav class="navbar navbar-default">
-      <ul class="nav navbar-nav navbar-left">
-        <li><span class="hmbrand">Manage ></span></li>
-        <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Auxiliary Files<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a (click)="loadModal('uploaddtd-community')">DTD</a></li>
-            <li><a (click)="loadModal('uploadcss-community')">Viewer CSS</a></li>
-            <li><a (click)="loadModal('uploadjs-community')">Viewer Javascript</a></li>
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#manage-navbar-collapse" aria-expanded="false" style="height:28px; position: relative; border-color: darkslategrey; left: -2px">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="collapse navbar-collapse" id="manage-navbar-collapse">
+          <ul class="nav navbar-nav" style="background-color:#DFDFDF; position: relative; top: 12px; z-index: 700">
+            <li><span class="hmbrand">Manage ></span></li>
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown"
+              role="button" aria-haspopup="true" aria-expanded="false">Auxiliary Files<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" (click)="loadModal('uploaddtd-community')">DTD</a></li>
+                <li><a class="dropdown-item" (click)="loadModal('uploadcss-community')">Viewer CSS</a></li>
+                <li><a class="dropdown-item" (click)="loadModal('uploadjs-community')">Viewer Javascript</a></li>
+              </ul>
+            </li>
+            <li class="dropdown" *ngIf="state.community.attrs.documents.length"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Collation<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" (click)="loadModal('collationeditor-choosebase')">Choose Base</a></li>
+                <li><a class="dropdown-item" (click)="loadModal('collationeditor-choosewitnesses')">Choose Witnesses</a></li>
+                <li><a class="dropdown-item" (click)="loadModal('collationeditor-retrievecollation')">Retrieve Collation</a></li>
+                <li><a class="dropdown-item" (click)="loadModal('collationeditor-makenexuscollation')">Convert Collation to NEXUS</a></li>
+              </ul>
+            </li>
+            <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community Management<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li ng-show="isCreator()===true||isLeader()===true"><a class="dropdown-item" (click)="deleteAllDocs()">Delete All Documents</a></li>
+                <li ng-show="isCreator()===true||isLeader()===true"><a class="dropdown-item" (click)="deleteCommunity()">Delete Community</a></li>
+              </ul>
+            </li>
+            <li class="dropdown" *ngIf="state.authUser.attrs.local.email=='peter.robinson@usask.ca'"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super User<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li ng-show="isCreator()===true"><a class="dropdown-item"  (click)="viewAllUsers()">View All Users</a></li>
+                <li ng-show="isCreator()===true"><a class="dropdown-item"  (click)="viewAllCommunities()">View All Communities</a></li>
+                <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportUsersFromTC1()">Export/Import Users from TC1 Community</a></li>
+                <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportTranscriptsFromTC1()">Move Transcripts from TC1 to TC2</a></li>
+                <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportDBVersionFromTC1()">Export Transcript from TC1 Database</a></li>
+                <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="createDefaultTranscripts()">Create Default Transcripts</a></li>
+              </ul>
+            </li>
           </ul>
-        </li>
-        <li class="dropdown" *ngIf="state.community.attrs.documents.length"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Collation<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a (click)="loadModal('collationeditor-choosebase')">Choose Base</a></li>
-            <li><a (click)="loadModal('collationeditor-choosewitnesses')">Choose Witnesses</a></li>
-            <li><a (click)="loadModal('collationeditor-retrievecollation')">Retrieve Collation</a></li>
-            <li><a (click)="loadModal('collationeditor-makenexuscollation')">Convert Collation to NEXUS</a></li>
-          </ul>
-        </li>
-        <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community Management<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li ng-show="isCreator()===true||isLeader()===true"><a (click)="deleteAllDocs()">Delete All Documents</a></li>
-            <li ng-show="isCreator()===true||isLeader()===true"><a (click)="deleteCommunity()">Delete Community</a></li>
-          </ul>
-        </li>
-        <li class="dropdown" *ngIf="state.authUser.attrs.local.email=='peter.robinson@usask.ca'"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super User<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li ng-show="isCreator()===true"><a (click)="viewAllUsers()">View All Users</a></li>
-            <li ng-show="isCreator()===true"><a (click)="viewAllCommunities()">View All Communities</a></li>
-            <li ng-show="isCreator()===true"><a (click)="exportUsersFromTC1()">Export/Import Users from TC1 Community</a></li>
-            <li ng-show="isCreator()===true"><a (click)="exportTranscriptsFromTC1()">Move Transcripts from TC1 to TC2</a></li>
-            <li ng-show="isCreator()===true"><a (click)="exportDBVersionFromTC1()">Export Transcript from TC1 Database</a></li>
-            <li ng-show="isCreator()===true"><a (click)="createDefaultTranscripts()">Create Default Transcripts</a></li>
-          </ul>
-        </li>
-      </ul>
+        </div>
+      </div>
     </nav>
   </div>
 

@@ -36,6 +36,7 @@ var DocSchema = extendNodeSchema('Doc', {
   image: String,
   meta: Schema.Types.Mixed,
   teiHeader: String,
+  control: {transcripts: String, tmsg: String, images: String, imsg:""},
 }, {
   methods: {
     _commit: function(
@@ -601,7 +602,7 @@ var DocSchema = extendNodeSchema('Doc', {
     clean: function(data) {
       const nodeData = _.defaults(
         {}, _.pick(data, [
-          '_id', 'name', 'label', 'g', 'children', 'community', 'ancestors', 'facs', 'image', 'teiHeader', 'docinf'
+          '_id', 'name', 'label', 'g', 'children', 'community', 'ancestors', 'facs', 'image', 'teiHeader', 'docinf', 'control'
         ]), {
           ancestors: [],
           children: [],
