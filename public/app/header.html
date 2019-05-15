@@ -1,23 +1,92 @@
-<div class="headerTC" *ngIf="state.showTop">
+<div class="headerTC" *ngIf="state.showTop" style="height:48px">
   <nav class="navbar navbar-default">
-    <div class="container-fluid">
-      <div class="collapse navbar-collapse"
-        id="bs-example-navbar-collapse-1">
-        <ul class="nav navbar-nav navbar-left">
-          <li><a [routerLink]="['Home']">
-              <span class="glyphicon glyphicon-home"></span></a></li>
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown"
-              role="button" aria-haspopup="true" aria-expanded="false">
-              Public Communities <span class="caret"></span></a>
+    <div class="container-fluid" style="margin-top:5px">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false" style="height:28px">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <!-- a class="navbar-brand" [routerLink]="['Home']"><span style="position: relative; top:13px;">T<sup style="font-size:90%">C</sup></span></a-->
+    </div>
+     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="border-color:#00446d; background-color: rgb(0, 86, 137)">
+        <ul class="navbar-nav nav" style="background-color: rgb(0, 86, 137); position: relative; z-index: 1000">
+          <li><a [routerLink]="['Home']"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a></li>
+          <li class="dropdown" style="z-index: 1000">
+            <a class="dropdown-toggle"
+              role="button" aria-haspopup="true" aria-expanded="false"
+               data-toggle="dropdown" aria-haspopup="true">
+              Public Communities  <span class="caret"></span></a>
             <ul class="dropdown-menu">
               <li *ngFor="#community of state.publicCommunities">
-                <a [routerLink]="['Community',
-                  {id: community.getId(), route: 'view'}]">
-                  {{community.attrs.name}}</a>
+                <a class="dropdown-item" [routerLink]="['Community',
+                  {id: community.getId(), route: 'view'}]"  style="display:block">
+                  {{community.attrs.name}}
+                </a>
               </li>
             </ul>
           </li>
+          <li *ngIf="showNoUser()">
+            <a (click)=showLoginModal()>
+              <span *ngIf="environment!='production'" class="glyphicon glyphicon-user"></span><span *ngIf="environment!='production'">Sign Up/</span>
+              <span class="glyphicon glyphicon-log-in"></span> Log In
+            </a>
+          </li>
+          <li *ngIf="isAuthenticated()" class="dropdown" style="z-index: 1000">
+              <a class="dropdown-toggle" data-toggle="dropdown" id="myCommunitiesNav"
+                role="button" aria-haspopup="true" aria-expanded="false">
+                My Communities <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" [routerLink]="['CreateCommunity']">Create Community</a>
+                </li>
+                <li role="separator" class="divider"></li>
+                <li *ngFor="#membership of state.authUser.attrs.memberships">
+                  <a class="dropdown-item" [routerLink]="['Community',
+                    {id: membership.community.getId(), route: 'view'}]" style="display:block">
+                    {{membership.community.attrs.name}}
+                  </a>
+                 </li>
+               </ul>
+            </li>
+            <li *ngIf="isAuthenticated()" class="dropdown" style="z-index: 1000" >
+              <a class="dropdown-toggle" data-toggle="dropdown" id="mylogOutNav"
+                role="button" aria-haspopup="true" aria-expanded="false">
+                {{state.authUser.getName()}}  <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" (click)="logout()"> <span class="glyphicon glyphicon-log-out"></span> Log Out</a>
+                </li>
+              </ul>
+            </li>
+            <li *ngIf="isAuthenticated()">
+              <a (click)="showLoginProf()">Login Profile</a>
+            </li>
+            <li *ngIf="isAuthenticated()">
+              <a [routerLink]="['MemberProfile']">Member Profile</a>
+            </li>
+            <li>
+              <a target="new" href="https://wiki.usask.ca/display/TC/Textual+Communities">Wiki</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+
+
+
+            <!--li *ngIf="isAuthenticated()" class="nav-item">
+              <a (click)="showLoginProf()" class="nav-link">Login Profile</a>
+            </li>
+            <li *ngIf="isAuthenticated()" class="nav-item">
+              <a [routerLink]="['MemberProfile']" class="nav-link">Member Profile</a>
+            </li>
+          </ul>
+      </div-->
+        <!--
           <li *ngIf="showNoUser()">
             <a (click)=showLoginModal()>
               <span *ngIf="environment!='production'" class="glyphicon glyphicon-user"></span><span *ngIf="environment!='production'">Sign Up/</span>
@@ -69,11 +138,11 @@
         <a class="navbar-brand" [routerLink]="['Home']">
           <span style="position: relative; top:-3px; left:5px">T</span><sup style="font-size:90%">C</sup></a>
       </div>
-    </div>
+    </div -->
   </nav>
 </div>
 <div *ngIf="state.showTop" style="margin-right:auto; font: 15px/26px 'Open Sans', Helvetica, Helvetica Neue, Arial; margin-left:auto; width:100%; padding-top: 10px;   padding-bottom: 1px; background-color: #00446d">
-  <p style="font-size:200%; text-align: center; margin-bottom: 5px; padding-bottom:0px; color: white">Textual Communities</p>
+  <p style="font-size:200%; text-align: center; margin-bottom: 5px; margin-top: 10px; padding-bottom:0px; color: white">Textual Communities</p>
   <p *ngIf="state.authUser" style=" text-align: center; margin-bottom: 5px; padding-bottom:0px;" class="wizardp">
     <seg *ngIf="showCreateOrJoin()">
       You do not lead or belong to any communities</seg>

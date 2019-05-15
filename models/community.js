@@ -30,8 +30,11 @@ var CommunitySchema = new Schema({
   ceconfig: {},
   documents: [{type: ObjectId, ref: 'Doc'}],
   entities: [{entityName: String, isTerminal: Boolean, name: String}],
+  control: {transcripts: String, images: String, collations: String, tmsg: String, imsg: String, cmsg: String},
+  canrequestview: Boolean
 });
 
+//controls range: none leaders members viewers
 _.assign(CommunitySchema.methods, {
   getDTDPath: function() {
     if (!OId.isValid(this._id)) {

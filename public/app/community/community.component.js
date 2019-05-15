@@ -4,6 +4,7 @@ var _ = require('lodash')
   , Location = ng.router.Location
   , CommunityService = require('../services/community')
   , UIService = require('../services/ui')
+  , config = require('../config')
 ;
 
 var CommunityComponent = ng.core.Component({
@@ -17,6 +18,7 @@ var CommunityComponent = ng.core.Component({
     require('./manage.component'),
     require('../editcommunity.component'),
     require('./members.component'),
+    require('./viewers.component'),
   ],
 }).Class({
   constructor: [
@@ -59,10 +61,26 @@ var CommunityComponent = ng.core.Component({
     //this one causes a problem when superuser wants to look at any community...
     if (this.state.authUser.attrs.local && this.state.authUser.attrs.local.email=="peter.robinson@usask.ca") {
       this._communityService.selectCommunity(id);
+      if (!this.state.community.attrs.control) {
+        var clone=_.clone(this.state.community.attrs);
+        clone.control={transcripts:"ALL", tmsg:"", images:"ALL", imsg:"", collations:"ALL", cmsg:""};
+        this._communityService.createCommunity(clone).subscribe(function(community) {
+        });
+      }
     } else {
       if (this._uiService.state.myCommunities[this._uiService.state.myCommunities.findIndex(x => x._id == id)]
         || this._uiService.state.publicCommunities[this._uiService.state.publicCommunities.findIndex(x => x._id == id)])
         this._communityService.selectCommunity(id);
+        //if we are a viewer.. add access to access field
+        if (this.role=="VIEWER") {
+          $.post(config.BACKEND_URL+'updateViewerAccess?community='+id+'&user='+this.state.authUser._id, function(res){});
+        }
+        if (!this.state.community.attrs.control) { //set up default for legacy communities
+          var clone=_.clone(this.state.community.attrs);
+          clone.control={transcripts:"ALL", tmsg:"", images:"ALL", imsg:"", collations:"ALL", cmsg:""};
+          this._communityService.createCommunity(clone).subscribe(function(community) {
+          });
+        }
     }
     //else: leave community at null
   },

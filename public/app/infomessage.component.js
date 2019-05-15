@@ -24,6 +24,10 @@ var InfoMessageComponent = ng.core.Component({
       $('#manageModal').width("400px");
       $('#manageModal').height("150px");
     }
+    if (this.source="accessControl") {
+      $('#manageModal').width("500px");
+      $('#manageModal').height("320px");
+    }
   },
   doLoginModal: function() {
     $('#manageModal').modal('hide');

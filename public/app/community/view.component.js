@@ -111,19 +111,133 @@ var ViewComponent = ng.core.Component({
     $('#CXcontainer').width(tcWidth);
     $('#tcVersions').height(tcHeight);
     var tcheight=$("tc-community-view")[0].clientHeight+"px";
-    },
+  },
+  changeAccess: function(doc) {
+    this._uiService.manageModal$.emit({type: "choosechange", context: this, community: this.state.community, parent:"DOCUMENT", document: doc, docname:""});
+  },
+  changePageAccess: function(doc) {
+    this._uiService.manageModal$.emit({type: "choosechange", context: this, community: this.state.community, parent:"PAGE", document: doc, docname:this.state.document.attrs.name});
+  },
+  isDocImageTranscriptLocked: function(doc) {
+    //is the community locked?
+    if (this.role=="CREATOR" || this.role=="LEADER") return false;   //always veiwable
+    if (!doc.attrs.name && !doc.attrs.requested) {
+      doc.attrs.requested=true;
+      this._docService.refreshDocument(doc).subscribe(function(mydoc) {
+        doc.attrs.requested=false;
+      });
+    }
+    if (this.role=="NONE") {
+        if ((doc.attrs.name && !doc.attrs.requested)) {
+        if (doc.attrs.control && doc.attrs.control.images=="ALL" && doc.attrs.control.transcripts=="ALL") return false;
+        if (doc.attrs.control && (doc.attrs.control.images!="ALL" || doc.attrs.control.transcripts!="ALL")) return true;
+        if (this.state.community.attrs.control.images=="ALL" && this.state.community.attrs.control.transcripts=="ALL") return false;
+        if (this.state.community.attrs.control.images!="ALL" || this.state.community.attrs.control.transcripts!="ALL") return true;
+        return true;
+      }
+    }
+    if (this.role=="VIEWER") {
+        if (doc.attrs.name && !doc.attrs.requested) {
+          if ((doc.attrs.control && doc.attrs.control.images=="ALL" || doc.attrs.control && doc.attrs.control.images=="VIEWERS") && (doc.attrs.control.transcripts=="ALL" || doc.attrs.control.transcripts=="VIEWERS")) return false;
+          if ((this.state.community.attrs.control.images=="ALL" || this.state.community.attrs.control.images=="VIEWERS") && (this.state.community.attrs.control.transcripts=="ALL" || this.state.community.attrs.control.transcripts=="VIEWERS")) return false;
+          return true;
+        }
+    }
+    if (this.role=="MEMBER") {
+      if (doc.attrs.name && !doc.attrs.requested) {
+        if ((doc.attrs.control && doc.attrs.control.images=="ALL" || doc.attrs.control && doc.attrs.control.images=="VIEWERS" || doc.attrs.control && doc.attrs.control.images=="MEMBERS") && (doc.attrs.control.transcripts=="ALL" || doc.attrs.control.transcripts=="VIEWERS" || doc.attrs.control && doc.attrs.control.images=="MEMBERS")) return false;
+        if ((this.state.community.attrs.control.images=="ALL" || this.state.community.attrs.control.images=="VIEWERS"  || this.state.community.attrs.control.images=="MEMBERS") && (this.state.community.attrs.control.transcripts=="ALL" || this.state.community.attrs.control.transcripts=="VIEWERS" || this.state.community.attrs.control.transcripts=="MEMBERS")) return false;
+        return true;
+      }
+    }
+  },
+  isPageImageTranscriptLocked: function(doc) {
+    if (doc.attrs=="dummy" || !this.state.document || this.state.document.attrs.requested) return false;  //not yet fully loaded
+    this.document=this.state.document;
+    this.community=this.state.community;
+    if (!BrowserFunctionService.isImageViewable(doc, this)) {doc.isPageITlocked=true; return true;}
+    if (!BrowserFunctionService.isPageViewable(doc, this)) {doc.isPageITlocked=true; return true;}
+    return(false);
+  },
+  stateImageAccess: function(doc) {
+    var message="";
+    message+="<b>Access to images.</b><br>"
+    if (this.state.community.attrs.control) {
+      message+="<i>Community</i>: ";
+      if (this.state.community.attrs.control.imsg!="") message+=adjustMessage(this.state.community.attrs.control.imsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="no restrictions defined<br>"
+    if (doc.attrs.control) {
+      message+="<i>Document</i>: ";
+      if (doc.attrs.control.imsg!="") message+=adjustMessage(doc.attrs.control.imsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="no restrictions defined<br>"
+    message+="<b>Access to transcripts.</b> <br>"
+    if (this.state.community.attrs.control) {
+      message+="<i>Community</i>: ";
+      if (this.state.community.attrs.control.tmsg!="") message+=adjustMessage(this.state.community.attrs.control.tmsg)+ "\r";
+      else message+="no restrictions defined <br>";
+    } else message+="no restrictions defined <br>";
+    if (doc.attrs.control) {
+      message+="<i>Document</i>: ";
+      if (doc.attrs.control.tmsg!="") message+=adjustMessage(doc.attrs.control.tmsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="no restrictions defined<br>"
+    this._uiService.manageModal$.emit({
+      type: 'info-message',
+      header:"Access control for document "+doc.attrs.name,
+      message: message,
+      source: "accessControl"
+    });
+  },
+  statePageImageAccess: function(page) {
+    var message="";
+    var doc=this.state.document;
+    message+="<b>Access to images.</b><br>"
+    if (this.state.community.attrs.control) {
+      message+="<i>Community</i>: ";
+      if (this.state.community.attrs.control.imsg!="") message+=adjustMessage(this.state.community.attrs.control.imsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="<i>Community</i>: no restrictions defined<br>"
+    if (doc.attrs.control) {
+      message+="<i>Document</i>: ";
+      if (doc.attrs.control.imsg!="") message+=adjustMessage(doc.attrs.control.imsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="<i>Document</i>: no restrictions defined<br>"
+    if (page.attrs.control) {
+      message+="<i>Page</i>: ";
+      if (page.attrs.control.imsg!="") message+=adjustMessage(page.attrs.control.imsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="<i>Page</i>: no restrictions defined<br>"
+    message+="<b>Access to transcripts.</b> <br>"
+    if (this.state.community.attrs.control) {
+      message+="<i>Community</i>: ";
+      if (this.state.community.attrs.control.tmsg!="") message+=adjustMessage(this.state.community.attrs.control.tmsg)+ "\r";
+      else message+="no restrictions defined <br>";
+    } else message+="<i>Community</i>: no restrictions defined <br>";
+    if (doc.attrs.control) {
+      message+="<i>Document</i>: ";
+      if (doc.attrs.control.tmsg!="") message+=adjustMessage(doc.attrs.control.tmsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="<i>Document</i>: no restrictions defined<br>"
+    if (page.attrs.control) {
+      message+="<i>Page</i>: ";
+      if (page.attrs.control.tmsg!="") message+=adjustMessage(page.attrs.control.tmsg)+ "<br>";
+      else message+="no restrictions defined<br>"
+    } else message+="<i>Page</i>: no restrictions defined<br>"
+    this._uiService.manageModal$.emit({
+      type: 'info-message',
+      header:"Access control for document "+doc.attrs.name,
+      message: message,
+      source: "accessControl"
+    });
+  },
   toggleDoc: function(doc) {
     doc.expand = !doc.expand;
     if (doc.expand) {
      this._docService.selectDocument(doc);
   //refresh the document...
     }
-/*    if (doc.expand) {
-      removeAllSelected(this, this.state.document.attrs.children[0]);
-      this._docService.selectDocument(doc);
-//      this._docService.selectPage(doc.attrs.children[0]);
-      this.state.document.attrs.children[0].attrs.selected=true;
-    } */
   },
   showAddFirstPage: function(doc) {
     return doc &&  _.isEmpty(_.get(doc, 'attrs.children'));
@@ -278,47 +392,6 @@ var ViewComponent = ng.core.Component({
         }
        }
     );
-  /*  var self =this;
-    self.state.community.entityName=entity.entityName;
-    var tcWidth=$('#tcPaneViewer').width();
-    var tcHeight=$('#tcPaneViewer').height();
-    $('#CXcontainer').width(tcWidth);
-    $('#tcVersions').height(tcHeight);
-    var testCollateX = {"witnesses":[{"id":"W1","content":"This next morning the cat observed little birds in the trees."},{"id":"W2","content":"The cat was observing birds in the little trees this morning, it observed birds for two hours."}],"algorithm":"dekker","tokenComparator":{"type":"equality"},"joined":true,"transpositions":true}
-    $.post(config.BACKEND_URL+'getEntityVersions?'+'id='+entity.entityName, function(res) {
-      self.versions=res.foundVersions;
-      if (self.versions.length>1) {
-        var sendCollateX = '{"witnesses":[';
-        for (i=0; i<self.versions.length; i++) {
-          sendCollateX+='{"id":"'+self.versions[i].sigil+'","content":"'+self.versions[i].version.replace(/(\r\n|\n|\r)/gm,"")+'"}'
-          if (i<self.versions.length-1) sendCollateX+=','
-        }
-        sendCollateX+='],"algorithm":"dekker","tokenComparator":{"type":"equality"},"joined":true,"transpositions":true}';
-  //      sendCollateX=JSON.stringify(sendCollateX);
-        //format the file to send to collateX
-        $.ajax({
-          url: 'https://collatex.net/demo/collate',
-          type: 'POST',
-          data: sendCollateX,
-          accepts: {
-                     svg: "image/svg+xml"
-              },
-                  converters: {
-                     "text svg": jQuery.parseXML
-          },
-          contentType: 'application/json; charset=utf-8',
-          dataType: 'svg'
-        })
-         .done(function( data ) {
-            $("#CXcontainer").html(data.documentElement.outerHTML);
-            $('#CXcontainer').width(tcWidth);
-            $('#tcVersions').height(tcHeight);
-        })
-         .fail(function( jqXHR, textStatus, errorThrown) {
-          alert( "error" + errorThrown );
-        });
-      }
-    }); */
   },
   selectDocEntity: function(doc, docEntity) {
       //choose the right page at this point
@@ -408,6 +481,12 @@ var ViewComponent = ng.core.Component({
 function removeAllSelected(self, page) {
   if (this.state.pageSelected) this.state.pageSelected.attrs.selected=false;
   this.state.pageSelected=page;
+}
+
+function adjustMessage(source) {
+    var start=source.indexOf("Change those settings");
+    if (start==-1) return(source);
+    return(source.substring(0, start));
 }
 
 

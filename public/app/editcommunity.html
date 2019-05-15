@@ -1,5 +1,5 @@
 <div style="text-align: center">
-  <hr style="border: 1px solid #8c8b8b; margin-top: 60px; margin-bottom:12px">
+  <hr style="border: 1px solid #8c8b8b; margin-top: 0px; margin-bottom:12px">
   <div id="ECSuccess"><div *ngIf="success" class="alert alert-success">
       {{success}}</div>
   </div>
@@ -7,7 +7,7 @@
       {{message}}</div>
   </div>
 </div>
-<div class="form-group">
+<div class="form-group"  style="margin-right:15px; margin-left: 15px" >
     <label>Name</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <input type="text" style="display: inline-block; border-color:red; border-width: 3px; border-style: solid;" placeholder="(20 characters maximum)ds"
     [(ngModel)]="edit.name">
@@ -32,29 +32,77 @@
   </div>
   <div class="form-group" style="margin-right:15px; margin-left: 15px">
     <label>Description</label>
-    <textarea class="form-control" rows="4" cols="50" placeholder="Description (you can include HTML)"
+    <textarea class="form-control" rows="2" cols="20" placeholder="Description (you can include HTML)"
       [(ngModel)]="edit.description"></textarea>
       <label style="margin-top: 10px;">Preview Description</label>
       <p [innerHTML]="edit.description" style="margin-left: 15px; margin-right: 15px"></p>
  </div>
   <div class="form-group" style="margin-right:15px; margin-left: 15px">
-    <label>Accessible to others</label> <br/>
-    <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.public">&nbsp;&nbsp;Everyone can see it&nbsp;&nbsp;&nbsp;&nbsp;
-    <span *ngIf="edit.public">
-      <input type="checkbox" [(ngModel)]="edit.accept" ng-disabled="edit.public==false">Anyone can ask to join
-    </span>
-    <span *ngIf="edit.accept&&edit.public">
-      <input type="checkbox" [(ngModel)]="edit.autoaccept" ng-disabled="edit.accept==false">Anyone asking joins
-    </span>
-    <span *ngIf="edit.autoaccept&&edit.public&&edit.accept">
-      <input type="checkbox" [(ngModel)]="edit.alldolead" ng-disabled="edit.autoaccept==false">Everyone joining leads
-    </span>
-    <span *ngIf="(edit.autoaccept||edit.accept) && !edit.alldolead" style="float:right">
-      <input type="checkbox" [(ngModel)]="edit.alltranscribeall" ng-disabled="edit.alldolead==true">Everyone joining transcribes everything
-    </span>
-
+      <label>Who can join</label> <br/>
+      <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.public">&nbsp;&nbsp;Everyone can see it&nbsp;&nbsp;&nbsp;&nbsp;
+      <span *ngIf="edit.public">
+        <input type="checkbox" [(ngModel)]="edit.accept" ng-disabled="edit.public==false">Anyone can ask to join
+      </span>
+      <span *ngIf="edit.accept&&edit.public">
+        <input type="checkbox" [(ngModel)]="edit.autoaccept" ng-disabled="edit.accept==false">Anyone asking joins
+      </span>
+      <span *ngIf="edit.autoaccept&&edit.public&&edit.accept">
+        <input type="checkbox" [(ngModel)]="edit.alldolead" ng-disabled="edit.autoaccept==false">Everyone joining leads
+      </span>
+      <span *ngIf="(edit.autoaccept||edit.accept) && !edit.alldolead" style="float:right">
+        <input type="checkbox" [(ngModel)]="edit.alltranscribeall" ng-disabled="edit.alldolead==true">Everyone joining transcribes everything
+      </span>
     </div>
-
+    <div class="form-group" style="margin-right:15px; margin-left: 15px">
+      <label>Who can see what</label>
+      <div class="container-fluid formgroup" style="margin-bottom: 15px; width:90%">
+        <div class="row">
+          <div class="col-sm-3 text-center" >
+            <span [ngSwitch]="edit.control.images">
+              <span *ngSwitchWhen="'ALL'">Everyone can view every image</span>
+              <span *ngSwitchWhen="'VIEWERS'">Only registered viewers and community members can see images</span>
+              <span *ngSwitchWhen="'MEMBERS'">Only community members and leaders can see images</span>
+              <span *ngSwitchWhen="'LEADERS'">Only community leaders can see images</span>
+            </span>
+          </div>
+          <div class="col-sm-1 text-center" >
+            <a (click)="changeControl('images')" style="float:right">Edit</a>
+          </div>
+          <div class="col-sm-3 text-center">
+            <span [ngSwitch]="edit.control.transcripts">
+              <span *ngSwitchWhen="'ALL'">Everyone can view every transcript</span>
+              <span *ngSwitchWhen="'VIEWERS'">Only registered viewers and community members can see transcripts</span>
+              <span *ngSwitchWhen="'MEMBERS'">Only community members and leaders can see transcripts</span>
+              <span *ngSwitchWhen="'LEADERS'">Only community leaders can see transcripts</span>
+            </span>
+          </div>
+          <div class="col-sm-1 text-center" >
+            <a (click)="changeControl('transcripts')" style="float:right">Edit</a>
+          </div>
+          <div class="col-sm-3 text-center">
+            <span [ngSwitch]="edit.control.collations">
+              <span *ngSwitchWhen="'ALL'">Everyone can view every collation</span>
+              <span *ngSwitchWhen="'VIEWERS'">Only registered viewers and community members can see collations</span>
+              <span *ngSwitchWhen="'MEMBERS'">Only community members and leaders can see collations</span>
+              <span *ngSwitchWhen="'LEADERS'">Only community leaders can see collations</span>
+            </span>
+          </div>
+          <div class="col-sm-1 text-center" >
+            <a (click)="changeControl('collations')" style="float:right">Edit</a>
+          </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+          <div class="col-sm-3 text-center" > &nbsp;</div>
+          <div class="col-sm-3 text-center" >
+              <input type="radio" name="canrequestview" (click)="canrequest(true)" [checked]="edit.canrequestview" > Viewers do not have to be invited
+          </div>
+          <div class="col-sm-3 text-center" >
+              <input type="radio" name="canrequestview" (click)="canrequest(false)" [checked]="!edit.canrequestview" > Viewers have to be invited
+          </div>
+          <div class="col-sm-3 text-center" > &nbsp;</div>
+      </div>
+    </div>
+  </div>
   <div class="form-group" style="width:100%; margin-right:15px; margin-left: 15px">
     <form name="communityForm" >
       <label>Choose community image (max. {{picFile.maxWidth}}x{{picFile.maxHeight}})</label> <br/>

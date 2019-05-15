@@ -20,6 +20,12 @@
             <a (click)="toggleDoc(doc)">
               {{doc.attrs.name}}
             </a>&nbsp;
+            <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="changeAccess(doc)" data-toggle="tooltip" title="Change who can see images and transcripts of this document">
+              <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
+            </a>
+            <a *ngIf="role!='LEADER'&&role!='CREATOR'" target="_blank" (click)="stateImageAccess(doc)" data-toggle="tooltip" title="Change who can see images of this document">
+              <img *ngIf="isDocImageTranscriptLocked(doc)" onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
+            </a>
             <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="restoreDoc(doc)" data-toggle="tooltip" title="Rebuild this document">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/restore-doc.png">
             </a>
@@ -63,6 +69,12 @@
             <li *ngFor="#page of doc.attrs.children" [ngClass]="{'selected':page.attrs.selected}">
                 <a (click)="selectPage(page)">
                   {{page.attrs.name}}
+                </a>
+                <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="changePageAccess(page)" data-toggle="tooltip" title="Change who can see images and transcripts of this document">
+                  <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
+                </a>
+                <a *ngIf="role!='LEADER'&&role!='CREATOR'" target="_blank" (click)="statePageImageAccess(page)" data-toggle="tooltip" title="Change who can see images of this document">
+                  <img *ngIf="page.isPageITlocked || isPageImageTranscriptLocked(page)" onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
                 </a>
                 <a *ngIf="pageHasImage(page)&&(role=='LEADER'||role=='CREATOR')" target="_blank" data-toggle="tooltip" title="Change Image"
                   (click)="editPageImage(page)">

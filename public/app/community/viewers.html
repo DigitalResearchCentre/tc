@@ -1,0 +1,34 @@
+<p style="margin: 20px; text-align: center; font-weight: bold; margin-top: 10px; font-size: 120%; margin-bottom:10px">
+  Community {{community.attrs.name}} has {{viewers.length}} <span *ngIf="viewers.length==1">viewer</span> <span *ngIf="viewers.length>1">viewers</span>
+</p>
+<p style="margin: 20px; text-align: center; margin-top: 10px; margin-bottom:10px">
+  <button type="button" class="btn btn-primary btn-md"
+    (click)="invite(community)" style="margin-top:5px">Invite</button> someone to view this community
+</p>
+<table style="border-spacing: 10px 2px; border-collapse: separate; width:100%" class="table">
+  <thead>
+    <tr>
+      <th style="border-bottom-width:0px; text-align:center" class="col-md-2">Name (Email)</th>
+      <th style="border-bottom-width:0px; text-align:center" class="col-md-2">Role</th>
+      <th style="border-bottom-width:0px; text-align:center" class="col-md-1">Joined</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="#viewer of viewers" class="commMembership">
+      <td  style="border-top-width:0px">{{viewer.name}}
+                  ({{viewer.email}})</td>
+      <td style="border-top-width:0px; text-align:center">
+        {{viewer.role}}
+        <span *ngIf="!viewer.expand" class="glyphicon glyphicon-triangle-right" (click)="toggleInstance(viewer)"></span>
+        <span *ngIf="viewer.expand" class="glyphicon glyphicon-triangle-bottom" (click)="toggleInstance(viewer)"></span>
+        <span *ngIf="viewer.expand">
+          <br/><button type="button" class="btn btn-primary btn-sm"
+              (click)="changeRole(viewer, viewer.user, viewer.role)" style="margin-top:5px">Change Role</button>
+          <br/>
+        </span>
+      </td>
+      <td style="border-top-width:0px; text-align:center">{{formatDate(viewer.date)}}</td>
+      <td  style="border-top-width:0px; padding: 0px; text-align: center">          </td>
+    </tr>
+  </tbody>
+</table>

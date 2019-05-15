@@ -124,6 +124,14 @@ var ViewerComponent = ng.core.Component({
     //var $imageMap = $('.image_map');
     //var options = {zoom: 2 , minZoom: 1, maxZoom: 5};
   },
+  register: function(page) {
+      //cannot be logged in if you are here!
+      this._uiService.manageModal$.emit({
+        type:'registerviewer',
+        community: this.state.community
+      });
+
+  },
   formatDate: function(rawdate) {
     var date = new Date(rawdate);
     var options = {
@@ -177,7 +185,9 @@ var ViewerComponent = ng.core.Component({
       , page = this.page
       , self = this
     ;
-    //there can be a problem of synchronicity: we could have loaded the document, then changed doc in view.html. BUT
+    this.imageUnrestricted=BrowserFunctionService.isImageViewable(page, this);
+    this.pageUnrestricted=BrowserFunctionService.isPageViewable(page, this);
+      //there can be a problem of synchronicity: we could have loaded the document, then changed doc in view.html. BUT
     //call to load pages of document might not have finished, so the state.page points to a page in the previously chosen
     //document. So I think .. we have to do test if this page is among the document pages and delay until it is...
     //ok, in case we have just added document which has no pages yet ... reset page to null to stop attempt to show the pages

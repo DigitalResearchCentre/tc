@@ -1,0 +1,23 @@
+<div style="font-size: 110%">
+  <div modal-draggable class="modalHeader">{{header}}
+    <button type="button" (click)="closeModalCCh()" class="close" data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;</button>
+  </div>
+  <div *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 1px">
+    {{success}}
+  </div>
+  <form action="" style="margin-left: 15px; margin-top:10px">
+            <input type="radio" name="changecontrol" [checked]="control=='ALL'" (click)="choose('ALL')">&nbsp;&nbsp;&nbsp;Everyone can see {{spec}}<br>
+            <input type="radio" name="changecontrol" [checked]="control=='VIEWERS'" (click)="choose('VIEWERS')">&nbsp;&nbsp;&nbsp;Only registered viewers and community members and leaders can see {{spec}}<br>
+            <input type="radio" name="changecontrol" [checked]="control=='MEMBERS'" (click)="choose('MEMBERS')">&nbsp;&nbsp;&nbsp;Only community members and leaders can see  {{spec}}<br>
+            <input type="radio" name="changecontrol" [checked]="control=='LEADERS'" (click)="choose('LEADERS')">&nbsp;&nbsp;&nbsp;Only community leaders can see {{spec}}<br>
+            <span *ngIf="parent!='COMMUNITY'"> <input type="radio" name="changecontrol" [checked]="control=='INHERITED'" (click)="choose('INHERITED')">&nbsp;&nbsp;&nbsp;Access to {{spec}} inherited from settings on this {{ancestor}}</span><br>
+  </form>
+  <div class="form-group" style="margin-right:15px; margin-left: 20px; margin-top: 15px">
+    <label>Message</label><br>
+    <textarea [(ngModel)]="cmessage" rows="3" cols="85"></textarea>
+  </div>
+  <hr style="border: 1px solid #8c8b8b; margin-bottom: 15px; margin-top:15px; ">
+    <div class="form-group" style="text-align: center; height: 18px;">
+      <button type="button" class="btn btn-primary" (click)="submit()">Save</button>
+    </div>
+</div>
