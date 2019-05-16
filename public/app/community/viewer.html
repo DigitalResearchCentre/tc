@@ -3,8 +3,8 @@
     <div [ngClass]="{'nodisplay':!image}" id="imageMap" class="image_map">
     </div>
     <div *ngIf="!imageUnrestricted" style="position: absolute; top: 40%;  margin: 40px">
-      <p style="text-align: center"><img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{imsg}} {{community.attrs.canrequestview}}</p>
-      <p *ngIf="imsg.includes('Only registered viewers') && community.attrs.canrequestview"  style="text-align: center">
+      <p style="text-align: center"><img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{state.imsg}}</p>
+      <p *ngIf="state.imsg.includes('Only registered viewers') && community.attrs.canrequestview"  style="text-align: center">
         <button type="button" class="btn btn-primary" (click)="register(page)">Register as Viewer</button>
       </p>
     </div>
@@ -38,8 +38,8 @@
   <tc-pane class="text-viewer">
     <div *ngIf="!pageUnrestricted" style="width:100%; height: 100%; display: table; text-align: center">
       <p style="display: table-cell; vertical-align:middle">
-        <img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{tmsg}}<br>
-        <span *ngIf="tmsg.includes('Only registered viewers') && community.attrs.canrequestview" >
+        <img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{state.tmsg}}<br>
+        <span *ngIf="state.tmsg.includes('Only registered viewers') && community.attrs.canrequestview" >
           <button type="button" style="margin-top:10px" class="btn btn-primary" (click)="register(page)">Register as Viewer</button></span>
         </p>
     </div>

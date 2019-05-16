@@ -8,6 +8,7 @@ var Observable = Rx.Observable
   , RevisionService = require('./revision')
   , bson = require('bson')()
   , ObjectID = bson.ObjectID
+  , BrowserFunctionService = require('../services/functions')
 ;
 
 var DocService = ng.core.Injectable().Class({
@@ -75,10 +76,20 @@ var DocService = ng.core.Injectable().Class({
       self.refreshDocument(doc).subscribe(function(doc) {
         var thispage=getParameterByName('page', document.location.href);
         var page=null;
+        //set jp access control
+        if (state.role!="LEADER" && state.role!="CREATOR") {
+            if (!state.document.attrs.pagesChecked) {
+              for (var i=0; i<state.document.attrs.children.length; i++) {
+                state.document.attrs.children[i].isPageITlocked=BrowserFunctionService.isPageImageTranscriptLocked(state.document.attrs.children[i], state);
+              }
+              state.document.attrs.pagesChecked=true;
+            }
+        }
         if (thispage) {
           var pagen=0;
           for (var i=0; i<doc.attrs.children.length; i++) {
             if (doc.attrs.children[i].attrs._id==thispage) pagen=i;
+
           }
           page = doc.attrs.children[pagen];
         }

@@ -2242,17 +2242,17 @@ var globalTextEl=null;
 
 router.post('/updateDbJson', function(req, res, next) {
   var collection=req.query.collection;
-  console.log("changing json1")
+//  console.log("changing json1")
   var param1=req.body[0];
   var param2=req.body[1];
 //  console.log("changing json")
-  console.log(param1._id);
+//  console.log(param1._id);
   if (param1.hasOwnProperty('_id')) {
 //    console.log("updating");
 //    param1={_id:}
     param1._id=ObjectId(param1._id);
-    console.log(param1);
-    console.log(param2);
+//    console.log(param1);
+//    console.log(param2);
   }
   if (collection=="Community") {
       Community.collection.update(param1, param2, function(err, result){

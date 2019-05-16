@@ -74,7 +74,7 @@
                   <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
                 </a>
                 <a *ngIf="role!='LEADER'&&role!='CREATOR'" target="_blank" (click)="statePageImageAccess(page)" data-toggle="tooltip" title="Change who can see images of this document">
-                  <img *ngIf="page.isPageITlocked || isPageImageTranscriptLocked(page)" onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
+                  <img *ngIf="page.isPageITlocked" onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
                 </a>
                 <a *ngIf="pageHasImage(page)&&(role=='LEADER'||role=='CREATOR')" target="_blank" data-toggle="tooltip" title="Change Image"
                   (click)="editPageImage(page)">
