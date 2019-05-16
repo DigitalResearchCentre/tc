@@ -254,19 +254,29 @@ var ViewComponent = ng.core.Component({
     }
     return(false);
   },
-  selectDoc: function(doc) {
-    removeAllSelected(this, this.state.document.attrs.children[0]);
+  adjustSelect: function(doc, self) {
+    self._docService.selectDocument(mydoc);
+    removeAllSelected(self, self.state.document.attrs.children[0]);
     //we check whether each page is available.. only have to do this is we are not a leader or a creator
-    this._docService.selectDocument(doc);
-    this.state.document.attrs.children[0].attrs.selected=true;
+    self.state.document.attrs.children[0].attrs.selected=true;
     //set attributes for locked or not on each page
-    if (this.role != "CREATOR" && this.role != "LEADER") {
-      if (!this.state.document.attrs.pagesChecked) {
-        for (var i=0; i<this.state.document.attrs.children.length; i++) {
-          this.state.document.attrs.children[i].isPageITlocked=BrowserFunctionService.isPageImageTranscriptLocked(this.state.document.attrs.children[i], this.state);
+    if (self.role != "CREATOR" && self.role != "LEADER") {
+      if (!self.state.document.attrs.pagesChecked) {
+        for (var i=0; i<self.state.document.attrs.children.length; i++) {
+          self.state.document.attrs.children[i].isPageITlocked=BrowserFunctionService.isPageImageTranscriptLocked(self.state.document.attrs.children[i], self.state);
         }
       }
-      this.state.document.attrs.pagesChecked=true;
+      self.state.document.attrs.pagesChecked=true;
+    }
+  },
+  selectDoc: function(doc) {
+    var self=this;
+    if (doc.attrs=="dummy" || doc.attrs.children[0].attrs=="dummy" || !state.document || state.document.attrs.requested) { //not yet flly loaded
+      this._docService.refreshDocument(doc).subscribe(function(mydoc) {
+        self.adjustSelect(mydoc, self);
+      });
+    } else {
+        this.adjustSelect(doc, this);
     }
   },
   selectPage: function(page) {
