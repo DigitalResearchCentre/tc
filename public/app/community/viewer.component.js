@@ -185,8 +185,10 @@ var ViewerComponent = ng.core.Component({
       , page = this.page
       , self = this
     ;
-    this.imageUnrestricted=BrowserFunctionService.isImageViewable(page, this);
-    this.pageUnrestricted=BrowserFunctionService.isPageViewable(page, this);
+    this.state.image=this.image;
+    this.imageUnrestricted=BrowserFunctionService.isImageViewable(page, this.state);
+    this.pageUnrestricted=BrowserFunctionService.isPageViewable(page, this.state);
+    if (!this.state.image) this.image=null;
       //there can be a problem of synchronicity: we could have loaded the document, then changed doc in view.html. BUT
     //call to load pages of document might not have finished, so the state.page points to a page in the previously chosen
     //document. So I think .. we have to do test if this page is among the document pages and delay until it is...

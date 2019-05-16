@@ -91,9 +91,10 @@ var ViewComponent = ng.core.Component({
       for (var i=0; i<this.state.authUser.attrs.memberships.length; i++) {
         if (this.state.authUser.attrs.memberships[i].community.attrs._id==this.state.community.attrs._id)
           this.role=this.state.authUser.attrs.memberships[i].role;
+          this.state.role=this.role;
       }
-    } else this.role="NONE";
-    if (this.state.authUser.attrs.local && this.state.authUser.attrs.local.email=="peter.robinson@usask.ca") this.role="LEADER";
+    } else {this.state.role="NONE"; this.role="NONE";}
+    if (this.state.authUser.attrs.local && this.state.authUser.attrs.local.email=="peter.robinson@usask.ca") {this.state.role="LEADER"; this.role="LEADER";}
 //    $('#TCsidebar').height(tcheight);
   },
   ngAfterViewChecked: function(){
@@ -150,14 +151,6 @@ var ViewComponent = ng.core.Component({
         return true;
       }
     }
-  },
-  isPageImageTranscriptLocked: function(doc) {
-    if (doc.attrs=="dummy" || !this.state.document || this.state.document.attrs.requested) return false;  //not yet fully loaded
-    this.document=this.state.document;
-    this.community=this.state.community;
-    if (!BrowserFunctionService.isImageViewable(doc, this)) {doc.isPageITlocked=true; return true;}
-    if (!BrowserFunctionService.isPageViewable(doc, this)) {doc.isPageITlocked=true; return true;}
-    return(false);
   },
   stateImageAccess: function(doc) {
     var message="";
@@ -235,7 +228,7 @@ var ViewComponent = ng.core.Component({
   toggleDoc: function(doc) {
     doc.expand = !doc.expand;
     if (doc.expand) {
-     this._docService.selectDocument(doc);
+     this.selectDoc(doc);
   //refresh the document...
     }
   },
@@ -263,8 +256,18 @@ var ViewComponent = ng.core.Component({
   },
   selectDoc: function(doc) {
     removeAllSelected(this, this.state.document.attrs.children[0]);
+    //we check whether each page is available.. only have to do this is we are not a leader or a creator
     this._docService.selectDocument(doc);
     this.state.document.attrs.children[0].attrs.selected=true;
+    //set attributes for locked or not on each page
+    if (this.role != "CREATOR" && this.role != "LEADER") {
+      if (!this.state.document.attrs.pagesChecked) {
+        for (var i=0; i<this.state.document.attrs.children.length; i++) {
+          this.state.document.attrs.children[i].isPageITlocked=BrowserFunctionService.isPageImageTranscriptLocked(this.state.document.attrs.children[i], this.state);
+        }
+      }
+      this.state.document.attrs.pagesChecked=true;
+    }
   },
   selectPage: function(page) {
     removeAllSelected(this, page);
