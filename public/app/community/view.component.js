@@ -50,6 +50,8 @@ var ViewComponent = ng.core.Component({
       self.docnames=res;
       for (var i=0; i<self.state.community.attrs.documents.length; i++) {
         self.state.community.attrs.documents[i].attrs.name=res[i].name;
+        if (Object.keys(res[i].control).length>0) self.state.community.attrs.documents[i].attrs.control=res[i].control;
+        self.state.community.attrs.documents[i].isDocImageTranscriptLocked=self.checkDocImageTranscriptLocked(self.state.community.attrs.documents[i]);
         if (self.state.community.attrs.documents[i].attrs.children.length==0 && res[i].npages!=0)
           self.state.community.attrs.documents[i].attrs.children[0]={attrs:"dummy"}  //idea is to force not to show add page if we have pages */
       }
@@ -101,6 +103,8 @@ var ViewComponent = ng.core.Component({
     var tcheight=$(window).height()-$("tc-header").height()-$("tc-manage-community").height()-$("nav").height();
     $('#TCSplitterTOC').height(tcheight);
     prevHeight=$(window).height();
+    //check if the documents are loaded...when they are set up access control and other important variables
+    // this is to remove all instances of function calls from the html...
   },
   ngOnChanges: function() {
     var docEl=document.getElementsByClassName("selected")[0];
@@ -119,37 +123,25 @@ var ViewComponent = ng.core.Component({
   changePageAccess: function(doc) {
     this._uiService.manageModal$.emit({type: "choosechange", context: this, community: this.state.community, parent:"PAGE", document: doc, docname:this.state.document.attrs.name});
   },
-  isDocImageTranscriptLocked: function(doc) {
+  checkDocImageTranscriptLocked: function(doc) {
     //is the community locked?
     if (this.role=="CREATOR" || this.role=="LEADER") return false;   //always veiwable
-    if (!doc.attrs.name && !doc.attrs.requested) {
-      doc.attrs.requested=true;
-      this._docService.refreshDocument(doc).subscribe(function(mydoc) {
-        doc.attrs.requested=false;
-      });
-    }
     if (this.role=="NONE") {
-        if ((doc.attrs.name && !doc.attrs.requested)) {
         if (doc.attrs.control && doc.attrs.control.images=="ALL" && doc.attrs.control.transcripts=="ALL") return false;
         if (doc.attrs.control && (doc.attrs.control.images!="ALL" || doc.attrs.control.transcripts!="ALL")) return true;
         if (this.state.community.attrs.control.images=="ALL" && this.state.community.attrs.control.transcripts=="ALL") return false;
         if (this.state.community.attrs.control.images!="ALL" || this.state.community.attrs.control.transcripts!="ALL") return true;
         return true;
-      }
     }
     if (this.role=="VIEWER") {
-        if (doc.attrs.name && !doc.attrs.requested) {
           if ((doc.attrs.control && doc.attrs.control.images=="ALL" || doc.attrs.control && doc.attrs.control.images=="VIEWERS") && (doc.attrs.control.transcripts=="ALL" || doc.attrs.control.transcripts=="VIEWERS")) return false;
           if ((this.state.community.attrs.control.images=="ALL" || this.state.community.attrs.control.images=="VIEWERS") && (this.state.community.attrs.control.transcripts=="ALL" || this.state.community.attrs.control.transcripts=="VIEWERS")) return false;
           return true;
-        }
-    }
+      }
     if (this.role=="MEMBER") {
-      if (doc.attrs.name && !doc.attrs.requested) {
         if ((doc.attrs.control && doc.attrs.control.images=="ALL" || doc.attrs.control && doc.attrs.control.images=="VIEWERS" || doc.attrs.control && doc.attrs.control.images=="MEMBERS") && (doc.attrs.control.transcripts=="ALL" || doc.attrs.control.transcripts=="VIEWERS" || doc.attrs.control && doc.attrs.control.images=="MEMBERS")) return false;
         if ((this.state.community.attrs.control.images=="ALL" || this.state.community.attrs.control.images=="VIEWERS"  || this.state.community.attrs.control.images=="MEMBERS") && (this.state.community.attrs.control.transcripts=="ALL" || this.state.community.attrs.control.transcripts=="VIEWERS" || this.state.community.attrs.control.transcripts=="MEMBERS")) return false;
         return true;
-      }
     }
   },
   stateImageAccess: function(doc) {
@@ -255,7 +247,7 @@ var ViewComponent = ng.core.Component({
     return(false);
   },
   adjustSelect: function(doc, self) {
-    self._docService.selectDocument(mydoc);
+    self._docService.selectDocument(doc);
     removeAllSelected(self, self.state.document.attrs.children[0]);
     //we check whether each page is available.. only have to do this is we are not a leader or a creator
     self.state.document.attrs.children[0].attrs.selected=true;

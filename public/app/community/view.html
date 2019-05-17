@@ -24,7 +24,7 @@
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
             </a>
             <a *ngIf="role!='LEADER'&&role!='CREATOR'" target="_blank" (click)="stateImageAccess(doc)" data-toggle="tooltip" title="Change who can see images of this document">
-              <img *ngIf="isDocImageTranscriptLocked(doc)" onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
+              <img *ngIf="doc.isDocImageTranscriptLocked" onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/lock.png">
             </a>
             <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="restoreDoc(doc)" data-toggle="tooltip" title="Rebuild this document">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/restore-doc.png">
@@ -35,10 +35,10 @@
             <a *ngIf="role=='LEADER'||role=='CREATOR'" target="_blank" (click)="addZipImages(doc)" data-toggle="tooltip" title="Add images in zip file">
               <img onmouseover="this.width='36';this.height='36'" onmouseout="this.width='18'; this.height='18'" class="menuimg" height="18" width="18" src="../../images/zip-file-load.png">
             </a>
-            <a *ngIf="docLacksImages(doc)&&(role=='LEADER'||role=='CREATOR')" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
+            <a *ngIf="(role=='LEADER'||role=='CREATOR') && docLacksImages(doc)" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
               <img onmouseover="this.width='24';this.height='36'" onmouseout="this.width='12'; this.height='18'" class="menuimg" height="18" width="12" src="../../images/camera-multiple-missing.png">
             </a>
-            <a *ngIf="!docLacksImages(doc)&&(role=='LEADER'||role=='CREATOR')" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
+            <a *ngIf="(role=='LEADER'||role=='CREATOR')" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
               <img onmouseover="this.width='24';this.height='36'" onmouseout="this.width='12'; this.height='18'" class="menuimg" height="18" width="12" src="../../images/camera-multiple.png">
             </a>
             <a target="_blank" *ngIf="role=='LEADER'||role=='CREATOR'" (click)="editTEIHeader(doc)" data-toggle="tooltip" title="Edit TEI header">
@@ -62,7 +62,7 @@
             <a target="_blank" data-toggle="tooltip" title="About this document" (click)="getDocInf(doc)">
                 <span onmouseover="this.style.fontSize='30px'" onmouseout="this.style.fontSize='15px'" class="glyphicon glyphicon-info-sign"></span>
             </a>
-            <span *ngIf="showAddFirstPage(doc)&&(role=='LEADER'||role=='CREATOR')" (click)="addFirstPage(doc)"
+            <span *ngIf="(role=='LEADER'||role=='CREATOR') && showAddFirstPage(doc)" (click)="addFirstPage(doc)"
               class="add-page-after"></span>
           </div>
           <ul>
@@ -80,11 +80,11 @@
                   (click)="editPageImage(page)">
                   <img onmouseover="this.width='22';this.height='19'" onmouseout="this.width='15'; this.height='12'" class="menuimg" height="12" width="15" src="../../images/camera-black.png">
                 </a>
-                <a *ngIf="!pageHasImage(page)&&(role=='LEADER'||role=='CREATOR')" target="_blank" data-toggle="tooltip" title="No image present. Add image."
+                <a *ngIf="(role=='LEADER'||role=='CREATOR') && !pageHasImage(page)" target="_blank" data-toggle="tooltip" title="No image present. Add image."
                   (click)="editPageImage(page)">
                   <img onmouseover="this.width='22';this.height='19'" onmouseout="this.width='15'; this.height='12'" class="menuimg" height="12" width="15" src="../../images/camera-red.png">
                 </a>
-                <span *ngIf="showAddPage(page, doc)&&(role=='LEADER'||role=='CREATOR')" (click)="addPageAfter(page, doc)"
+                <span *ngIf="(role=='LEADER'||role=='CREATOR') && showAddPage(page, doc)" (click)="addPageAfter(page, doc)"
                   class="add-page-after"></span>
             </li>
           </ul>
