@@ -17,14 +17,16 @@ var TEISchema = extendNodeSchema('TEI', {
   community: String,
   docs: {type: [{type: Schema.Types.ObjectId, ref: 'Doc'}], index: true },
   entityChildren: {type : [{type: Schema.Types.ObjectId, ref: 'TEI'}], index: true},
+  isTerminal: Boolean,
   attrs: {type: Schema.Types.Mixed},
+  collateX: String,
   doNotWrite: Boolean,
 }, {
   statics: {
     clean: function(data) {
       const nodeData = _.defaults(
         {}, _.pick(data, [
-          '_id', 'name', 'text', 'isEntity', 'entityName', 'entityAncestor', 'ancestors', 'children', 'docs',  'entityChildren', 'attrs',
+          '_id', 'name', 'text', 'isEntity', 'entityName', 'entityAncestor', 'ancestors', 'children', 'docs',  'entityChildren', 'attrs', 'isTerminal', 'collateX',
 
         ]), {
           ancestors: [],

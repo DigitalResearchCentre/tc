@@ -94,11 +94,19 @@ var ViewComponent = ng.core.Component({
         if (this.state.authUser.attrs.memberships[i].community.attrs._id==this.state.community.attrs._id)
           this.role=this.state.authUser.attrs.memberships[i].role;
           this.state.role=this.role;
+          this.GAid=this.state.authUser._id;
       }
-    } else {this.state.role="NONE"; this.role="NONE";}
+    } else {this.state.role="NONE"; this.role="NONE"; this.GAid="VISITOR"}
     if (this.state.authUser.attrs.local && this.state.authUser.attrs.local.email=="peter.robinson@usask.ca") {this.state.role="LEADER"; this.role="LEADER";}
 //    $('#TCsidebar').height(tcheight);
   },
+  ngAfterViewInit: function() {
+    //because Angular removes script tags from templates..
+     var s = document.createElement("script");
+     s.type = "text/javascript";
+     s.innerHTML="gtag('set', {'user_id': '"+this.GAid+"'});";
+     document.body.appendChild(s);
+ },
   ngAfterViewChecked: function(){
     var tcheight=$(window).height()-$("tc-header").height()-$("tc-manage-community").height()-$("nav").height();
     $('#TCSplitterTOC').height(tcheight);

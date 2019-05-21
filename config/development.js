@@ -10,5 +10,6 @@ module.exports = {
   COLLATE_URL: 'http://localhost:8080',
   logFormat: 'dev',
   localDevel: true,
-  host_url: 'http://localhost:3000'
+  host_url: 'http://localhost:3000',
+  authority: 'usask',
 };

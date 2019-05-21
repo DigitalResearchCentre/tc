@@ -3,6 +3,7 @@ var ElementRef = ng.core.ElementRef
   , UIService = require('../services/ui')
   , DocService = require('../services/doc')
   , $ = require('jquery')
+  , async = require('async')
   , OpenSeadragon = require('openseadragon')
   , config = require('../config')
   , BrowserFunctionService = require('../services/functions')
@@ -609,7 +610,7 @@ var ViewerComponent = ng.core.Component({
           //go get these from the db
           if (!state.doNotParse) {
             if (!self.commitFail)
-              self._uiService.manageModal$.emit({type: 'info-message', header: "Committing page "+page.attrs.name+" in document "+self.state.document.attrs.name, message: "Page successfully committed"});
+              self._uiService.manageModal$.emit({type: 'info-message', header: "Committing page "+page.attrs.name+" in document "+self.state.document.attrs.name, message: "Page successfully committed. Now updating all collatable entities in the database for this page."});
           }
           if (!self.commitFailed) revision.set('status', 'COMMITTED');
           self.commitFailed=false;
@@ -629,6 +630,18 @@ var ViewerComponent = ng.core.Component({
           $.post(config.BACKEND_URL+'changeTranscriptStatus?'+'pageId='+self.page.attrs._id+'&status=COMMITTED&userId='+self.state.authUser.attrs._id+'&communityId='+self.community.attrs._id+'&docId='+self.document.attrs._id, function(res) {
             if (res.error!="none") alert ("Error in changing transcript status: "+res.error);
             self.pageStatus.status="COMMITTED";
+          });
+          $.get(config.host_url+'/uri/urn:det:tc:'+config.authority+':'+self.community.attrs.abbr+'/entity=*:document='+self.document.attrs.name+':'+self.page.attrs.label+'='+self.page.attrs.name, function(entities) {
+              async.map(entities, function (entity, cb1) {
+                if (entity.collateable) {
+                  $.get(config.BACKEND_URL+"cewitness/?witness="+self.document.attrs.name+"&community="+self.community.attrs.abbr+"&entity="+entity.entity+"&override=true", function (json, status) {
+                    var bill=1;
+                    cb1(null)
+                  });
+                } else {cb1(null)}
+              }, function (err, results) {
+                self._uiService.manageModal$.emit({type: 'info-message', header: "Committing page "+page.attrs.name+" in document "+self.state.document.attrs.name, message: "Page successfully committed. All collatable entities in the database for this page updated."});
+              })
           });
         });
       }

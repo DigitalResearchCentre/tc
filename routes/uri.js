@@ -95,7 +95,8 @@ router.get('**', function(req, res, next) {
           });
       } else {
 //        console.log(authparts[4]);
-        Community.findOne({abbr:authparts[4], public:true}, function(err, community){
+//      currently every community API is open...
+        Community.findOne({abbr:authparts[4]}, function(err, community){
   //        console.log(community)
           if (!community) res.status(400).send('The community "'+authparts[4]+'" is not known on this Textual Communities server, or is not publicly available.');
           else { //fun starts! we got a community. Now, what do we have??? are we looking for just entity, just document, or text
@@ -411,11 +412,12 @@ function docRequest(req, res, documents, name, docparts, i, callback) {
 function processText(req, res, next, community, seekEntity, seekDocument, detString, entityparts, docparts) {
   //presently, only support: listing of docs with a particular entity; text of an entity in a doc returned in various formats including colledtior
   //return all documents containing a particular entity
-  //need to support: find all entities present in a document..
+  //need to support: find all entities present in a document..or part of a document..
   if (entityparts[entityparts.length-1].value=="*" && docparts.length>0) {
     console.log("here");
       getDocEntities(community, seekDocument, seekEntity,  entityparts, docparts, function (result){
-          res.json({message: "hello"});
+
+          res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length==1) { //looking for documents holding this text
       getEntityDocs(community, seekEntity, req, res, entityparts, docparts, function (result){
@@ -443,29 +445,56 @@ function processText(req, res, next, community, seekEntity, seekDocument, detStr
 
 //we return a list of entities present in a document, or document part. Sp final entity must be *:* or maybe x:*
 function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docparts, callback){
-  console.log("in process text"); console.log(community); console.log(docparts); console.log(entityparts); console.log(seekEntity); console.log(seekDocument);
   //first find the doc.  We are only going to look down to the page level, not lower\
   var ancestors=[];  //inital search is going to be looking for docs with no ancestors.. work our day down the tree
   var iteration=1;
   async.mapSeries(docparts, function (docpart, cb1) {//do a deep div to find the document...
     Doc.findOne({name:docpart.value, community:community, ancestors: ancestors}, function (err, myDoc){
       if (!err && myDoc) {
-        console.log(myDoc);
+//        console.log(myDoc);
         ancestors.push(myDoc._id)
-        cb2(null, myDoc._id);
+        cb1(null, myDoc._id);
       } else {
-        cb2(err, []);
+        cb1(err, []);
       }
-    })
-  }, function (err) {
-
-  });
-  Doc.findOne({name:docparts[0].value, community:community, ancestors: []}, function (err, myDoc){
-    if (!myDoc) callback({error:true, message:"Cannot find document "});
-    else {
-      if (docparts.length>3) { //we don't go more than 3 levels down -- ie doc quire page max ()
-
-      }
+    });
+  }, function (err, result) {
+    //ok, now find the entities as specified...a bit tricky as we have to get the entity ancestors of all teis present in this page, not just the entities which start on this page
+    if (entityparts[0].value=="*" && entityparts.length==1) {
+      var myEntities=[];
+      TEI.find({docs: result[result.length-1]}, function (err, teis){
+        async.each(teis, function(teiel, cb2) {
+            console.log(teiel._id);
+            if (teiel.isEntity) {
+                if (!myEntities.some(e => e.entity === teiel.entityName)) myEntities.push({entity: teiel.entityName, collateable:teiel.isTerminal});
+                cb2(null);
+            } else { //gp looking for the entity...by definition the tei must be inside a documemnt..
+              var nextTeiId=teiel.ancestors[teiel.ancestors.length-1];
+              async.whilst (
+                function () {return nextTeiId!=null},
+                function(cb1) {
+                  TEI.findOne({_id: nextTeiId}, function(err, ancestorTei){
+                    if (ancestorTei.isEntity && ancestorTei.name!="text") {
+        //              if (ancestorTei.name!="text") console.log (ancestorTei);
+                      if (!myEntities.some(e => e.entity === ancestorTei.entityName)) myEntities.push({entity: ancestorTei.entityName, collateable:ancestorTei.isTerminal});
+                      nextTeiId=ancestorTei.ancestors[ancestorTei.ancestors.length-1];
+                      cb1(null, null);
+                    } else {
+                      if (ancestorTei.ancestors.length==0) nextTeiId=null;
+                      else nextTeiId=ancestorTei.ancestors[ancestorTei.ancestors.length-1];
+                      cb1(null, null);
+                    }
+                  })
+                },
+                function (err) {
+                  cb2(null); //finished this each
+                }
+              )
+            }
+          }, function (err) {
+            callback(myEntities);
+          });
+      })
     }
   });
 }

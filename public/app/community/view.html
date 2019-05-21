@@ -1,5 +1,9 @@
 <tc-splitter class="content" (resize)="onResize($event)" id="TCSplitterTOC" *ngIf="state.community">
   <tc-pane id='TCsidebar' [ngClass]="{true:'sidebar', false:'nodisplay'}[state.showSide]">
+    <script type="text/javascript">
+      alert("loading")
+      gtag('set', {'user_id': '{{GAid}}'}); // Set the user ID using signed-in user_id.
+    </script>
     <ul class="nav nav-tabs">
       <li id="docTabHead" class="center active" (click)="active('Documents')"><a>Documents</a></li>
       <li id="collationTabHead" class="center" (click)="active('Collation')"><a>Collation</a></li>
@@ -38,7 +42,7 @@
             <a *ngIf="(role=='LEADER'||role=='CREATOR') && docLacksImages(doc)" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
               <img onmouseover="this.width='24';this.height='36'" onmouseout="this.width='12'; this.height='18'" class="menuimg" height="18" width="12" src="../../images/camera-multiple-missing.png">
             </a>
-            <a *ngIf="(role=='LEADER'||role=='CREATOR')" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
+            <a *ngIf="(role=='LEADER'||role=='CREATOR') && !docLacksImages(doc)" target="_blank" (click)="addBulkImages(doc)" data-toggle="tooltip" title="Add multiple images">
               <img onmouseover="this.width='24';this.height='36'" onmouseout="this.width='12'; this.height='18'" class="menuimg" height="18" width="12" src="../../images/camera-multiple.png">
             </a>
             <a target="_blank" *ngIf="role=='LEADER'||role=='CREATOR'" (click)="editTEIHeader(doc)" data-toggle="tooltip" title="Edit TEI header">

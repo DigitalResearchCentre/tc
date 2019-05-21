@@ -2630,6 +2630,9 @@ router.get('/cewitness', function(req, res, next) {
 //we have to find the entities in this doc. First, find the doc in this community, then all teis in this doc which are this entity
 //along the way: construct the full colleditor form of this doc
 //get the docid first:
+  var targetTei, thisDoc;
+  var thisEntity=req.query.entity;
+  var override=req.query.override;
   async.waterfall([
     function (cb) {
       Community.findOne({'abbr':req.query.community}, function (err, myCommunity) {
@@ -2641,6 +2644,7 @@ router.get('/cewitness', function(req, res, next) {
       Doc.findOne({_id: {$in: myDocs}, name: req.query.witness}, function (err, myDoc) {
         if (err) cb(err, []);
         else {
+          thisDoc=myDoc;
           cb(null, myDoc);
         }
       })
@@ -2654,19 +2658,20 @@ router.get('/cewitness', function(req, res, next) {
           if (err) cb(err, []);
           else {  //have to deal with case where this entity is absent from the document
             if (teis.length==0) {
-              cb("no witness", []);
+              cb({error:"no witness"}, []);
+            } else if (override=="false" && teis[0].collateX && teis[0].collateX!="") {
+                cb({error:"has Collatex"}, teis[0].collateX);
             } else {  //we have to deal with multiple texts for this witness
-//put second line back
               var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
               var teiContent={"content":""}; //make this a loop if more than one wit here
-              console.log("versions "+teis.length)
+  //            console.log("versions "+teis.length)
               //put third line back
               content+=',"witnesses":['
               var counter=1, thisWitness="", witnesses=[];
               //ok this is where we check for next
               //we need to make this a waterfall -- get this first
 //              console.log(counter+" "+thisTei)
-              async.mapSeries(teis, function(thisTei){
+                async.mapSeries(teis, function(thisTei){
                 const cb2 = _.last(arguments);
                 thisWitness="";
                     //we have to do this
@@ -2729,12 +2734,12 @@ router.get('/cewitness', function(req, res, next) {
                           },
                           function (err, nextTEI) {
                             //got this sigil already.. make sure we do NOT duplicate
-                            console.log("witnesses "+witnesses+" this "+thisWitness)
+  //                          console.log("witnesses "+witnesses+" this "+thisWitness)
                             if (_.includes(witnesses, thisWitness)) {
                               thisWitness+="-"+counter;
                             }
                             witnesses.push(thisWitness);
-                            console.log("witnesses2 "+witnesses)
+//                            console.log("witnesses2 "+witnesses)
                             thisWitness+=")";
                             cb3(null, []);
                             //add the teis we have won on to the children of thisTEI and go...
@@ -2769,16 +2774,19 @@ router.get('/cewitness', function(req, res, next) {
         });
       }
   ], function(err, result) {
-    if (err=="no witness" || err) {
-        res.sendStatus(404); //this feels like a hack but it gives the desired result
-      }  else {
-//      console.log("ms is"+result);
-      //save it to the tei for this entity in this ms...
-//      console.log("to save it we need ms "+req.query.witness+" community "+req.query.community+" entity "+req.query.entity)
-        console.log(result);
-//      console.log("about to parse result");
-      res.json(JSON.parse(result));
-    }
+    if (!err) {
+       TEI.update({docs: thisDoc._id, entityName: thisEntity}, {$set: {collateX: result}}, function (err, results){
+         res.json(JSON.parse(result));
+       });
+     } else {   //have to do it this way else screw up comparing string and json object
+       var thisexists=(err.error=="has Collatex");
+       var thismissing=(err.error=="no witness");
+       if (thismissing) {
+         res.sendStatus(404); //this feels like a hack but it gives the desired result
+       }  else if (thisexists) {
+         res.json(JSON.parse(result));
+       }
+     }
   });
 });
 
