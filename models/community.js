@@ -21,6 +21,7 @@ var CommunitySchema = new Schema({
   alldolead: Boolean,
   alltranscribeall: Boolean,
   haspicture: Boolean,
+  rebuildents: Boolean,
   image: String,
   css: String,
   js: String,

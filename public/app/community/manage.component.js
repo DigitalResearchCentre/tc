@@ -18,6 +18,16 @@ var ManageCommunityComponent = ng.core.Component({
     this._communityService = communityService;
     this.state = uiService.state;
   }],
+  ngOnChanges: function(){
+  	if (this.state.community.attrs.rebuildents==undefined) {
+    	this.state.community.attrs.rebuildents=false;
+    	this._communityService.createCommunity(this.state.community.attrs).subscribe(function(community) {
+    	  //all ok
+    	},function(err) {
+            if (err) alert(err.json().message);
+        });
+     }
+  },
   loadModal: function(which) {
     if (which=='uploadcss-community') this._uiService.manageModal$.emit({type: "uploadfile-community", community: this.community, filetype: "css"});
     else if (which=='uploadjs-community') this._uiService.manageModal$.emit({type: "uploadfile-community", community: this.community, filetype: "js"});
@@ -33,6 +43,15 @@ var ManageCommunityComponent = ng.core.Component({
   isLeader: function() {
     var state = this.state;
     return this._communityService.isLeader(state.community, state.authUser);
+  },
+  setCollEnts: function(){
+  	if (this.state.community.attrs.rebuildents) this.state.community.attrs.rebuildents=false
+  	else this.state.community.attrs.rebuildents=true;
+  	this._communityService.createCommunity(this.state.community.attrs).subscribe(function(community) {
+    	  //all ok
+	},function(err) {
+		if (err) alert(err.json().message);
+	});
   },
   isCreator: function(){
     var state = this.state;

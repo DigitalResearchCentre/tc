@@ -89,6 +89,14 @@ var ViewComponent = ng.core.Component({
         });
       }
     }
+    if (this.state.community.attrs.rebuildents==undefined) {
+    	this.state.community.attrs.rebuildents=false;
+    	this._communityService.createCommunity(this.state.community.attrs).subscribe(function(community) {
+    	  //all ok
+    	},function(err) {
+            if (err) alert(err.json().message);
+        });
+     }
     if (this.state.authUser._id) {
       for (var i=0; i<this.state.authUser.attrs.memberships.length; i++) {
         if (this.state.authUser.attrs.memberships[i].community.attrs._id==this.state.community.attrs._id)
