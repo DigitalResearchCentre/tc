@@ -41,6 +41,7 @@ var EditCommunityComponent = ng.core.Component({
     this._uiService.sendCommand$.emit("createChosen");
     if (community && community.attrs.abbr) {
       this.edit = _.clone(community.attrs);
+      if (community.attrs.rebuildents==undefined) this.edit.rebuildentes=false;
       this.community = community;
 //      this.edit.entities=community.attrs.entities;
       this.origname=community.attrs.name;
@@ -69,6 +70,8 @@ var EditCommunityComponent = ng.core.Component({
         members: [this._uiService.state.authUser._id],
         alltranscribeall: false,
         haspicture: false,
+        entities:[],
+        rebuildents: false,
         created:Date.now(),
         image: "",
         control: {transcripts:"ALL", tmsg:"", images:"ALL", imsg:"", collations:"ALL", cmsg:""},
@@ -202,7 +205,7 @@ var EditCommunityComponent = ng.core.Component({
             self.initEdit(community);
             document.getElementById("ECSuccess").scrollIntoView(true);
             //change to view this Community
-            window.location="/app/community/?id="+community._id+"&route=view"
+            window.location="/app/community/?id="+community.attrs.data._id+"&route=view"
             //switch to view community
           }, function(err) {
             self.message = err.json().message;

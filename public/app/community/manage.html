@@ -22,11 +22,15 @@
               </ul>
             </li>
             <li class="dropdown" *ngIf="state.community.attrs.documents.length"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Collation<span class="caret"></span></a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu" style="width:215px">
                 <li><a class="dropdown-item" (click)="loadModal('collationeditor-choosebase')">Choose Base</a></li>
                 <li><a class="dropdown-item" (click)="loadModal('collationeditor-choosewitnesses')">Choose Witnesses</a></li>
                 <li><a class="dropdown-item" (click)="loadModal('collationeditor-retrievecollation')">Retrieve Collation</a></li>
                 <li><a class="dropdown-item" (click)="loadModal('collationeditor-makenexuscollation')">Convert Collation to NEXUS</a></li>
+                <li>
+                	<a class="dropdown-item" style="display:inline" (click)="setCollEnts()">Rebuild Collation Entities on Commit</a> 
+                	<span *ngIf="state.community.attrs.rebuildents"> <img class="menuimg" height="11" width="11" src="../../images/checked.png"></span>  
+                	<span *ngIf="!state.community.attrs.rebuildents"> <img class="menuimg" height="9" width="9" src="../../images/unchecked.png"></span>  
               </ul>
             </li>
             <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community Management<span class="caret"></span></a>

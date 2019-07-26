@@ -436,11 +436,15 @@ var ViewerComponent = ng.core.Component({
     //ok..what status do we have? change it if it needs changing
     //let's always change it
     status="IN_PROGRESS";
-    for (var i=0; i<page.attrs.tasks.length; i++) {
-      if (page.attrs.tasks[i].userId==this.state.authUser.attrs._id) page.attrs.tasks[i].status=status;
-    }
+    if (page.attrs.tasks) {
+		for (var i=0; i<page.attrs.tasks.length; i++) {
+		  if (page.attrs.tasks[i].userId==this.state.authUser.attrs._id) page.attrs.tasks[i].status=status;
+		}
+	} else {
+		page.attrs.tasks=[];
+	}
     $.post(config.BACKEND_URL+'changeTranscriptStatus?'+'pageId='+page.attrs._id+'&status='+status+'&userId='+this.state.authUser.attrs._id+'&communityId='+this.community.attrs._id+'&docId='+this.document.attrs._id, function(res) {
-      if (res.error!="none") alert ("Error in changing transcript status: "+error);
+      if (res.error!="none") alert ("Error in changing transcript status: "+res.error.message																																		);
       self.pageStatus.status="IN_PROGRESS"
     });
   //  revision.set('status', status);
@@ -631,18 +635,21 @@ var ViewerComponent = ng.core.Component({
             if (res.error!="none") alert ("Error in changing transcript status: "+res.error);
             self.pageStatus.status="COMMITTED";
           });
-          $.get(config.host_url+'/uri/urn:det:tc:'+config.authority+':'+self.community.attrs.abbr+'/entity=*:document='+self.document.attrs.name+':'+self.page.attrs.label+'='+self.page.attrs.name, function(entities) {
-              async.map(entities, function (entity, cb1) {
-                if (entity.collateable) {
-                  $.get(config.BACKEND_URL+"cewitness/?witness="+self.document.attrs.name+"&community="+self.community.attrs.abbr+"&entity="+entity.entity+"&override=true", function (json, status) {
-                    var bill=1;
-                    cb1(null)
-                  });
-                } else {cb1(null)}
-              }, function (err, results) {
-                self._uiService.manageModal$.emit({type: 'info-message', header: "Committing page "+page.attrs.name+" in document "+self.state.document.attrs.name, message: "Page successfully committed. All collatable entities in the database for this page updated."});
-              })
-          });
+          if (self.state.community.attrs.rebuildents) {
+			  $.get(config.host_url+'/uri/urn:det:tc:'+config.authority+':'+self.community.attrs.abbr+'/entity=*:document='+self.document.attrs.name+':'+self.page.attrs.label+'='+self.page.attrs.name, function(entities) {
+				  async.map(entities, function (entity, cb1) {
+					if (entity.collateable) {
+					  $.get(config.BACKEND_URL+"cewitness/?witness="+self.document.attrs.name+"&community="+self.community.attrs.abbr+"&entity="+entity.entity+"&override=true", function (json, status) {
+						cb1(null)
+					  });
+					} else {cb1(null)}
+				  }, function (err, results) {
+					self._uiService.manageModal$.emit({type: 'info-message', header: "Committing page "+page.attrs.name+" in document "+self.state.document.attrs.name, message: "Page successfully committed. All collatable entities in the database for this page updated. \r(Turn off entity updating at Manage-->Collation-->Rebuild Collation Entities on Commit)"});
+				  })
+			  });
+		  } else {
+			self._uiService.manageModal$.emit({type: 'info-message', header: "Committing page "+page.attrs.name+" in document "+self.state.document.attrs.name, message: "Page successfully committed. \r(Turn on entity updating at Manage-->Collation-->Rebuild Collation Entities on Commit)"});
+		  }
         });
       }
     });

@@ -41,8 +41,8 @@ var UIService = ng.core.Class({
   createCommunity: function(community) {
     var state = this.state;
     state.community = community;
-    if (community.attrs.public) {
-      state.publicCommunities.push(community);
+    if ((community.attrs.data && community.attrs.data.public) || community.attrs.public) {
+      state.publicCommunities.push(community);  //annoying inconsistency..sometimes attrs.data
     }
     this.authService$.emit({
       type: 'refreshAuthUser',

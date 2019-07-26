@@ -103,6 +103,10 @@
       </div>
     </div>
   </div>
+  <div class="form-group" style="margin-right:15px; margin-left: 15px">
+      <label>Collation</label><br/>
+      <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.rebuildents">&nbsp;&nbsp;Rebuild collateable entities on each commit (takes longer)
+  </div>
   <div class="form-group" style="width:100%; margin-right:15px; margin-left: 15px">
     <form name="communityForm" >
       <label>Choose community image (max. {{picFile.maxWidth}}x{{picFile.maxHeight}})</label> <br/>

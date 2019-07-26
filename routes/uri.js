@@ -424,7 +424,7 @@ function processText(req, res, next, community, seekEntity, seekDocument, detStr
         res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length==2) {//this is looking for a page range: pages holding this entity
-      getEntityDocs(community, seekEntity, req, res, docparts, function (result){
+      getEntityDocs(community, seekEntity, req, res, entityparts, docparts, function (result){
         res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length>2) {
@@ -535,7 +535,7 @@ function makeCollatedWitList(community, entityparts, callback) {
     }
   });
 }
-function getEntityDocs(community, seekEntity, req, res, docparts, callback) {
+function getEntityDocs(community, seekEntity, req, res, docparts, entityparts, callback) {
   //bring back the number of documents holding this entity, the names of the documents, or the page range of the document
   //we are either searching for documents holding this entity...
   if (docparts.length==1) {

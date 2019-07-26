@@ -60,14 +60,21 @@ var CommunityResource = _.inherit(Resource, function(opts) {
   afterCreate: function(req, res, next) {
     return function(community, cb) {
       var  user = req.user;
-      user.memberships.push({
+      console.log("in membership push")
+      console.log(user);
+      var newmembership={
         community: community._id,
         role: User.CREATOR,
         pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}
+      }
+      user.memberships.push(newmembership);
+      console.log(user);
+      User.collection.update({_id: user._id}, {$push: {memberships: newmembership}},  function (err, result) {
+      		 cb(result, community);
       });
-      user.save(function(err, user) {
-        cb(err, community);
-      });
+//      user.save(function(err, user) {
+//        cb(err, community);
+//      });
     };
   }
 });
@@ -1157,10 +1164,20 @@ router.post('/changeTranscriptStatus', function(req, res, next) {
                 function(cb3){User.findOne({_id:ObjectId(userId)}, function(err, thisUser){ username=thisUser.local.name;
                     for (var i=0; i<thisUser.memberships.length; i++) { if (String(thisUser.memberships[i].community)==communityId) memberid=String(thisUser.memberships[i]._id);}
                     cb3(err);})
+                },          
+                function(cb3) { //could be that tasks is null -- fix this here
+                	Doc.findOne({_id:ObjectId(pageId)}, function(err, thisDoc) {
+                		if (thisDoc.tasks==null) {
+                			console.log("trump talks bullshit");
+                			Doc.collection.update({_id:ObjectId(pageId)}, {$set: {"tasks":[]}}, function(err, result) {
+                				cb3(err);
+                			});
+                		} else cb3(err);
+                	});
                 }
               ], function (err, result){
                   if (!err) {
-//                    //("about to add new object")
+                   //("about to add new object")	
                     Doc.collection.update({_id:ObjectId(pageId)}, {$push: {"tasks": {userId:userId, name:username, status:"IN_PROGRESS", memberId:memberid, date:new Date(), witname:witname}}}, function (err, result){
                       if (!err) res.json({error:"none"})
                       else res.json({error:err});
