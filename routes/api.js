@@ -2645,17 +2645,12 @@ function getWitness (witness, community, entity, override, recallback) {
   	var thisDoc;
 	async.waterfall([
 		function (cb) {
-		  Community.findOne({'abbr':community}, function (err, myCommunity) {
-			if (err) cb(err, []);
-			else cb(null, myCommunity.documents);
-		  });
-		},
-		function (myDocs, cb) {
-		  Doc.findOne({_id: {$in: myDocs}, name: witness}, function (err, myDoc) {
+		  Doc.findOne({_id: {$in: community.documents}, name: witness}, function (err, aDoc) {
 			if (err) cb(err, []);
 			else {
-			  thisDoc=myDoc;
-			  cb(null, myDoc);
+			  thisDoc=aDoc;
+			  console.log("here now")
+			  cb(null, aDoc);
 			}
 		  })
 		},
@@ -2663,7 +2658,7 @@ function getWitness (witness, community, entity, override, recallback) {
 		  //check for more tnan one instance...
 	//        console.log(req.query.witness);
 	//        console.log("looking for wit");
-	//        console.log(myDoc);
+	        console.log(myDoc);
 			TEI.find({docs: myDoc._id, entityName: entity}, function(err, teis){
 			  if (err) cb(err, []);
 			  else {  //have to deal with case where this entity is absent from the document
@@ -2790,39 +2785,51 @@ function getWitness (witness, community, entity, override, recallback) {
 
 router.post('/getCEWitnesses', function(req, res, next) {
 	var community=req.query.community;
+	var thisCommunity={};
 	var witlist=req.body.witnesses;
 	var base=req.body.base;
 	var entity=req.body.entity;
 	var results=[];
 	var baseHasText=false;
-	async.mapSeries(witlist, function(witness, callback){
-		getWitness (witness, community, entity, false, function(err, result, thisDoc){
-			if (!err) {
-			   TEI.update({docs: thisDoc._id, entityName: entity}, {$set: {collateX: result}}, function (err, written){
-				 results.push(result);
-				 if (witness==base) baseHasText=true;
-				 callback(null);
-			   });
-			 } else {   //have to do it this way else screw up comparing string and json object
-			   var thisexists=(err.error=="has Collatex");
-			   var thismissing=(err.error=="no witness");
-			   if (thismissing) {
-				 //just don't add it to the array
-				 callback(null);
-			   }  else if (thisexists) {
-				 results.push(result);
-				 if (witness==base) baseHasText=true;
-				 callback(null);
-			   } else callback(err)
-			 }
-			 
-		});
-	}, function (err) {
-		if (!err)
-			res.json({success:true, baseHasText: baseHasText, result:results});
-		else res.json({success:false, error: err});
-	})
-})
+	async.waterfall([
+		function (cb) {
+		  Community.findOne({'abbr':community}, function (err, myCommunity) {
+			if (err) cb(err, []);
+			else {
+				thisCommunity=myCommunity;
+				cb(null, myCommunity.documents);
+			}
+		  });
+		}
+	], function (err) {
+		async.mapSeries(witlist, function(witness, callback){
+			getWitness (witness, thisCommunity, entity, false, function(err, result, thisDoc){
+				if (!err) {
+				   TEI.update({docs: thisDoc._id, entityName: entity}, {$set: {collateX: result}}, function (err, written){
+					 results.push(result);
+					 if (witness==base) baseHasText=true;
+					 callback(null);
+				   });
+				 } else {   //have to do it this way else screw up comparing string and json object
+				   var thisexists=(err.error=="has Collatex");
+				   var thismissing=(err.error=="no witness");
+				   if (thismissing) {
+					 //just don't add it to the array
+					 callback(null);
+				   }  else if (thisexists) {
+					 results.push(result);
+					 if (witness==base) baseHasText=true;
+					 callback(null);
+				   } else callback(err)
+				 }
+			});
+		}, function (err) {
+			if (!err)
+				res.json({success:true, baseHasText: baseHasText, result:results});
+			else res.json({success:false, error: err});
+		})
+	});
+});
 
 //hereon: collation editor calls
 router.get('/cewitness', function(req, res, next) {
@@ -2833,185 +2840,39 @@ router.get('/cewitness', function(req, res, next) {
   var thisDoc;
   var thisEntity=req.query.entity;
   var override=req.query.override;
+  var community=req.query.community;
 //call to getWintess
-  getWitness (req.query.witness, req.query.community, thisEntity, override, function(err, result, thisDoc){
-  	 if (!err) {
-       TEI.update({docs: thisDoc._id, entityName: thisEntity}, {$set: {collateX: result}}, function (err, results){
-         res.json(JSON.parse(result));
-       });
-     } else {   //have to do it this way else screw up comparing string and json object
-       var thisexists=(err.error=="has Collatex");
-       var thismissing=(err.error=="no witness");
-       if (thismissing) {
-         res.sendStatus(404); //this feels like a hack but it gives the desired result
-       }  else if (thisexists) {
-         res.json(JSON.parse(result));
-       }
-     }
-  });
+	async.waterfall([
+		function (cb) {
+		  Community.findOne({'abbr':community}, function (err, myCommunity) {
+			if (err) cb(err, []);
+			else {
+				cb(null, myCommunity);
+			}
+		  });
+		},
+		function (myCommunity, cb) {
+		  getWitness (req.query.witness, myCommunity, thisEntity, override, function(err, result, thisDoc){
+			 if (!err) {
+			   TEI.update({docs: thisDoc._id, entityName: thisEntity}, {$set: {collateX: result}}, function (err, results){
+				 res.json(JSON.parse(result));
+			   });
+			 } else {   //have to do it this way else screw up comparing string and json object
+			   var thisexists=(err.error=="has Collatex");
+			   var thismissing=(err.error=="no witness");
+			   if (thismissing) {
+				 res.sendStatus(404); //this feels like a hack but it gives the desired result
+			   }  else if (thisexists) {
+				 res.json(JSON.parse(result));
+			   }
+			 }
+		  });
+		}
+	]);
 });
   
 
-/*
-  // below is the original code
-  async.waterfall([
-    function (cb) {
-      Community.findOne({'abbr':req.query.community}, function (err, myCommunity) {
-        if (err) cb(err, []);
-        else cb(null, myCommunity.documents);
-      });
-    },
-    function (myDocs, cb) {
-      Doc.findOne({_id: {$in: myDocs}, name: req.query.witness}, function (err, myDoc) {
-        if (err) cb(err, []);
-        else {
-          thisDoc=myDoc;
-          cb(null, myDoc);
-        }
-      })
-    },
-    function (myDoc, cb) {
-      //check for more tnan one instance...
-//        console.log(req.query.witness);
-//        console.log("looking for wit");
-//        console.log(myDoc);
-        TEI.find({docs: myDoc._id, entityName: req.query.entity}, function(err, teis){
-          if (err) cb(err, []);
-          else {  //have to deal with case where this entity is absent from the document
-            if (teis.length==0) {
-              cb({error:"no witness"}, []);
-            } else if (override=="false" && teis[0].collateX && teis[0].collateX!="") {
-                cb({error:"has Collatex"}, teis[0].collateX);
-            } else {  //we have to deal with multiple texts for this witness
-              var content='{"_id": "'+req.query.witness+'_'+req.query.entity+'", "context": "'+req.query.entity+'","tei":"", "transcription_id": "'+req.query.witness+'","transcription_siglum": "'+req.query.witness+'","siglum": "'+req.query.witness+'"';
-              var teiContent={"content":""}; //make this a loop if more than one wit here
-  //            console.log("versions "+teis.length)
-              //put third line back
-              content+=',"witnesses":['
-              var counter=1, thisWitness="", witnesses=[];
-              //ok this is where we check for next
-              //we need to make this a waterfall -- get this first
-//              console.log(counter+" "+thisTei)
-                async.mapSeries(teis, function(thisTei){
-                const cb2 = _.last(arguments);
-                thisWitness="";
-                    //we have to do this
-                async.waterfall([
-                    function (cb3) {
-                      if (thisTei.attrs && thisTei.attrs.next) {//use async to find it, of course
-//                         console.log("dealing with the tei now"); console.log(thisTei); console.log(thisTei.attrs.next)
-                         var nextTEI=thisTei.attrs.next;
-                         async.whilst (
-                           function () {return nextTEI!=null},
-                           function(callback) {
-                             //find the next tei and add it to children of thisTei
-                             TEI.findOne({"attrs.xml:id":nextTEI}, function (err, version) {
-                               thisTei.children.push(version.children );
-                               if (version.attrs.next)  nextTEI=version.attrs.next;
-                               else nextTEI=null;
-                               callback(null, null);
-                             });
-                           },
-                           function (err, nextTEI) {
-                             cb3(null, []);
-                             //add the teis we have won on to the children of thisTEI and go...
-                           }
-                         )
-                       } else { cb3(null, []);}
-                      //move through the next values here, appending them to the teis...
-                    },
-                    function (results, cb3) {//what page are we on in this tei?
-  //                    console.log("counter "+counter);
-  //                    console.log(thisTei);
-                      if (teis.length==1) {
-                        thisWitness=req.query.witness;
-                        cb3(null, []);
-                      } else {
-                        //assuming that page is always a direct child of document
-                        //bad idea... better start at highest level doc and work our way down...
-                        //a job for async.whilst!!!
-                        var nextDocId=thisTei.docs[1];
-                        var depth=1, lastDoc;
-                        async.whilst (
-                          function () {return nextDocId!=null},
-                          function(callback) {
-                              Doc.findOne({_id: nextDocId}, function(err, thisDoc) {
-                                if (depth==1) thisWitness=req.query.witness+"("+thisDoc.name;
-                                else {
-                                  if (typeof thisDoc.name!= "undefined") {
-                                    thisWitness+="."+thisDoc.label[0]+thisDoc.name;
-                                  } else { //just count the columns or numbers
-                                    var k=0;
-                                    while (String(lastDoc.children[k])!=String(nextDocId) && k<lastDoc.children.length) {k++};
-                                    thisWitness+="."+thisDoc.label[0]+k;
-                                  }
-                                }
-                                if (++depth<thisTei.docs.length) {
-                                  nextDocId=thisTei.docs[depth];
-                                } else {nextDocId=null}
-                                lastDoc=thisDoc;
-                                callback(null, null);
-                              });
-                          },
-                          function (err, nextTEI) {
-                            //got this sigil already.. make sure we do NOT duplicate
-  //                          console.log("witnesses "+witnesses+" this "+thisWitness)
-                            if (_.includes(witnesses, thisWitness)) {
-                              thisWitness+="-"+counter;
-                            }
-                            witnesses.push(thisWitness);
-//                            console.log("witnesses2 "+witnesses)
-                            thisWitness+=")";
-                            cb3(null, []);
-                            //add the teis we have won on to the children of thisTEI and go...
-                          }
-                        )
-                      }
-                    },
-                    function (results, cb3) {
-                        teiContent.content="";
-                        FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
-                          if (teiContent.content!="") {
-                            if (counter>1) {
-                              content+=","+FunctionService.makeJsonList(teiContent.content, thisWitness)
-                            }
-                            else content+=FunctionService.makeJsonList(teiContent.content, thisWitness);
-                            counter++;
-                            cb3(null);
-                          } else cb3(null);
-                        });
-                      },
-                  ], function(err) {
-                        //put back content line below here
-                          cb2(null, content);
-                    });
-                }, function(err, result){
-//                    console.log(result);
-                    content+=']}';
-                    cb(null, content);
-                });
-              }
-            }
-        });
-      }
-  ], function(err, result) {
-    if (!err) {
-       TEI.update({docs: thisDoc._id, entityName: thisEntity}, {$set: {collateX: result}}, function (err, results){
-         res.json(JSON.parse(result));
-       });
-     } else {   //have to do it this way else screw up comparing string and json object
-       var thisexists=(err.error=="has Collatex");
-       var thismissing=(err.error=="no witness");
-       if (thismissing) {
-         res.sendStatus(404); //this feels like a hack but it gives the desired result
-       }  else if (thisexists) {
-         res.json(JSON.parse(result));
-       }
-     }
-  });
-});
 
-*/
 
 router.post('/adjustRestorePage',function(req, res, next) {
   var page=req.body;
