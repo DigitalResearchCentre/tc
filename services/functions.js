@@ -486,7 +486,26 @@ var FunctionService = {
   //    console.log("about to call CE array :"+thistext);
       var myWords=FunctionService.makeCeArray(myWitRdgs[j].content);
   //    console.log(thistext);
-  //    console.log(myWords);
+        console.log(myWords);
+  //this is a backstop....
+  		for (var i = 0; i < myWords.length; i++) {
+  			if (myWords[i].word[0]=="<") {  //rewrite, removing xml
+  				var newWord="";
+  				myWords[i].xmlword=myWords[i].word;
+  				for (var k=0; k<myWords[i].word.length; k++) {
+  					if (myWords[i].word[k]=="<") {
+  						while (myWords[i].word[k]!=">" && j<myWords[i].word.length) {
+  							k++;
+  						}
+  					} else {
+  						newWord+=myWords[i].word[k];
+  					}
+  				}
+  				myWords[i].word=newWord;
+  				console.log("after clean");
+  				console.log(myWords);
+  			} 
+  		}
     //  var myWords=content.split(" ");
       for (var i = 0; i < myWords.length; i++) {
         var index=(i+1)*2;
