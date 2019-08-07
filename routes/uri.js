@@ -414,17 +414,17 @@ function processText(req, res, next, community, seekEntity, seekDocument, detStr
   //return all documents containing a particular entity
   //need to support: find all entities present in a document..or part of a document..
   if (entityparts[entityparts.length-1].value=="*" && docparts.length>0) {
-    console.log("here");
+//    console.log("here");
       getDocEntities(community, seekDocument, seekEntity,  entityparts, docparts, function (result){
 
           res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length==1) { //looking for documents holding this text
-      getEntityDocs(community, seekEntity, req, res, entityparts, docparts, function (result){
+      getEntityDocs(community, seekEntity, req, res, docparts, entityparts, function (result){
         res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length==2) {//this is looking for a page range: pages holding this entity
-      getEntityDocs(community, seekEntity, req, res, entityparts, docparts, function (result){
+      getEntityDocs(community, seekEntity, req, res, docparts, entityparts, function (result){
         res.json(result);
       });
   } else if (docparts[docparts.length-1].value=="*" && docparts.length>2) {
@@ -464,7 +464,7 @@ function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docp
       var myEntities=[];
       TEI.find({docs: result[result.length-1]}, function (err, teis){
         async.each(teis, function(teiel, cb2) {
-            console.log(teiel._id);
+ //           console.log(teiel._id);
             if (teiel.isEntity) {
                 if (!myEntities.some(e => e.entity === teiel.entityName)) myEntities.push({entity: teiel.entityName, collateable:teiel.isTerminal});
                 cb2(null);
@@ -500,12 +500,12 @@ function  getDocEntities(community, seekDocument, seekEntity,  entityparts, docp
 }
 
 function makeCollatedWitList(community, entityparts, callback) {
-  console.log(entityparts);
+//  console.log(entityparts);
   var entitySought=community;
   for (var i=0; i<entityparts.length-1; i++) {
     entitySought+=":"+entityparts[i].property+"="+entityparts[i].value;
   }
-  console.log("looking for "+entitySought);
+//  console.log("looking for "+entitySought);
   Community.findOne({abbr:community}, function(err, myCommunity) {
     if (typeof myCommunity.ceconfig.witnesses != "undefined") {
       var listWit="<listWit>";
@@ -538,6 +538,7 @@ function makeCollatedWitList(community, entityparts, callback) {
 function getEntityDocs(community, seekEntity, req, res, docparts, entityparts, callback) {
   //bring back the number of documents holding this entity, the names of the documents, or the page range of the document
   //we are either searching for documents holding this entity...
+ // console.log("here in ged docparts "); console.log(docparts);
   if (docparts.length==1) {
     TEI.find({entityName: community+":"+seekEntity, community: community}, function (err, texts) {
       if (err) res.status(400).send("Database search error "+err);
@@ -560,44 +561,50 @@ function getEntityDocs(community, seekEntity, req, res, docparts, entityparts, c
     var listPages=[];
 //    console.log(seekEntity);
     Doc.findOne({name:docparts[0].value, community:community, ancestors: []}, function (err, myDoc){
-      //find the tei for this entity in this doc. does it exist?
-      TEI.find({entityName: community+":"+seekEntity, community: community, docs: {$in:[myDoc._id]}}, function(err, myTEIs){
-        if (err) res.status(400).send('error in database search for '+seekEntity+' in document '+myDoc.name);
-        else {
-          async.forEachOf(myTEIs, function(myTEI) {  //there could be more than one...
-            const cb1 = _.last(arguments);
-            async.mapSeries(myDoc.children, function(thisDoc, cb2){ //check each page. Does it have myTEI as an ancestor:
-  //            console.log("doc "+thisDoc+" myTEI" +myTEI._id);
-              TEI.findOne({name:"pb", docs: {$in:[thisDoc]}, ancestors:{$in:[myTEI._id]}}, function (err, inTEI) {
-                if (!err) {
-                  if (inTEI) { //this page is a child of the tei
-                    Doc.findOne({_id:thisDoc}, function(err, pbDoc){
-                      if (listPages.indexOf(pbDoc.name)==-1) listPages.push(pbDoc.name);
-                      cb2(null, []);
-                    })
-                  } else { //might be the other way around! tei is a child of the page
-                    if ((myTEI.docs).indexOf(thisDoc)!=-1) {
-                      Doc.findOne({_id:thisDoc}, function(err, pbDoc){
-                        if (listPages.indexOf(pbDoc.name)==-1) listPages.push(pbDoc.name);
-                        cb2(null, []);
-                      });
-                    } else cb2(null, []);
-                  }
-                } else cb2(err, []);
-              })
-            }, function (err, results){
-              cb1(err, []);
-            })
-          }, function (err, results){
-            if (err) res.status(400).send('error in database search for '+seekEntity+' in document '+myDoc.name);
-            else {
-              if (req.query.type=="count") res.json({count: listPages.length});
-              else if (req.query.type=="list") res.json(listPages);
-              else res.status(400).send("Error in query string '"+JSON.stringify(req.query)+"'. Only types count and list accepted in this context");
-            }
-          });
-        }
-      })
+     if (!myDoc) {
+     	 res.status(400).send("No document "+docparts[0].value+" in this community");
+     } else {
+		  //find the tei for this entity in this doc. does it exist?
+		 if (!myDoc) res.status(400).send("No document "+err+docparts[0].value+"");
+//		  console.log(myDoc);
+		  TEI.find({entityName: community+":"+seekEntity, community: community, docs: {$in:[myDoc._id]}}, function(err, myTEIs){
+			if (err) res.status(400).send('error in database search for '+seekEntity+' in document '+myDoc.name);
+			else {
+			  async.forEachOf(myTEIs, function(myTEI) {  //there could be more than one...
+				const cb1 = _.last(arguments);
+				async.mapSeries(myDoc.children, function(thisDoc, cb2){ //check each page. Does it have myTEI as an ancestor:
+	  //            console.log("doc "+thisDoc+" myTEI" +myTEI._id);
+				  TEI.findOne({name:"pb", docs: {$in:[thisDoc]}, ancestors:{$in:[myTEI._id]}}, function (err, inTEI) {
+					if (!err) {
+					  if (inTEI) { //this page is a child of the tei
+						Doc.findOne({_id:thisDoc}, function(err, pbDoc){
+						  if (listPages.indexOf(pbDoc.name)==-1) listPages.push(pbDoc.name);
+						  cb2(null, []);
+						})
+					  } else { //might be the other way around! tei is a child of the page
+						if ((myTEI.docs).indexOf(thisDoc)!=-1) {
+						  Doc.findOne({_id:thisDoc}, function(err, pbDoc){
+							if (listPages.indexOf(pbDoc.name)==-1) listPages.push(pbDoc.name);
+							cb2(null, []);
+						  });
+						} else cb2(null, []);
+					  }
+					} else cb2(err, []);
+				  })
+				}, function (err, results){
+				  cb1(err, []);
+				})
+			  }, function (err, results){
+				if (err) res.status(400).send('error in database search for '+seekEntity+' in document '+myDoc.name);
+				else {
+				  if (req.query.type=="count") res.json({count: listPages.length});
+				  else if (req.query.type=="list") res.json(listPages);
+				  else res.status(400).send("Error in query string '"+JSON.stringify(req.query)+"'. Only types count and list accepted in this context");
+				}
+			  });
+			}
+		})
+      }
     })
   }
 }
