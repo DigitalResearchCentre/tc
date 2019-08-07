@@ -2790,7 +2790,6 @@ router.post('/getCEWitnesses', function(req, res, next) {
 	var base=req.body.base;
 	var entity=req.body.entity;
 	var results=[];
-	var baseHasText=false;
 	async.waterfall([
 		function (cb) {
 		  Community.findOne({'abbr':community}, function (err, myCommunity) {
@@ -2807,7 +2806,6 @@ router.post('/getCEWitnesses', function(req, res, next) {
 				if (!err) {
 				   TEI.update({docs: thisDoc._id, entityName: entity}, {$set: {collateX: result}}, function (err, written){
 					 results.push(result);
-					 if (witness==base) baseHasText=true;
 					 callback(null);
 				   });
 				 } else {   //have to do it this way else screw up comparing string and json object
@@ -2818,14 +2816,13 @@ router.post('/getCEWitnesses', function(req, res, next) {
 					 callback(null);
 				   }  else if (thisexists) {
 					 results.push(result);
-					 if (witness==base) baseHasText=true;
 					 callback(null);
 				   } else callback(err)
 				 }
 			});
 		}, function (err) {
 			if (!err)
-				res.json({success:true, baseHasText: baseHasText, result:results});
+				res.json({success:true, result:results});
 			else res.json({success:false, error: err});
 		})
 	});
