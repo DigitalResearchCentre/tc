@@ -19,6 +19,7 @@
         <li *ngIf="role=='LEADER'||role=='CREATOR'"><a (click)="navigate('members')">Members</a></li>
         <li *ngIf="role=='LEADER'||role=='CREATOR'"><a (click)="navigate('viewers')">Viewers</a></li>
         <li *ngIf="role=='LEADER'||role=='CREATOR'"><a (click)="navigate('edit')">Edit</a></li>
+        <li><a (click)="navigate('vbase')">VBase</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li *ngIf="state.community?.attrs.haspicture" style="padding:0; top:-6px; left:15px"><img  height="35px" width="300px" src="{{state.community?.attrs.image}}"/></li>
@@ -27,12 +28,13 @@
   </div>
 </nav>
 <tc-manage-community *ngIf="state.community" [community]="state.community"></tc-manage-community>
-<div *ngIf="state.community" [ngSwitch]="route">
+<div *ngIf="state.community" [ngSwitch]="route" id="thisCommunity">
   <tc-community-home *ngSwitchWhen="'home'"></tc-community-home>
   <tc-community-about *ngSwitchWhen="'about'"></tc-community-about>
   <tc-community-view *ngSwitchWhen="'view'"></tc-community-view>
   <tc-community-members [community]="state.community" *ngSwitchWhen="'members'"></tc-community-members>
   <tc-community-viewers [community]="state.community" *ngSwitchWhen="'viewers'"></tc-community-viewers>
+  <tc-community-vbase [community]="state.community" *ngSwitchWhen="'vbase'"></tc-community-vbase>
   <tc-edit-community *ngSwitchWhen="'edit'" style="overflow:auto"
      id="tc-edit-community" [community]="state.community"></tc-edit-community>
   <tc-community-home *ngSwitchDefault ></tc-community-home>

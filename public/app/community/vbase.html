@@ -1,0 +1,112 @@
+<tc-splitter class="vertical" (resize)="onResize($event)" id="viewerSplitter">
+	 <tc-pane class="panel-left">
+	 	<div style="width: 500px">
+			<p *ngIf="error.length>0" class="alert alert-danger" style="margin-bottom: 10px;"> <a (click)="error=''">ⓧ</a>
+				{{error}}
+			  </p>
+			<p *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 10px; white-space:normal">
+				 <a (click)="success=''">ⓧ</a> {{success}}
+			 </p>
+			<p *ngIf="role=='CREATOR'||role=='LEADER'" style="text-align: center"><b>Make a VBase from a XML apparatus file</b>
+				<tc-filereader  (filechange)="filechange($event)"></tc-filereader>
+			</p>	
+			<table *ngIf="role=='CREATOR'|| role=='LEADER'" style="width:560px">
+			 	<tr *ngFor="#vBase of vBases">
+			 		<td>
+			 			<span *ngIf="!vBase.selected" class="vb"><input type="radio" name="chooseVbase" (click)="choose(vBase)"></span>
+						<span *ngIf="vBase.selected" class="vb"><input type="radio" checked="checked" name="chooseVbase" (click)="choose(vBase)"></span>
+						<span class="vb"> <input (keypress)="changeVBName($event)" [(ngModel)]="vBase.name" placeholder="(edit name)" size="12"></span><span  class="vb" style="width: 75px; display: inline-block">{{vBase.nVars}} sites</span>
+						<span  class="vb" style="width: 110px; display: inline-block">{{vBase.nRdgs}} readings</span>
+						<span *ngIf="!vBase.saved" class="vb"><button type="button" class="btn btn-primary btn-xs" (click)="save(vBase)">Save</button></span>
+						<span *ngIf="vBase.saved"  class="vb"><button type="button" class="btn btn-primary btn-xs" disabled="true">Save</button></span>
+						<span class="vb"><button *ngIf="!vBase.delete" type="button" class="btn btn-primary btn-xs" (click)="vBase.delete=true">Delete</button></span><span *ngIf="vBase.delete">Are you sure? <button type="button" class="btn-xs btn-primary" (click)="delete(vBase)">Delete</button> <button type="button" class="btn-xs btn-primary " (click)="vBase.delete=false">Cancel</button> </span>
+			 			<table style="text-align: left; width: 100%; margin-left: 40px" *ngIf="vBase.selected && vBase.conditionsets.length>0">
+			 				<tr *ngFor="#conditionset of vBase.conditionsets; #j = index">
+			 					<td *ngIf="j>0"  style="height: 28px">
+			 						<span *ngIf="conditionset.selected"><input type="radio" checked="checked" name="chooseSearch" (click)="chooseSearch(conditionset)"></span>
+			 						<span *ngIf="!conditionset.selected" ><input type="radio" name="chooseSearch" (click)="chooseSearch(conditionset)"></span>
+			 					 	<span style="width: 110px; display: inline-block">{{conditionset.name}}</span>
+			 						<button *ngIf="!conditionset.delete" type="button" class="btn btn-primary btn-xs" (click)="conditionset.delete=true">Delete</button> <span *ngIf="conditionset.delete">Are you sure? <button type="button" class="btn-xs btn-primary " (click)="deleteCond(conditionset)">Delete</button> <button type="button" class="btn-xs btn-primary " (click)="conditionset.delete=false">Cancel</button> </span>
+			 					</td>
+			 				</tr>
+			 			</table>
+			 		</td>
+			 	</tr>
+			</table>
+			<table *ngIf="role!='CREATOR' && role!='LEADER'" >
+			 	<tr *ngFor="#vBase of vBases">
+			 		<td *ngIf="!vBase.selected" class="vb"><input type="radio" name="chooseVbase" (click)="choose(vBase)">
+			 		<span *ngIf="vBase.selected" class="vb"><input type="radio" checked="checked" name="chooseVbase" (click)="choose(vBase)"></span>
+					<span class="vb"> {{vBase.name}} </span><span  class="vb">{{vBase.nVars}} sites </span><span  class="vb">{{vBase.nRdgs}} readings {{vBase.conditionsets.length}} {{vBase.selected}} </span>
+			 			<table style="text-align: left; width: 100%" *ngIf="vBase.selected && vBase.conditionsets.length>0">
+			 				<tr *ngFor="#conditionset of vBase.conditionsets; #j = index">
+			 					<td>bill</td>
+			 					<td *ngIf="j!=0">{{conditionset.name}}</td>
+			 				</tr>
+			 			</table>
+			 		</td>
+			 	</tr>
+			</table>
+		</div>
+	</tc-pane>
+  	<tc-pane class="panel-right">
+  		<div style="text-align: center; font-weight: bold">
+			<p *ngIf="!isVBase()">No VBase loaded</p>
+			<p *ngIf="isVBase()">Current VBase: {{vBase.name}}<span *ngIf="conditionName"> ({{conditionName}})</span></p>
+		</div>
+		<div *ngIf="isVBase()">
+			<p style="text-align: center">Find all variants which are:</p>
+			<table style="margin: auto">
+				<tr *ngFor="#condition of conditions; #i = index">
+					<td *ngIf="i==0">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+					<td *ngIf="i!=0"><i>and</i>&nbsp;&nbsp;</td>
+					<td> <input name="inornotin{{i}}" type="radio" [checked]="condition.in" (click)="toggleinout(condition)"> In 
+					/ <input name="inornotin{{i}}" type="radio" [checked]="!condition.in" (click)="toggleinout(condition)"> Not in </td>
+					<td> <input [(ngModel)]="condition.spec" placeholder="(< > 3)" size="6" class="specVB"> of 
+						<input [(ngModel)]="condition.wits" placeholder="(list of witnesses, or \all)" size="40" class="conditionVB">
+					</td>
+					<td>
+					 <span *ngIf="i>0" data-toggle="tooltip"  title="Remove condition" (click)="removeCondition(i)" class="add-document">
+						 <img class="menuimg" height="18" width="18" src="../../images/cancel.png">
+					  </span>
+					  <span *ngIf="i==conditions.length-1" data-toggle="tooltip"  title="Add condition" (click)="addCondition()" class="add-document">
+						 <img class="menuimg" height="18" width="18" src="../../images/adddocument.png">
+					  </span>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div *ngIf="isVBase()" style="margin: 15px; width: 100%">
+			<span *ngIf="!showWitList"><a (click)="showWitList=true">Show witness list</a></span>
+			<span *ngIf="showWitList"><a (click)="showWitList=false">Hide witness list</a> {{vBase.witlist.join(" ")}}</span>
+			<span *ngIf="searchDone && !doSaveCondition" style="float: right; margin-right: 15px"><button type="button" class="btn-md btn-primary" (click)="doSaveCondition=true">Save Search</button></span>
+			<span *ngIf="doSaveCondition" style="float: right">
+				<input [(ngModel)]="conditionName" placeholder="(search name))" size="16" class="saveCondVB"> <button type="button" class="btn-md btn-primary " (click)="doSaveCondition=false">Cancel</button> <button type="button" class="btn-md btn-primary " (click)="saveCondition()">Save</button>
+			</span>
+		</div>
+		<div *ngIf="isVBase()" style="text-align: center; margin-top: 15px; clear: both">
+			<button type="button" class="btn-lg wizardbutton" (click)="searchVBase()">Search</button>
+		</div>
+ 		<div *ngIf="isVBase() && searchDone" style="text-align: center; margin-top: 15px">
+ 			<hr style="border: 1px solid lightgrey">
+			<p>{{found}} variants found. Displaying variants from <input [(ngModel)]="varFrom" size="4"> to <input [(ngModel)]="varTo" size="4"></p>
+			<table style="text-align: left; width: 100%" >
+				<tr *ngFor="#varsite of varsites" style="margin-top: 20px">
+					<td style="vertical-align:top"><span [innerHTML]="varsite.lemma"></span>
+						<table style="text-align: left; width: 100%">
+							<tr *ngFor="#reading of varsite.readings">
+								<td width="5%">&nbsp;</td>
+								<td width="20%" [innerHTML]="reading.reading" style="vertical-align:top"></td>
+								<td width="5%" style="vertical-align:top">{{reading.nWits}} </td>
+								<td width="70%" style="vertical-align:top">{{reading.wits}}</td>
+							</tr>
+							<tr><td>&nbsp;</td></tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+ 	</tc-pane>
+</tc-splitter>
+  
+

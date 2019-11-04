@@ -1,5 +1,6 @@
 var EventEmitter = ng.core.EventEmitter
   , ElementRef = ng.core.ElementRef
+  , UIService = require('../services/ui')
   , $ = require('jquery')
 ;
 
@@ -9,12 +10,12 @@ var FileReaderComponent = ng.core.Component({
   template: '<input id="FRinput" class="btn wizardbutton" style="margin: auto; color: white; text-align: center" type="file"/>',
   // style="width: 250px; display: inline-block"
   outputs: [
-    'filechange'
+    'filechange', 
   ],
 }).Class({
-  constructor: [ElementRef, function(elementRef) {
+  constructor: [ElementRef, UIService, function(elementRef, uiService) {
     this._elementRef = elementRef;
-
+	this.uiService = uiService;
     this.filechange = new EventEmitter();
   }],
   ngOnInit: function() {
@@ -24,6 +25,7 @@ var FileReaderComponent = ng.core.Component({
     ;
     $el.bind('change', function(event) {
       var reader = new FileReader();
+      self.uiService.getFileName$.emit(event.target.files[0].name);
       reader.onload = function(evt) {
         self.filechange.emit(evt.target.result);
       };

@@ -21,6 +21,7 @@ var _ = require('lodash')
   , Doc = models.Doc
   , Collation = models.Collation
   , Entity = models.Entity
+  , VBase = models.VBase
   , Revision = models.Revision
   , TEI = models.TEI
   , RESTError = require('./resterror')
@@ -28,7 +29,6 @@ var _ = require('lodash')
   , FunctionService = require('../services/functions')
 ;
 
-//to handle emails when not on the server
 
 if (config.localDevel) TCMailer = require('../TCMailer');
 
@@ -107,6 +107,122 @@ router.post('/community/:id/members/', function(req, res, next) {
   });
 });
 
+var vBaseResource = new Resource(VBase, {id: 'vbase'});
+vBaseResource.serve(router, 'vbases');
+
+
+router.post('/community/:abbr/vbases/', function(req, res, next) {
+  var community = req.params.abbr;
+   VBase.find({community:"CTP"}, function(err, vbases) {
+  	if (err) {
+  		res.json({result: err});
+  	} else {
+		if (vbases.length) {
+			 var VBases=[];
+			 vbases.forEach(function(vbase, index){
+			 	var nVars=vbase.varsites.length;
+			 	var nRdgs=0;
+			 	for (var j=0; j<vbase.varsites.length; j++) {nRdgs+=vbase.varsites[j].variants.length};
+		 		if (index==0) VBases.push({name:vbase.name, community: community, witlist: vbase.witlist,  origname: vbase.name, nRdgs: nRdgs, nVars:nVars, varsites: vbase.varsites, saved: true, indb: true, selected: true, conditionsets: vbase.conditionsets});
+		 		else VBases.push({name:vbase.name, nRdgs: nRdgs, nVars:nVars, origname: vbase.name, saved: true, indb: true, selected: false, varsites:[]});
+			 });
+			res.json({result:"success", nvars:1, vBases: VBases});
+		 } else {
+			 res.json({result:"success", nvars:0});
+		 }
+	  }
+	}); 
+});
+
+router.post('/saveVBName', function (req, res, next){ //new search saved
+	var community=req.query.community, vBase=req.query.vBase;
+	VBase.collection.update({community: community, name:vBase}, 
+		{$push: {conditionsets: req.body}}, function (err) {
+		if (!err) res.json({success: 1});
+		else res.json({success:0, error:err});
+	});
+});
+
+router.post('/insertVBConditions', function (req, res, next){ //new search saved
+//wierd behaviour. Have to remove the condition and then add it back. Can't just replace the conditions
+	var community=req.query.community, vBase=req.query.vBase;
+	var offset=req.body.offset, name=req.body.name, conditions=req.body.conditions;
+	console.log(offset);
+	console.log(name);
+	console.log(conditions);
+	VBase.collection.update({community: community, name:vBase}, 
+		{$push: {conditionsets: {$each: [{"name":name, "conditions": conditions}], $position:offset}}}, function (err, result) {
+		if (!err) res.json({success: 1});
+		else res.json({success:0, error:err});
+	});
+});
+
+
+router.post('/deleteVBCondition', function (req, res, next){ //new search saved
+//wierd behaviour. Have to remove the condition and then add it back. Can't just replace the conditions
+	var community=req.query.community, vBase=req.query.vBase, condition=req.query.condition;
+	VBase.collection.update({community: community, name:vBase}, 
+		{$pull: {conditionsets:{name: condition}}}, {multi: true}, function (err, result) {
+		if (!err) res.json({success: 1});
+		else res.json({success:0, error:err});
+	});
+});
+
+router.post('/isAlreadyVBase',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VBase.findOne({community: community, name: name }, function(err, vbase) {
+	 	if (err) res.json({success: 0});
+	 	else {
+	 		if (vbase) {res.json({success: 1, isDuplicate: 1})}
+		 	else {res.json({success: 1, isDuplicate: 0})}
+	 	}
+	 });
+});
+
+router.post('/getVBase',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VBase.findOne({community: community, name: name }, function(err, vbase) {
+		if (err || !vbase) res.json({success: 0});
+		else res.json({success:1, varsites: vbase.varsites, conditionsets: vbase.conditionsets, witlist: vbase.witlist});
+	});	
+});
+
+router.post('/getVBaseConditions',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VBase.findOne({community: community, name: name }, function(err, vbase) {
+		if (err || !vbase) res.json({success: 0, error: err});
+		else res.json({success:1, conditionsets: vbase.conditionsets});
+	});	
+});
+
+router.post('/deleteVBase',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VBase.collection.remove({community: community, name: name }, function(err, result) {
+		if (err) res.json({success: 0});
+		else res.json({success:true});
+	});	
+});
+
+
+router.post('/changeVBaseName',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name, origname=req.query.origname ;
+	VBase.collection.update({community: community, name: origname}, {$set: {name: name}}, function(err) {
+		if (err) res.json({success:0});
+		else res.json({success:1});
+	});
+});
+
+router.post('/saveVBase', function(req, res, next) {
+	var vbase=req.body;
+	var community=req.query.community, name=req.query.name;
+//	console.log(vbase.varsites[0].entity);
+	VBase.collection.update({community: vbase.community, name: vbase.origname}, 
+	     {$set: {name: name, witlist: vbase.witlist, community: community, varsites:vbase.varsites, conditionsets: vbase.conditionsets}}, {upsert: true}, function(err){
+		if (!err) res.json({success: 1});
+		else res.json({success: 0});
+	})
+});
+
 //ok -- also add to members array
 router.post('/communities/:id/add-member', function(req, res, next) {
   var communityId = req.params.id
@@ -177,7 +293,6 @@ collationResource.serve(router, 'collations');
 
 var actionResource = new Resource(Action, {id: 'action'});
 actionResource.serve(router, 'tcactions');
-
 
 
 //console.log("collation"); console.log(Collation);
