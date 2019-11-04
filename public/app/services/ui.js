@@ -24,6 +24,7 @@ var UIService = ng.core.Class({
     this.nullEditor$ = new EventEmitter();
     this._communitySubject = new EventEmitter();
     this.choosePage$ = new EventEmitter();
+    this.getFileName$ = new EventEmitter();
     this.showDocument$ = new EventEmitter();
     this.changeMessage$ = new EventEmitter();
     this.getCSS$ = new EventEmitter();

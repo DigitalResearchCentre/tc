@@ -19,6 +19,7 @@ var CommunityComponent = ng.core.Component({
     require('../editcommunity.component'),
     require('./members.component'),
     require('./viewers.component'),
+    require('./vbase.component'),
   ],
 }).Class({
   constructor: [
@@ -53,6 +54,8 @@ var CommunityComponent = ng.core.Component({
     } else {
       this.role="NONE";
     }
+    
+    
     //so superuser can see it and edit it too
 
     if (this.state.authUser.attrs.local && this.state.authUser.attrs.local.email=="peter.robinson@usask.ca") this.role="LEADER";
@@ -81,7 +84,7 @@ var CommunityComponent = ng.core.Component({
           this._communityService.createCommunity(clone).subscribe(function(community) {
           });
         }
-    }
+    } 
     //else: leave community at null
   },
   navigate: function(route) {
