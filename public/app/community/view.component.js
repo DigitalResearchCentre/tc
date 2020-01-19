@@ -407,9 +407,14 @@ var ViewComponent = ng.core.Component({
        } */
      ], function (err) {
        if (!err) {
-         self.collationEditor=true;
-         var src=config.COLLATE_URL+"/collation/?dbUrl="+config.BACKEND_URL+"&entity="+entity.entityName+"&community="+this.state.community.attrs.abbr;
-         $('#ce_iframe').attr('src', src);
+       	 //collator MUST be registered project leader or creator
+       	 if (self.role=="CREATOR" || self.role=="LEADER" ) {
+         	self.collationEditor=true;
+         	var src=config.COLLATE_URL+"/collation/?dbUrl="+config.BACKEND_URL+"&entity="+entity.entityName+"&community="+this.state.community.attrs.abbr+"&user="+self.state.authUser.attrs._id;
+         	$('#ce_iframe').attr('src', src);
+          } else {
+          	alert("Only project leaders or creators can use the collation tool.");
+          }
         }
        }
     );

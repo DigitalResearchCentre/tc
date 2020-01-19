@@ -60,15 +60,15 @@ var CommunityResource = _.inherit(Resource, function(opts) {
   afterCreate: function(req, res, next) {
     return function(community, cb) {
       var  user = req.user;
-      console.log("in membership push")
-      console.log(user);
+ //     console.log("in membership push")
+//      console.log(user);
       var newmembership={
         community: community._id,
         role: User.CREATOR,
         pages: {"assigned":0,"inprogress":0,"submitted":0, "approved":0, "committed":0}
       }
       user.memberships.push(newmembership);
-      console.log(user);
+//      console.log(user);
       User.collection.update({_id: user._id}, {$push: {memberships: newmembership}},  function (err, result) {
       		 cb(result, community);
       });
@@ -113,7 +113,7 @@ vBaseResource.serve(router, 'vbases');
 
 router.post('/community/:abbr/vbases/', function(req, res, next) {
   var community = req.params.abbr;
-   VBase.find({community:"CTP"}, function(err, vbases) {
+   VBase.find({community: community}, function(err, vbases) {
   	if (err) {
   		res.json({result: err});
   	} else {
@@ -147,9 +147,6 @@ router.post('/insertVBConditions', function (req, res, next){ //new search saved
 //wierd behaviour. Have to remove the condition and then add it back. Can't just replace the conditions
 	var community=req.query.community, vBase=req.query.vBase;
 	var offset=req.body.offset, name=req.body.name, conditions=req.body.conditions;
-	console.log(offset);
-	console.log(name);
-	console.log(conditions);
 	VBase.collection.update({community: community, name:vBase}, 
 		{$push: {conditionsets: {$each: [{"name":name, "conditions": conditions}], $position:offset}}}, function (err, result) {
 		if (!err) res.json({success: 1});
@@ -2764,16 +2761,11 @@ function getWitness (witness, community, entity, override, recallback) {
 			if (err) cb(err, []);
 			else {
 			  thisDoc=aDoc;
-			  console.log("here now")
 			  cb(null, aDoc);
 			}
 		  })
 		},
 		function (myDoc, cb) {
-		  //check for more tnan one instance...
-	//        console.log(req.query.witness);
-	//        console.log("looking for wit");
-	        console.log(myDoc);
 			TEI.find({docs: myDoc._id, entityName: entity}, function(err, teis){
 			  if (err) cb(err, []);
 			  else {  //have to deal with case where this entity is absent from the document
@@ -3044,6 +3036,15 @@ router.post('/markEntityCollated', function(req, res, next){
   })
 })
 
+router.post('/unMarkEntityCollated', function(req, res, next){
+//  console.log("mark collation for "+req.query.entity);
+  Entity.update({entityName:req.query.entity, isTerminal:true}, {$set:{hasCollation:false}}, function (err, result){
+//    console.log(err);
+    res.json({status:true});
+  })
+})
+
+
 router.post('/putCollation', function(req, res, next){
   //if there is one already, updates, if not, insertedI
 //  console.log("saving the collation now");
@@ -3127,6 +3128,45 @@ router.post('/deleteRules', function (req, res, next) {
   Collation.remove({id: {$in:req.body.delete}, community:req.query.community, model:"regularization"}, function(result){
     res.json({success:0});
   })
+});
+
+router.post('/deleteAllRules', function (req, res, next) {
+//is this person a leader or creator? if not, don't do it...
+  var user=req.query.user, abbr=req.query.community, entity=req.query.entity;
+  Community.findOne({abbr: abbr}, function(err, community) {
+  	if (!community || err) {
+  		res.json({success:0, message:"No community "+abbr+" found."})
+  	} else {//we got a community. Now find the user, check is leader or creator
+  		User.findOne({_id:ObjectId(user)}, function(err, myUser){
+  			if (!myUser || err) {
+  				res.json({success:0, message:"No user id "+user+" found."});
+  			} else {
+//  			console.log(myUser)
+				var isLeader=false;
+  				for (var i=0; i<myUser.memberships.length && !isLeader; i++) { //later add COLLATOR or similar? like approver?
+  					if (String(myUser.memberships[i].community)==String(community._id) && (myUser.memberships[i].role=="CREATOR" || myUser.memberships[i].role=="LEADER")) {
+//  					console.log("this user a creator or leader be!")
+						isLeader=true;
+						Collation.remove({entity: entity, community:req.query.community}, function(err, result){
+							if (err) {
+								res.json({success:0, message:"Collation rules removal for entity \""+entity+"\" failed. (Perhaps none were set?)"});
+								return;
+							} else {
+								res.json({success:1, message:"Collation rules removal for entity \""+entity+"\" succeeded. "+result.result.n+" records removed. "});
+  								return;
+  							}
+					  	})
+  					}
+  				}
+  				//can't be a leader or creater
+  				if (!isLeader) res.json({success:0, message:"User id "+user+" not a leader. Cannot delete these records"});
+  			}
+  		});
+  	}
+  });
+/*  Collation.remove({entity: req.query.entity, community:req.query.community}, function(result){
+    res.json({success:0});
+  }) */
 });
 
 router.post('/addCEGlobalExceptions', function (req, res, next) {
