@@ -7,20 +7,20 @@ module.exports = _.assign({
   logFormat: 'combined',
   auth: {
     'facebookAuth' : {
-        'clientID'      : '***REMOVED***', // your App ID
-        'clientSecret'  : '***REMOVED***', // your App Secret
+        'clientID'      : '', // your App ID
+        'clientSecret'  : '', // your App Secret
         'callbackURL'   : 'http://localhost:3000/auth/facebook/callback'
     },
 
     'twitterAuth' : {
-        'consumerKey'       : '***REMOVED***',
-        'consumerSecret'    : '***REMOVED***',
+        'consumerKey'       : '',
+        'consumerSecret'    : '',
         'callbackURL'       : 'http://localhost:3000/auth/twitter/callback'
     },
 
     'googleAuth' : {
-        'clientID'      : '***REMOVED***',
-        'clientSecret'  : '***REMOVED***',
+        'clientID'      : '',
+        'clientSecret'  : '',
         'callbackURL'   : 'http://localhost:3000/auth/google/callback'
     }
   }
