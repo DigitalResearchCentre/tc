@@ -11,6 +11,7 @@ var mongoose = require('mongoose')
   , Entity = require('./entity')
   , Collation = require('./collation')
   , VBase = require('./vbase')
+  , VMap = require('./vmap')
 ;
 
 Doc.Entity = Entity;
@@ -48,5 +49,6 @@ module.exports = {
   Revision: Revision,
   Collation: Collation,
   VBase: VBase,
+  VMap: VMap,
   Action: mongoose.model('Action', ActionSchema),
 };

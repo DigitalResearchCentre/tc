@@ -22,6 +22,7 @@ var _ = require('lodash')
   , Entity = models.Entity
   , Revision = models.Revision
   , TEI = models.TEI
+  , VMap = models.VMap
   , RESTError = require('./resterror')
   , ObjectId = mongoose.Types.ObjectId
   , FunctionService = require('../services/functions')
@@ -71,6 +72,7 @@ router.get('**', function(req, res, next) {
         } else {
           if (bits[0]=="entity") {inentity=true; indoc=false};
           if (bits[0]=="document") {inentity=false; indoc=true};
+          if (bits[0]=="vmap") {processVmap(bits, req, res, authparts[4]); return};
           if (inentity) entityparts.push({property:bits[0], value:bits[1]})
           if (indoc) docparts.push({property:bits[0], value:bits[1]})
         }
@@ -705,5 +707,35 @@ function getXMLText(res, next, community, seekEntity, seekDocument, detString, e
   })
 }
 
+function processVmap (bits, req, res, community) {
+	if (bits[1]=="*") {
+		 VMap.find({community: community}, function(err, vmaps) {
+			if (err) {
+				res.json({result: err});
+			} else {
+			if (vmaps.length) {
+				 var VMaps=[];
+				 vmaps.forEach(function(vmap){
+					VMaps.push({name:vmap.name, unlabelled: vmap.pdfunlabelled.name, nwits:vmap.wits.length})
+				 });
+				 if (req.query.type=="count") {
+					res.json({count: vmaps.length});
+				} else if  (req.query.type=="list") {
+					res.json(VMaps);
+				} else {
+					res.json({error: "No valid request type"})
+				}
+			 } else { //no varmaps
+				 res.json({error:"No variant maps found"});
+			 }
+		  }
+		}); 
+	} else {
+		VMap.findOne({community: community, name: bits[1] }, function(err, vmap) {
+			if (err || !vmap) res.json({error: ""});
+			else res.json(vmap);
+		});
+	}
+}
 
 module.exports = router;

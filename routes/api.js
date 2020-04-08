@@ -22,6 +22,7 @@ var _ = require('lodash')
   , Collation = models.Collation
   , Entity = models.Entity
   , VBase = models.VBase
+  , VMap = models.VMap
   , Revision = models.Revision
   , TEI = models.TEI
   , RESTError = require('./resterror')
@@ -107,9 +108,64 @@ router.post('/community/:id/members/', function(req, res, next) {
   });
 });
 
+var vMapResource = new Resource(VMap, {id: 'vmap'});
+vMapResource.serve(router, 'vmaps');
+
+router.post('/saveVMap', function(req, res, next) {
+	var vmap=req.body;
+	var community=req.query.community, name=req.query.name;
+//	console.log(vbase.varsites[0].entity);
+	console.log("Name "+name+" community "+community+" name from array "+vmap.name);
+	VMap.collection.update({community: community, name: name}, 
+	     {$set: {name: name, community: community, pheight: vmap.pheight, pwidth: vmap.pwidth, pdflabelled: vmap.pdflabelled, pdfunlabelled: vmap.pdfunlabelled, wits: vmap.wits }}, {upsert: true}, function(err){
+		if (!err) res.json({success: 1});
+		else {
+			console.log(err)
+			res.json({success: 0});
+		}
+	})
+});
+
+router.post('/isAlreadyVMap',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VMap.findOne({community: community, name: name }, function(err, vmap) {
+	 	if (err) res.json({success: 0});
+	 	else {
+	 		if (vmap) {res.json({success: 1, isDuplicate: 1})}
+		 	else {res.json({success: 1, isDuplicate: 0})}
+	 	}
+	 });
+});
+
+router.post('/community/:abbr/vmaps/', function(req, res, next) {
+  var community = req.params.abbr;
+   VMap.find({community: community}, function(err, vmaps) {
+  	if (err) {
+  		res.json({result: err});
+  	} else {
+		if (vmaps.length) {
+			 var VMaps=[];
+			 vmaps.forEach(function(vmap){
+			 	VMaps.push({name:vmap.name, unlabelled: vmap.pdfunlabelled.name, nwits:vmap.wits.length})
+			 });
+			res.json({result:"success", nvars:1, vMaps: VMaps});
+		 } else {
+			 res.json({result:"success", nvars:0});
+		 }
+	  }
+	}); 
+});
+
+router.post('/getVMap',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VMap.findOne({community: community, name: name }, function(err, vmap) {
+		if (err || !vmap) res.json({success: 0});
+		else res.json({success:1, vmap: vmap});
+	});	
+});
+
 var vBaseResource = new Resource(VBase, {id: 'vbase'});
 vBaseResource.serve(router, 'vbases');
-
 
 router.post('/community/:abbr/vbases/', function(req, res, next) {
   var community = req.params.abbr;

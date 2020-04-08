@@ -30,8 +30,10 @@
                 <li>
                 	<a class="dropdown-item" style="display:inline" (click)="setCollEnts()">Rebuild Collation Entities on Commit</a> 
                 	<span *ngIf="state.community.attrs.rebuildents"> <img class="menuimg" height="11" width="11" src="../../images/checked.png"></span>  
-                	<span *ngIf="!state.community.attrs.rebuildents"> <img class="menuimg" height="9" width="9" src="../../images/unchecked.png"></span>  
-              </ul>
+                	<span *ngIf="!state.community.attrs.rebuildents"> <img class="menuimg" height="9" width="9" src="../../images/unchecked.png"></span>  </li>
+                <li><a class="dropdown-item" (click)="loadModal('collationeditor-createVarMaps')">Make Variant Map</a></li>
+                 <li><a class="dropdown-item" (click)="loadModal('collationeditor-editVarMaps')">Edit Variant Maps</a></li>
+             </ul>
             </li>
             <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community Management<span class="caret"></span></a>
               <ul class="dropdown-menu">

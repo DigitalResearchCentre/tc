@@ -45,6 +45,8 @@
     </tc-managemodal-retrievecollation>
     <tc-managemodal-makenexuscollation *ngSwitchWhen="'makenexuscollation'" [community]="community">
     </tc-managemodal-makenexuscollation>
+    <tc-managemodal-createVarMaps *ngSwitchWhen="'createVarMaps'" [community]="community">
+    </tc-managemodal-createVarMaps>
     <tc-managemodal-reorder-document *ngSwitchWhen="'reorder-document'" [document]="document">
     </tc-managemodal-reorder-document>
     <tc-managemodal-assign-pages *ngSwitchWhen="'assign-pages'" [community]="community" [user]="user" [memberId]="memberId" [source]="source">
@@ -80,7 +82,11 @@
     </tc-community-changecontrol>
     <tc-document-choosechangecontrol *ngSwitchWhen="'choosechange'" [document]="document" [community]="community" [parent]="parent" [context]="context" [docname]="docname">
     </tc-document-choosechangecontrol>
-    <tc-managemodal-registerviewer *ngSwitchWhen="'registerviewer'" [community]="community">
+    <tc-managemodal-editvmap *ngSwitchWhen="'edit-vmap'" [vMap]="vMap" >
+    </tc-managemodal-editvmap>
+    <tc-managemodal-editvmaps *ngSwitchWhen="'editvMaps'" [community]="community" >
+    </tc-managemodal-editvmaps>
+   <tc-managemodal-registerviewer *ngSwitchWhen="'registerviewer'" [community]="community">
     </tc-managemodal-registerviewer>
 
 </div>

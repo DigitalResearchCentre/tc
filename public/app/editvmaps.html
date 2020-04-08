@@ -1,0 +1,26 @@
+<div style="font-size: 110%; height:100%; width: 100%; overflow: auto" id="edVmaps">
+  <div modal-draggable class="modalHeader">Edit Variant Maps in Community {{community.attrs.name}}
+    <button type="button" (click)="closeModalAP()" class="close" data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;</button>
+  </div>
+	<table style="border-spacing: 10px 2px; border-collapse: separate; width:100%; text-align:center" class="table">
+	  <thead>
+		<tr>
+		  <th style="border-bottom-width:0px; text-align:center" class="col-md-3">Name</th>
+		  <th style="border-bottom-width:0px; text-align:center" class="col-md-6">Stemma file</th>
+		  <th style="border-bottom-width:0px; text-align:center" class="col-md-1">Witnesses</th>
+		  <th style="border-bottom-width:0px; text-align:center" class="col-md-2">&nbsp;</th>
+		</tr>
+	  </thead>
+	  <tbody>
+		<tr *ngFor="#vmap of vmaps">
+		  <td  style="border-top-width:0px">{{vmap.name}}</td>
+		  <td  style="border-top-width:0px">{{vmap.unlabelled}}</td>
+		  <td  style="border-top-width:0px">{{vmap.nwits}}</td>
+		  <td  style="border-top-width:0px; padding: 0px; text-align: center">
+        	<button type="button" class="btn btn-primary btn-sm"
+         	 (click)="editVMap(vmap.name)" style="margin-top:5px">Edit</button> 
+          </td>
+		</tr>
+	  </tbody>
+	</table>
+</div>

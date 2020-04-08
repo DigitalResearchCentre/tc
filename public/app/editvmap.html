@@ -1,0 +1,42 @@
+<div style="font-size: 110%; height:100%; width: 100%; overflow: auto" id="edVmap">
+  <div modal-draggable class="modalHeader">Edit Variant Map {{vMap.name}} in Community {{vMap.community}}
+    <button type="button" (click)="closeModalAP()" class="close" data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;</button>
+  </div>
+  <div style="display:flex">
+	<div style="width: 50%; text-align: center">
+		 <p>Unlabelled file: {{vMap.pdfunlabelled.name}}  </p>
+		 <p *ngIf="chosen.name==''">Click on sigil in image to edit. </p>
+		 <p *ngIf="chosen.name!=''">{{chosen.name}} left: <input type="text" size="3" [(ngModel)]="chosen.left" (keyup)="changeLeft()"> top: <input type="text" size="3" (keyup)="changeTop()" [(ngModel)]="chosen.top"></p>
+		 <div id="div1" style="width: 612px; height: 792px; overflow: auto; transform: rotate(0deg);"> 
+		 	<canvas id="canvas1"></canvas>
+		 		<ul style="list-style-type:none">
+		 			<li *ngFor="#place of vMap.wits" style="display:inline">
+		 				<div (click)="editPlace(place.name)" id="{{place.name}}" style="display: inline; position: absolute; z-index: 999; top:{{place.y}}px; left: {{place.x}}px">
+		 					{{place.name}}
+		 				</div>
+		 				<div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div>
+		 			</li>
+		 		</ul>
+		 </div>
+	</div>
+	<div style="flex-grow: 1; text-align: center">
+		 <p>Labelled file: {{vMap.pdflabelled.name}}</p>
+		 <p>&nbsp;</p>
+		 <div *ngIf="message.length>0" class="alert alert-danger" style="margin-bottom: 10px">
+    		{{message}}
+		  </div>
+		  <div *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 10px">
+			{{success}}
+		  </div>
+		 <div id="div2" style="overflow: auto;">
+		  <canvas id="canvas2"></canvas>
+		</div>
+	</div>
+</div>
+<form action="" style="width:100%; height: 32px; margin-top:10px" >
+  <div class="form-group" style="text-align: center;">
+    <button type="button"
+      class="btn btn-primary" (click)="submit()">Save</button>
+  </div>
+</form>
+</div>
