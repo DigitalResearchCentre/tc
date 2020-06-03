@@ -28,6 +28,7 @@ var _ = require('lodash')
   , RESTError = require('./resterror')
   , ObjectId = mongoose.Types.ObjectId
   , FunctionService = require('../services/functions')
+  , DualFunctionService = require('../public/app/services/dualfunctions')
 ;
 
 
@@ -115,12 +116,12 @@ router.post('/saveVMap', function(req, res, next) {
 	var vmap=req.body;
 	var community=req.query.community, name=req.query.name;
 //	console.log(vbase.varsites[0].entity);
-	console.log("Name "+name+" community "+community+" name from array "+vmap.name);
+//	console.log("Name "+name+" community "+community+" name from array "+vmap.name);
 	VMap.collection.update({community: community, name: name}, 
 	     {$set: {name: name, community: community, pheight: vmap.pheight, pwidth: vmap.pwidth, pdflabelled: vmap.pdflabelled, pdfunlabelled: vmap.pdfunlabelled, wits: vmap.wits }}, {upsert: true}, function(err){
 		if (!err) res.json({success: 1});
 		else {
-			console.log(err)
+//			console.log(err)
 			res.json({success: 0});
 		}
 	})
@@ -2507,6 +2508,7 @@ router.use(function(err, req, res, next) {
   }
 });
 
+//here we add page references to all revision documents
 router.get('/getBasicRestore', function(req, res, next){
     Doc.findOne({_id: req.query.docid}, function(err, document) {
       var docinf=[];
@@ -2515,11 +2517,11 @@ router.get('/getBasicRestore', function(req, res, next){
         docinf.push({name:document.name, _id:document._id, teiHeader: document.teiHeader, meta: document.meta})
         async.mapSeries(document.children, function(page, callback) {
           Doc.findOne({ _id: page}, function(err, pageinf){
-
-  //          if (pageinf.facs) var facs={facs: pageinf.facs} else var facs=""
-            if (pageinf.tasks && pageinf.tasks.length>0)
-              callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, tasks: pageinf.tasks, _id: pageinf._id});
-            else callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, _id: pageinf._id});
+			Revision.collection.update({doc: page}, {$set: {parent: document.name, name: pageinf.name}}, {multi: true}, function(err, result){
+ 				if (pageinf.tasks && pageinf.tasks.length>0)
+				  callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, tasks: pageinf.tasks, _id: pageinf._id});
+				else callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, _id: pageinf._id});
+			});
           });
         }, function(err, results) {
           docinf.push({pages:results});
@@ -2803,6 +2805,7 @@ router.get('/getDocNames', function(req, res, next) {
           cb(err, {name: thisDoc.name, npages: thisDoc.children.length, control: thisDoc.control });
         })
       }, function (err, results){
+      	if (err) res.json({error:"failure in get docnames routine"})
         res.json(results);
       })
     }
@@ -2919,10 +2922,11 @@ function getWitness (witness, community, entity, override, recallback) {
 							teiContent.content="";
 							FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
 							  if (teiContent.content!="") {
+//							  	console.log("TEI content for witness "+witness+": "+teiContent.content)
 								if (counter>1) {
-								  content+=","+FunctionService.makeJsonList(teiContent.content, thisWitness)
+								  content+=","+DualFunctionService.makeJsonList(teiContent.content, thisWitness)
 								}
-								else content+=FunctionService.makeJsonList(teiContent.content, thisWitness);
+								else content+=DualFunctionService.makeJsonList(teiContent.content, thisWitness);
 								counter++;
 								cb3(null);
 							  } else cb3(null);
@@ -2952,6 +2956,7 @@ router.post('/getCEWitnesses', function(req, res, next) {
 	var witlist=req.body.witnesses;
 	var base=req.body.base;
 	var entity=req.body.entity;
+	var override=req.body.override;
 	var results=[];
 	async.waterfall([
 		function (cb) {
@@ -2965,7 +2970,7 @@ router.post('/getCEWitnesses', function(req, res, next) {
 		}
 	], function (err) {
 		async.mapSeries(witlist, function(witness, callback){
-			getWitness (witness, thisCommunity, entity, false, function(err, result, thisDoc){
+			getWitness (witness, thisCommunity, entity, override, function(err, result, thisDoc){
 				if (!err) {
 				   TEI.update({docs: thisDoc._id, entityName: entity}, {$set: {collateX: result}}, function (err, written){
 					 results.push(result);
@@ -3044,12 +3049,26 @@ router.post('/adjustRestorePage',function(req, res, next) {
     }
   }
   var docid=req.query.docid;
+  var parent=req.query.parent;
   Doc.collection.update({"ancestors.0":ObjectId(docid), name:page.name}, {$set: {facs: page.facs, image: page.image, tasks: page.tasks}}, function(err, result){
-    Doc.findOne({"ancestors.0":ObjectId(docid), name:page.name}, function(err, myDoc){
-      Revision.collection.update({doc:ObjectId(page._id)}, {$set: {doc: ObjectId(myDoc._id)}}, {multi: true}, function(err, result){
-        res.json({success:true})
-      });
-    })
+  	if (err) {
+  		res.json({success: false, error: "Error rewriting page information"})
+  	}
+    else {
+    	Doc.findOne({"ancestors.0":ObjectId(docid), name:page.name}, function(err, myDoc){
+          if (err) {
+          	res.json({success: false, error: "Error finding page"})
+          } else {
+			  Revision.collection.update({doc:ObjectId(page._id)}, {$set: {doc: ObjectId(myDoc._id)}}, {multi: true}, function(err, result){
+			  	if (err) {
+			  	 	res.json({success: false, error: "Error finding revisions"})
+        	 	 } else {			  	
+				res.json({success:true})
+				}
+			 });
+		  }
+       })
+    }
   })
 });
 
@@ -3341,6 +3360,26 @@ router.get('/getCollations', function(req, res, next) {
   Collation.find({community:req.query.community, status:"approved"}, function (err, results){
     results.forEach(function(result){
       collations.push(result.ce);
+    });
+    res.json(collations);
+  });
+});
+
+router.get('/adjustModOrig', function(req, res, next) {
+  var collations=[];
+  Collation.find({community:req.query.community, status:"approved"}, function (err, results){
+    results.forEach(function(result){
+      collations.push({entity: result.entity, ce: result.ce});
+    });
+    res.json(collations);
+  });
+});
+
+router.get('/xmlCollations', function(req, res, next) {
+  var collations=[];
+  Collation.find({community:req.query.community, status:"xml/positive"}, function (err, results){
+    results.forEach(function(result){
+      collations.push({entity: result.entity, ce: result.ce});
     });
     res.json(collations);
   });

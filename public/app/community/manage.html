@@ -41,7 +41,7 @@
                 <li ng-show="isCreator()===true||isLeader()===true"><a class="dropdown-item" (click)="deleteCommunity()">Delete Community</a></li>
               </ul>
             </li>
-            <li class="dropdown" *ngIf="state.authUser.attrs.local.email=='peter.robinson@usask.ca'"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super User<span class="caret"></span></a>
+            <li class="dropdown" *ngIf="state.authUser.attrs.local.email=='peter.robinson@usask.ca' || state.authUser.attrs.local.email=='peter@sd-editions.com'"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super User<span class="caret"></span></a>
               <ul class="dropdown-menu">
                 <li ng-show="isCreator()===true"><a class="dropdown-item"  (click)="viewAllUsers()">View All Users</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item"  (click)="viewAllCommunities()">View All Communities</a></li>
@@ -49,7 +49,9 @@
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportTranscriptsFromTC1()">Move Transcripts from TC1 to TC2</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportDBVersionFromTC1()">Export Transcript from TC1 Database</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="createDefaultTranscripts()">Create Default Transcripts</a></li>
-              </ul>
+                <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="testCollConversion()">Test Collation Conversion</a></li>
+                <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="removeModOrig()">Remove redundant mod/orig</a></li>
+             </ul>
             </li>
           </ul>
         </div>

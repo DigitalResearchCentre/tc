@@ -54,7 +54,8 @@ var ManageModalComponent = ng.core.Component({
     require('./registerviewer.component'),
     require('./makevarmaps.component'),
     require('./editvmap.component'),
-    require('./editvmaps.component')
+    require('./editvmaps.component'),
+    require('./testcollationconversion.component')
  ]
 }).Class({
   constructor: [CommunityService, UIService, RESTService, function(communityService, uiService, restService) {
@@ -298,6 +299,9 @@ var ManageModalComponent = ng.core.Component({
       } else if (event.type ==='registerviewer'){
         self.choice=event.type;
         self.community=event.community;
+      } else if (event.type ==='test-collate-conversion') {
+      	self.choice=event.type;
+      	self.community=event.community;
       }
       $('#manageModal').modal('show');
     });

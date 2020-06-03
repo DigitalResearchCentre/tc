@@ -3,6 +3,7 @@ var $ = require('jquery')
   , UIService = require('./services/ui')
   , config = require('./config')
   , BrowserFunctionService = require('./services/functions')
+  , DualFunctionService = require('./services/dualfunctions')
 ;
 
 var makeNexusCollationComponent = ng.core.Component({
@@ -61,7 +62,7 @@ var makeNexusCollationComponent = ng.core.Component({
           self.success="Parsed uploaded file. Now convering to NEXUS";
           $('#manageModal').height("220px");
           self.message="";
-          var result=makeNEXUS(text);
+          var result=DualFunctionService.makeNEXUS(text);
           if (result.error!="") {
             self.message=result.error;
             self.success="";
@@ -78,6 +79,7 @@ var makeNexusCollationComponent = ng.core.Component({
 
 
 //duplicates serverside function
+//move to dualfunctions some time
 function makeNEXUS(source) {
   var converted="#NEXUS\rBEGIN DATA;\r";
   var myXMLDOM = new DOMParser().parseFromString(source, "text/xml");
@@ -170,24 +172,8 @@ function makeNEXUS(source) {
   return({error:"", result:converted});
 }
 
-function standardChar(source) {
-  var target=new Array(source.length)
-  for (var i=0; i<source.length; i++) {
-    if (source.charCodeAt(i)>127) {
-      target[i]="x";
-    } else target[i]=source[i];
-  }
-  return(target.join(""));
-}
 
-function download(content, filename, contentType)
-{
-    if(!contentType) contentType = 'application/octet-stream';
-    var a = document.createElement('a');
-    var blob = new Blob([content], {'type':contentType});
-    a.href = window.URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-}
+
+
 
 module.exports = makeNexusCollationComponent;

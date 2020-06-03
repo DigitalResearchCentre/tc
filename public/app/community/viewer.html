@@ -1,14 +1,17 @@
   <tc-splitter class="horizontal" (resize)="onResize($event)" id="viewerSplitter">
   <tc-pane class="image-viewer" style="position:relative">
-    <div [ngClass]="{'nodisplay':!image}" id="imageMap" class="image_map">
+    <div [ngClass]="{'nodisplay':(!image || page.attrs.facs.startsWith('EXTERNAL:'))}" id="imageMap" class="image_map">
     </div>
+     <div *ngIf="page.attrs.facs.startsWith('EXTERNAL:')" style="position: absolute; top: 40%; left: 5%">
+     	<p style="text-align: center;"><a target="msShow" href="{{imageExternal}}">Page image ({{imageExternal}}) opens in an external window</a></p>
+    </div>  
     <div *ngIf="!imageUnrestricted" style="position: absolute; top: 40%;  margin: 40px">
       <p style="text-align: center"><img class="menuimg" height="36" width="36" src="../../images/lock.png"> {{state.imsg}}</p>
       <p *ngIf="state.imsg.includes('Only registered viewers') && community.attrs.canrequestview"  style="text-align: center">
         <button type="button" class="btn btn-primary" (click)="register(page)">Register as Viewer</button>
       </p>
     </div>
-    <div *ngIf="imageUnrestricted" [ngClass]="{'nodisplay':image}" style="position: absolute; top: 40%; left: 40%;">
+    <div *ngIf="imageUnrestricted" [ngClass]="{'nodisplay':(image || page.attrs.facs.startsWith('EXTERNAL:'))}" style="position: absolute; top: 40%; left: 40%;">
       <p>No image associated with this page<br/><br/>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <button *ngIf="role=='LEADER'||role=='CREATOR'" type="button" class="btn btn-primary" (click)="addPageImage(page)">Add Image</button>

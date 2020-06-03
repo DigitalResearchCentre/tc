@@ -26,6 +26,7 @@ var _ = require('lodash')
   , RESTError = require('./resterror')
   , ObjectId = mongoose.Types.ObjectId
   , FunctionService = require('../services/functions')
+  , DualFunctionService = require('../public/app/services/dualfunctions')
   , config=require('../config')
   , $ = require('jquery')
 ;
@@ -271,7 +272,7 @@ function entityRequest(req, res, entities, name, entityparts, i, community, call
                     var endXML="</div></body></text></TEI>".replace(/</gi, "&lt;");
                     startXML+="Collation for "+name+", output for "+req.user.local.name+" ("+req.user.local.email+"), generated at "+today+'</title></titleStmt><publicationStmt><p rend="ital">dummy</p></publicationStmt><sourceDesc>'+witlist+'</sourceDesc></fileDesc></teiHeader><text><body><div>'
                     content=startXML.replace(/</gi, "&lt;")+content+"<br/>"+endXML;
-                    if (req.query.format=="NEXUS") content=FunctionService.makeNEXUS(content);
+                    if (req.query.format=="NEXUS") content=DualFunctionService.makeNEXUS(content);
                     if (missing) content="No collation found for "+missing+"<br/>"+content;
                     res.send(content);
                   });
@@ -684,9 +685,9 @@ function getXMLText(res, next, community, seekEntity, seekDocument, detString, e
                     if (isXML) foundVersions.push({place: myPage.name, text: teiContent.content})
                     else {
                       if (counter>0) {
-                        content+=","+FunctionService.makeJsonList(teiContent.content, foundDoc.name+"("+counter+")");
+                        content+=","+DualFunctionService.makeJsonList(teiContent.content, foundDoc.name+"("+counter+")");
                       }
-                      else  content+=FunctionService.makeJsonList(teiContent.content, foundDoc.name);
+                      else  content+=DualFunctionService.makeJsonList(teiContent.content, foundDoc.name);
                       counter++;
                     }
                     cb2(err);

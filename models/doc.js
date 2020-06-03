@@ -61,8 +61,8 @@ var DocSchema = extendNodeSchema('Doc', {
         docEl = {name: self.label, attrs: {n: self.name}};
       }
      if (config.localDevel)  console.log("starting oit");
-//      console.log(communityAbbr);
-//      console.log(docEl)
+      console.log(communityAbbr);
+      console.log(docEl)
       globalDoc=docRoot;
       globalCommAbbr=communityAbbr;
       sourceTeisAA.clear();
@@ -70,7 +70,7 @@ var DocSchema = extendNodeSchema('Doc', {
       otherAncestorTeisAA.clear();
 
 //     console.log(teiRoot.children[0].children[1].children[0].children);
-//      console.log(teiRoot);
+      console.log(teiRoot);
       if (_.isEmpty(teiRoot)) {
         let loop = true;
 
@@ -122,7 +122,7 @@ var DocSchema = extendNodeSchema('Doc', {
 
       _.dfs([teiRoot], function(el) {
         let cur = TEI.clean(el);
-//        if (config.localDevel)  console.log("cur: "+cur);
+        if (config.localDevel)  console.log("cur: "); console.log(cur);
 
         if (!el.children) {
           el.children = [];
@@ -131,7 +131,7 @@ var DocSchema = extendNodeSchema('Doc', {
           cur.docs = docsMap[el.doc].ancestors.concat(new ObjectId(el.doc));
         }
         cur.children = TEI._loadChildren(cur);
-  //      console.log("teichildren: "+cur.children);
+       if (config.localDevel)  console.log("teichildren: "); console.log(cur.children);
         if (el._bound) {
           let item = boundsMap[el._id.toString()];
           if (item.el) {
@@ -167,7 +167,7 @@ var DocSchema = extendNodeSchema('Doc', {
       //this one to pick up bug in routine for identifying teis-- when doc has only one page
       //deleteTeis is always blank, but everything has to go!
       if (config.localDevel)  console.log("starting our teis")
-//      if (config.localDevel)  console.log(insertTeis)
+ //     if (config.localDevel)  console.log(insertTeis)
 //      console.log("starting load "+communityAbbr)
       if (_.isEmpty(deleteTeis) && String(docRoot.label)=="pb") {
         fromVFile=true;
@@ -412,7 +412,7 @@ var DocSchema = extendNodeSchema('Doc', {
             } else {cb1(null, self);}
           },
           function(argument, cb1) {
-            if (config.localDevel) console.log("function 10");
+            if (config.localDevel) console.log("function 10"); 
             if (updateTeiEls.length > 0) {
               async.forEachOf(updateTeiEls, function(up) {
                 const cb2 = _.last(arguments);
@@ -493,7 +493,7 @@ var DocSchema = extendNodeSchema('Doc', {
             if (insertTeis.length > 0) {
       //        insertTeis.forEach(function(eachTEI){eachTEI.community=globalCommAbbr})
               TEI.collection.insert(insertTeis, function(err) {
-                if (config.localDevel) console.log("function 12d");
+                if (config.localDevel) console.log("function 12d"); console.log(insertTeis)
 //                console.log(err);
                 cb1(err, self);
               });

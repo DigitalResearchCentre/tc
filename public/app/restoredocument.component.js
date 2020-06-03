@@ -210,7 +210,7 @@ function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
     UpdateDbService("Document", jsoncall, function(result){
       async.mapSeries(brf[1].pages, function (page, cb){
         $.ajax({
-          url:config.BACKEND_URL+'adjustRestorePage?docid='+myDoc._id,
+          url:config.BACKEND_URL+'adjustRestorePage?docid='+myDoc._id+"&parent="+myDoc.name,
           type: 'POST',
           data: JSON.stringify(page),
           accepts: 'application/json',
@@ -218,11 +218,16 @@ function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
           dataType: 'json'
         })
         .done(function(data){
-          context.success+=" "+page.name;
+          if (data.success) {
+          	context.success+=" "+page.name;
+          } else {
+          	context.success+=" Error in "+page.name+" "+data;
+          }
           return cb(null);
         })
         .fail(function( jqXHR, textStatus, errorThrown) {
-          cb(errorThrown);
+          context.success+=" Error in "+page.name+" "+errorThrown;
+          return cb(null);
         });
       }, function (err){
         if (!err) callback({success:true})

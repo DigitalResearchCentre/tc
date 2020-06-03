@@ -143,8 +143,12 @@ var ViewerComponent = ng.core.Component({
   },
   onImageChange: function() {
     var viewer = this.viewer;
-    if (this.image) {
+    if (this.page.attrs.facs.startsWith("EXTERNAL:")) {
+    	this.image=this.page.attrs.facs;
+    	this.imageExternal=this.page.attrs.facs.slice(9);
+    } else if (this.image) {
       //could be a iiif reference, or a reference to our own iiif server. If the first, begins http...
+      //another possibility: could be direct link to library ms page, which needs to go into an IFRAME. In this, case we start with IFRAME/ followed by image address
       if (this.image.startsWith("http")) var url=this.image;
       else var url=config.IIIF_URL + this.image;
       url=url+'/info.json';    //let's hope all iiif follow the standard
@@ -295,6 +299,8 @@ var ViewerComponent = ng.core.Component({
             doc: page.getId(),
             text: dbRevision,
             user: meta.user,
+            name: page.attrs.name,
+            parent: self.document.attrs.name,
             community: community,
             committed: meta.committed,
             status: 'COMMITTED',
@@ -306,6 +312,8 @@ var ViewerComponent = ng.core.Component({
                 doc: page.getId(),
                 text: dbRevision,
                 user: meta.user,
+                name: page.attrs.name,
+            	parent: self.document.attrs.name,
                 community: community,
                 committed: meta.committed,
                 status: 'IN_PROGRESS',
@@ -356,6 +364,8 @@ var ViewerComponent = ng.core.Component({
         doc: page.getId(),
         text: newText,
         user: meta.user,
+        name: page.attrs.name,
+        parent: self.document.attrs.name,
         community: community,
         committed: meta.committed,
         status: 'CONTINUEPAGE',
@@ -452,6 +462,8 @@ var ViewerComponent = ng.core.Component({
       doc: page.getId(),
       text: text,
       community: community,
+      name: page.attrs.name,
+      parent: self.document.attrs.name,
       status: status,
     }).subscribe(function(revision) {
       self.revisions.unshift(revision);
@@ -513,6 +525,8 @@ var ViewerComponent = ng.core.Component({
         docService.addRevision({
           doc: page.getId(),
           text: contentText,
+          name: page.attrs.name,
+          parent: self.document.attrs.name,
           community: community,
           status: status,
         }).subscribe(function(revision) {
@@ -554,6 +568,8 @@ var ViewerComponent = ng.core.Component({
         docService.addRevision({
           doc: page.getId(),
           text: contentText,
+          name: page.attrs.name,
+          parent: self.document.attrs.name,
           community: community,
           status: status,
         }).subscribe(function(revision) {
@@ -773,6 +789,7 @@ function isPageAssigned(page, user, role) {
 
 function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound etc doesn't like the extra space
 //possibly because we changed his loader to preserve white space in some contexts (within content elements etc)
+//problem.. at end of page we take out last character. Not clever
   contentText=contentText.trim();
   var stop=false;
   var endString="", startString="", i=0, j=0;
@@ -804,7 +821,7 @@ function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound 
         }
     }
   }
-  return (startString+contentText.slice(j-1, i+1)+endString);
+  return (startString+contentText.slice(j-1, i+2)+endString);  //was losing last character of the page
 }
 
 function sendPreviewText (contentText, context, page) {
