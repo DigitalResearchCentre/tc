@@ -304,12 +304,14 @@ var DualFunctionService = {
           //ok, deal with am ex here
           if (expanword.indexOf("<am")!=-1) {
             origword = expanword;
-            var re_am2 = /<am[^>]*>(.*?)<\/am>/g;;
+ //           console.log("before "+origword)
+            var re_am2 = /<am rend=''([^'].*)''.*<\/am>/g;;
             var re_ex = /<ex>(.*?)<\/ex>/g;
             var re_ex2= /<ex(.*?)<\/ex>/g;
             var re_am = /<am>(.*?)<\/am>/g;
             expanword=expanword.replace(re_am2, "").replace(re_ex, "$1");
             origword=origword.replace(re_ex2, "").replace(re_am2, "$1");
+//            console.log("after "+origword)
           }
 //          if (punctbefore!=""||punctafter!="") console.log("word "+word+" punctbefore "+punctbefore+" punctafter "+punctafter+" character is '"+content.charAt(i)+"'");
           if (myContent[i]!=" ") i--;

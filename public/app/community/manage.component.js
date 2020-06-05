@@ -148,9 +148,18 @@ var ManageCommunityComponent = ng.core.Component({
 										let modtext="";
 										let origtext="";
 									//both mod and orig appear in the reading haha. Now check if the text values of each - k and m- are identical
+									//here a complication. Reading MIGHT be in SR_text. Check if there is an entry for either in standoff_subreadings
+										let modIsSub=false;
+										let origIsSub=false;
+										if (adjustCollation.structure.apparatus[i].readings[j].hasOwnProperty("standoff_subreadings")) {
+											if (adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings.includes(mod_str)) modIsSub=true;
+											if (adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings.includes(orig_str)) origIsSub=true;
+										}
 										for (let n=0; n<adjustCollation.structure.apparatus[i].readings[j].text.length; n++) {
-											modtext+=JSON.stringify(adjustCollation.structure.apparatus[i].readings[j].text[n][mod_str]);
-											origtext+=JSON.stringify(adjustCollation.structure.apparatus[i].readings[j].text[n][orig_str]);
+											if (modIsSub) {modtext+=adjustCollation.structure.apparatus[i].readings[j].SR_text[mod_str].text[n][mod_str]["t"]} else {modtext+=adjustCollation.structure.apparatus[i].readings[j].text[n][mod_str]["t"]};
+											if (origIsSub) {origtext+=adjustCollation.structure.apparatus[i].readings[j].SR_text[orig_str].text[n][orig_str]["t"]} else {origtext+=adjustCollation.structure.apparatus[i].readings[j].text[n][orig_str]["t"]};
+											modtext+=" ";
+											origtext+=" ";
 										}
 										if (modtext==origtext) { //we have a duplicate! remove for each text...; adjust name of each mod element; remove orig element
 											for (let n=0; n<adjustCollation.structure.apparatus[i].readings[j].text.length; n++) { 

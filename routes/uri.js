@@ -548,14 +548,29 @@ function getEntityDocs(community, seekEntity, req, res, docparts, entityparts, c
       else if (req.query.type=="count") {res.json({count: texts.length})}
       else if (req.query.type!="list") {res.status(400).send("Error in query string '"+JSON.stringify(req.query)+"'. Only types count and list accepted in this context")}
       else if (req.query.type=="list") {
-        async.mapSeries(texts, function(myText, cb){
-          Doc.findOne({_id:myText.docs[0]}, function(err, myDoc){
-            cb(err, {name: myDoc.name})
-          })
-        }, function(err, results){
-          if (err) res.status(400).send("Database error");
-          else callback(results);
-        });
+      	//we need to return these in the order in which they are in the master docs
+      	Community.findOne({abbr:community}, function(err, myCommunity){
+      		console.log(myCommunity.documents);
+      		async.mapSeries(myCommunity.documents, function(myDoc, cb){
+      		  //does this doc contain this entity?
+      		  let myEnt= community+":"+seekEntity;
+     		  console.log("here "+myDoc+" entity "+myEnt+" community "+community);
+     		  //we have all the texts.. just match the document id against values in the texts array
+     		  let foundText=false;
+     		  texts.forEach(function(text) {
+     		  	console.log("ancestor "+text.docs[0]);
+     		  	if (String(text.docs[0])==String(myDoc)) foundText=true;
+     		  });
+     		  if (foundText) {
+				  Doc.findOne({_id:myDoc}, function(err, thisDoc){
+					cb(err, {name: thisDoc.name})
+				  })
+			  } else {cb(err, "")};
+			}, function(err, results){
+			  if (err) res.status(400).send("Database error");
+			  else callback(results.filter(Boolean));
+			});
+      	});
       }
     });
   } else {//more than one doc part. We must be looking for a page range
