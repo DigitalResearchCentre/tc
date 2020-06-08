@@ -70,8 +70,8 @@ var DualFunctionService = {
   					}
   				}
   				myWords[i].word=newWord;
-  				console.log("after clean");
-  				console.log(myWords);
+ // 				console.log("after clean");
+ // 				console.log(myWords);
   			} 
   		}
     //  var myWords=content.split(" ");
@@ -310,7 +310,9 @@ var DualFunctionService = {
             var re_ex2= /<ex(.*?)<\/ex>/g;
             var re_am = /<am>(.*?)<\/am>/g;
             expanword=expanword.replace(re_am2, "").replace(re_ex, "$1");
+            expanword=expanword.replace(re_am, "");
             origword=origword.replace(re_ex2, "").replace(re_am2, "$1");
+            origword=origword.replace(re_am, "$1");
 //            console.log("after "+origword)
           }
 //          if (punctbefore!=""||punctafter!="") console.log("word "+word+" punctbefore "+punctbefore+" punctafter "+punctafter+" character is '"+content.charAt(i)+"'");

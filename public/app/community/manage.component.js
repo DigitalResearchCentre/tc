@@ -162,17 +162,45 @@ var ManageCommunityComponent = ng.core.Component({
 											origtext+=" ";
 										}
 										if (modtext==origtext) { //we have a duplicate! remove for each text...; adjust name of each mod element; remove orig element
-											for (let n=0; n<adjustCollation.structure.apparatus[i].readings[j].text.length; n++) { 
-												Object.defineProperty(adjustCollation.structure.apparatus[i].readings[j].text[n], wit_str, Object.getOwnPropertyDescriptor(adjustCollation.structure.apparatus[i].readings[j].text[n], mod_str));
-												delete adjustCollation.structure.apparatus[i].readings[j].text[n][mod_str];
-												delete adjustCollation.structure.apparatus[i].readings[j].text[n][orig_str];
-												for (let p=0; p<adjustCollation.structure.apparatus[i].readings[j].text[n].reading.length; p++) {
-													if (adjustCollation.structure.apparatus[i].readings[j].text[n].reading[p]==mod_str) {
-														adjustCollation.structure.apparatus[i].readings[j].text[n].reading[p]=wit_str;
+											if (modIsSub) {var nrdgs=adjustCollation.structure.apparatus[i].readings[j].SR_text[mod_str].text.length}
+											else {var nrdgs=adjustCollation.structure.apparatus[i].readings[j].text.length}
+											for (let n=0; n<nrdgs; n++) { 
+												if (modIsSub) {
+													if (n==0) Object.defineProperty(adjustCollation.structure.apparatus[i].readings[j].SR_text, wit_str, Object.getOwnPropertyDescriptor(adjustCollation.structure.apparatus[i].readings[j].SR_text, mod_str));
+													Object.defineProperty(adjustCollation.structure.apparatus[i].readings[j].SR_text[wit_str].text[n], wit_str, Object.getOwnPropertyDescriptor(adjustCollation.structure.apparatus[i].readings[j].SR_text[wit_str].text[n], mod_str));
+													delete adjustCollation.structure.apparatus[i].readings[j].SR_text[wit_str].text[n][mod_str];
+													adjustCollation.structure.apparatus[i].readings[j].SR_text[wit_str].text[n].reading[0]=wit_str;
+													if (n==nrdgs-1) delete adjustCollation.structure.apparatus[i].readings[j].SR_text[mod_str];
+												} 
+												if (!modIsSub) {
+													Object.defineProperty(adjustCollation.structure.apparatus[i].readings[j].text[n], wit_str, Object.getOwnPropertyDescriptor(adjustCollation.structure.apparatus[i].readings[j].text[n], mod_str));
+													delete adjustCollation.structure.apparatus[i].readings[j].text[n][mod_str];
+												} 
+												if (origIsSub) {
+													if (n==0) delete adjustCollation.structure.apparatus[i].readings[j].SR_text[orig_str]
+												} 
+												if (!origIsSub) {
+													delete adjustCollation.structure.apparatus[i].readings[j].text[n][orig_str];
+												}
+												if (!modIsSub) {
+													for (let p=0; p<adjustCollation.structure.apparatus[i].readings[j].text[n].reading.length; p++) {
+														if (adjustCollation.structure.apparatus[i].readings[j].text[n].reading[p]==mod_str) {
+															adjustCollation.structure.apparatus[i].readings[j].text[n].reading[p]=wit_str;
+														}
+														if (adjustCollation.structure.apparatus[i].readings[j].text[n].reading[p]==orig_str) {
+															adjustCollation.structure.apparatus[i].readings[j].text[n].reading.splice(p, 1);
+															p--;
+														}
 													}
-													if (adjustCollation.structure.apparatus[i].readings[j].text[n].reading[p]==orig_str) {
-														adjustCollation.structure.apparatus[i].readings[j].text[n].reading.splice(p, 1);
-														p--;
+												} else {  // adjust in standoff array
+													for (let p=0; p<adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings.length; p++) {
+														if (adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings[p]==mod_str) {
+															adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings[p]=wit_str;
+														}
+														if (adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings[p]==orig_str) {
+															adjustCollation.structure.apparatus[i].readings[j].standoff_subreadings.splice(p, 1);
+															p--;
+														}
 													}
 												}
 											}
