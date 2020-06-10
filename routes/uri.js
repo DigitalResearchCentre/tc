@@ -152,6 +152,61 @@ router.get('**', function(req, res, next) {
                         });
                       } else res.status(400).send( "Cannot deal with IIIF request format '"+req.query.format+"'");
                     }
+                  } else if (req.query.type=="transcriptInf") {
+                  		var seekDocument=detparts[1].slice(9, detparts[1].indexOf(":"));
+                  		//get the document this is part of
+                  		var pid= foundDoc.ancestors[0];
+                  		Doc.findOne({_id: ObjectId(pid)}, function (err, parent){
+                  			//now get the revisions...
+                  			Revision.find({doc: foundDoc._id}, function (err, revisions){
+                  				//ok .. go get the users, the date, the status of each
+                  				let pRevisions=[];
+                  				let users=[];
+                  				revisions.forEach(function(revision) {
+                  					if (!users.includes(String(revision.user))) users.push(String(revision.user))
+                  					pRevisions.push({created: revision.created, status:revision.status, user:String(revision.user)})
+                  				});
+                  				//filter: so we are left with.. all users who carried out in progress or submitted transcripts
+                  				//get last commit date
+                  				var d = new Date(1990, 1, 1, 0, 0, 0, 0);
+                  				var committed={date:d, user:""};
+                  				pRevisions.forEach(function(previs) { 
+                  					if (previs.status=='COMMITTED') if (previs.created>committed.date) {committed.date=previs.created; committed.user=previs.user}
+                  				});
+                  				//only get revisions etc BEFORE last commit date
+                  				var transcribers=[];
+                  				var uncommittedTranscripts=false;
+                  				pRevisions.forEach(function(previs) { 
+                  					if (previs.status=="IN_PROGRESS" || previs.status=="SUBMITTED") {
+                  						if (previs.created>committed.date) {
+                  							uncommittedTranscripts=true;
+                  						}  else {
+                  							if (!transcribers.includes(previs.user)) transcribers.push(previs.user);
+                  						}
+                  					}
+                  				});
+                  				//now get the user information
+                  				async.map(users, function(user, cb){
+                  					User.findOne({_id:ObjectId(user)}, function(err, myUser){
+                  						if (err || !myUser) cb(err);
+                  						else {
+                  							cb(null, {user: user, name: myUser.local.name});
+                  						}
+                  					});
+                  				}, function (err, results) {
+                  					//replace id in transcribers and committer with name
+                  					if (committed.user!="") {
+                  						let username=results.filter(function (obj){return String(obj.user) == String(committed.user);})[0]
+                  						committed.user=username.name;
+                  					}	
+                  					transcribers.forEach(function(transcriber,index){
+                  						let username=results.filter(function (obj){return String(obj.user) == String(transcriber);})[0]
+                  						transcribers[index]=username.name;
+                  					})
+     					           res.json({commitdate: committed.date, committer:committed.user, transcribers: transcribers, uncommittedtranscripts: uncommittedTranscripts, teiHeader: parent.teiHeader})                 			
+                  				});
+                   			})
+                  		});
                   }
                   else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
                 }

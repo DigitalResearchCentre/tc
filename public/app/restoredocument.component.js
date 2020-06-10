@@ -221,12 +221,13 @@ function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
           if (data.success) {
           	context.success+=" "+page.name;
           } else {
-          	context.success+=" Error in "+page.name+" "+data;
+          	context.success+=" Error in "+page.name+" ";
+          	alert(data.error);
           }
           return cb(null);
         })
         .fail(function( jqXHR, textStatus, errorThrown) {
-          context.success+=" Error in "+page.name+" "+errorThrown;
+          context.success+=" System Error in database "+page.name+" "+errorThrown;
           return cb(null);
         });
       }, function (err){

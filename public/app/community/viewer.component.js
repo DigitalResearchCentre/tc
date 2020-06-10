@@ -37,6 +37,7 @@ var ViewerComponent = ng.core.Component({
     this.isText=false;
     this.state=uiService.state;
     this.state.doNotParse=false;
+//    this.page=this.state.page;
     this.isVerticalSplit=true;
     this.isPreviewText=false;
     this.pageStatus={status:"NONE",access:"NONE"};
@@ -143,7 +144,7 @@ var ViewerComponent = ng.core.Component({
   },
   onImageChange: function() {
     var viewer = this.viewer;
-    if (this.page.attrs.facs.startsWith("EXTERNAL:")) {
+    if (this.page.attrs.facs && this.page.attrs.facs.startsWith("EXTERNAL:")) {
     	this.image=this.page.attrs.facs;
     	this.imageExternal=this.page.attrs.facs.slice(9);
     } else if (this.image) {

@@ -3056,7 +3056,7 @@ router.post('/adjustRestorePage',function(req, res, next) {
   	}
     else {
     	Doc.findOne({"ancestors.0":ObjectId(docid), name:page.name}, function(err, myDoc){
-          if (err) {
+          if (err || !myDoc) {
           	res.json({success: false, error: "Error finding page"})
           } else {
 			  Revision.collection.update({doc:ObjectId(page._id)}, {$set: {doc: ObjectId(myDoc._id)}}, {multi: true}, function(err, result){
