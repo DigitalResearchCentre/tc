@@ -3124,7 +3124,9 @@ router.post('/putCollation', function(req, res, next){
   //if there is one already, updates, if not, insertedI
 //  console.log("saving the collation now");
 //  console.log(req.body);
-  Collation.update({community:req.query.community, entity:req.query.entity, id:req.query.community+'/'+req.query.entity+'/'+req.query.status, model:"collation", status:req.query.status}, {$set: {ce: req.body.collation.ce}}, {upsert: true}, function(err) {
+  if (req.query.adjusted) {var adjusted=req.query.adjusted}
+  else {var adjusted=false};
+  Collation.update({community:req.query.community, entity:req.query.entity, id:req.query.community+'/'+req.query.entity+'/'+req.query.status, model:"collation", status:req.query.status}, {$set: {ce: req.body.collation.ce, approved:req.query.approved, adjusted:adjusted}}, {upsert: true}, function(err) {
 //    console.log(err);
     if (!err) res.json({success:true}) ;
     else res.json({success:false});
@@ -3366,12 +3368,24 @@ router.get('/getCollations', function(req, res, next) {
 });
 
 router.get('/adjustModOrig', function(req, res, next) {
+  var fetch=parseInt(req.query.fetch);
   var collations=[];
-  Collation.find({community:req.query.community, status:"approved"}, function (err, results){
-    results.forEach(function(result){
-      collations.push({entity: result.entity, ce: result.ce});
-    });
-    res.json(collations);
+  Collation.find({community:req.query.community, status:"approved", $or: [{adjusted: {$exists: false}}, {adjusted: false}]}, function (err, results){
+    for (let i=0; i<fetch && i<results.length; i++) {
+      collations.push({entity: results[i].entity, ce: results[i].ce});
+    };
+    res.json({total: results.length, collations: collations});
+  });
+});
+
+router.get('/adjustXmlCollations', function(req, res, next) {
+  var collations=[];
+  var fetch=parseInt(req.query.fetch);
+  Collation.find({community:req.query.community, status:"xml/positive", $or: [{adjusted: {$exists: false}}, {adjusted: false}]}, function (err, results){
+    for (let i=0; i<fetch && i<results.length; i++) {
+      collations.push({entity: results[i].entity, ce: results[i].ce});
+    };
+    res.json({total: results.length, collations: collations});
   });
 });
 

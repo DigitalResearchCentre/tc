@@ -1,0 +1,27 @@
+<div id="retrieveCollationModal" style="font-size: 110%; height:100%;">
+  <div  modal-draggable class="modalHeader">{{header}}
+    <button type="button" (click)="closeModalRV()" class="close" data-dismiss="modal" style="font-size:200%; font-weight:800; position: relative; left:-10px; top:-3px;">&times;</button>
+  </div>
+  <div>
+    <div *ngIf="message.length>0" class="alert alert-danger" style="height: 40px; margin-bottom: 1px; width: 100%">
+      {{message}}
+    </div>
+    <div *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 1px">
+      {{success}}
+    </div>
+  </div>
+  <div style="margin: 20px">
+  <p>Paste in XML text of the entity whose collation conversion you want to test</p>
+  <textarea class="form-control" rows="6" cols="50" placeholder="XML for the entity"
+        [(ngModel)]="testText"></textarea>
+  </div>
+   <div style="margin: 20px; height: 400px; overflow: auto">
+  	  <p>JSON converted file</p>
+ 	 <p>{{converted}}</p>
+  </div>
+
+<hr style="border: 1px solid #8c8b8b; margin-bottom: 5px; margin-top:0px; position: relative; top: 2px ">
+  <div class="form-group" style="text-align: center; height: 18px; position: relative; top: 4px">
+    <button type="button" class="btn btn-primary" (click)="submit()">Test conversion</button>
+  </div>
+</div>

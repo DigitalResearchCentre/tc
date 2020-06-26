@@ -14,6 +14,7 @@ const collationSchema = new Schema({
     to: String,
     ce: String,
     model: String,
+    adjusted: Boolean,
     status: String
 });
 
