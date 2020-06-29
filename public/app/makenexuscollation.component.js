@@ -63,15 +63,11 @@ var makeNexusCollationComponent = ng.core.Component({
           $('#manageModal').height("220px");
           self.message="";
           var result=DualFunctionService.makeNEXUS(text);
-          if (result.error!="") {
-            self.message=result.error;
-            self.success="";
-          } else {
-            BrowserFunctionService.download(result.result, self.community.attrs.abbr+"-NEXUS", "text/plain");
-            self.message="";
-            self.success="Converted to NEXUS. Check your downloads folder.";
-            $('#manageModal').height("220px");
-          }
+          result=result.replace(/<br\/>/gi, "\r").replace(/&nbsp;/gi," ");
+    
+          BrowserFunctionService.download(result, self.community.attrs.abbr+"-NEXUS", "text/plain");
+		  self.message="";
+		  self.success="Converted to NEXUS. Check your downloads folder.";
       }
     });
   }
