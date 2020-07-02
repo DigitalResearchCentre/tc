@@ -207,8 +207,9 @@ router.get('**', function(req, res, next) {
                   				});
                    			})
                   		});
-                  }
-                  else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
+                  }  else if (req.query.type=="attrs") {
+                  	res.json(foundDoc);
+                  } else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
                 }
               })
             }
