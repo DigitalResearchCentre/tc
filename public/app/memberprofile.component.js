@@ -113,9 +113,13 @@ var MemberProfileComponent = ng.core.Component({
 });
 
 function getMemberTasks (member, callback) {
-  $.post(config.BACKEND_URL+'getMemberTasks?'+'id='+member._id, function(res) {
-      callback(null, res);
-    });
+  if (member._id==undefined) {
+  	callback(null, []);
+  } else {
+	  $.post(config.BACKEND_URL+'getMemberTasks?'+'id='+member._id, function(res) {
+		  callback(null, res);
+		});
+  }
 }
 
 function adjustNumbers(sourceArray) {

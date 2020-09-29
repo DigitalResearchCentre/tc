@@ -21,24 +21,28 @@ var CommunityMembersComponent = ng.core.Component({
   }],
   ngOnInit: function() {
     var self=this;
-    $.post(config.BACKEND_URL+'community/'+this.community._id+'/members/', function(res) {
-      for (var i=0; i<res.length; i++) {
-          var thisMembership=res[i].memberships.filter(function (obj){return String(obj.community) == String(self.community._id);})[0];
-          if (thisMembership.role!="VIEWER") self.members.push({name:res[i].local.name, email: res[i].local.email, date:thisMembership.created, role:thisMembership.role, approvername: thisMembership.approvername, approvermail: thisMembership.approvermail, assigned:thisMembership.pages.assigned, inprogress:thisMembership.pages.inprogress, submitted:thisMembership.pages.submitted, approved:thisMembership.pages.approved, committed:thisMembership.pages.committed, _id:thisMembership._id, user:res[i], pageinstances: {assigned:[], inprogress:[], committed:[], submitted:[],approved:[], committed:[]}})
-      }
-      //now, get the tasks for each member..
-      async.map(self.members, function(member, callback) {
-        $.post(config.BACKEND_URL+'getMemberTasks?'+'id='+member._id, function(result) {
-          if (result.assigned.length) {adjustNumbers((result.assigned)); sortBy(result.assigned, ['docName', 'sortable']);}
-          if (result.approved.length) {adjustNumbers((result.approved)); sortBy(result.approved, ['docName', 'sortable']);}
-          if (result.inprogress.length) {adjustNumbers((result.inprogress)); sortBy(result.inprogress, ['docName', 'sortable']);}
-          if (result.submitted.length) {adjustNumbers((result.submitted)); sortBy(result.submitted, ['docName', 'sortable']);}
-          if (result.committed.length) {adjustNumbers((result.committed)); sortBy(result.committed, ['docName', 'sortable']);}
-          member.pageinstances=result;
-          callback(null, res);
-        });
-      })
-    });
+    //community creators don't have member ids.. fix this first
+    $.post(config.BACKEND_URL+'community/'+this.community._id+'/fixMembers/', function(fixed) {
+    	//ok, so now all memberships must have an id
+		$.post(config.BACKEND_URL+'community/'+self.community._id+'/members/', function(res) {
+		  for (var i=0; i<res.length; i++) {
+			  var thisMembership=res[i].memberships.filter(function (obj){return String(obj.community) == String(self.community._id);})[0];
+			  if (thisMembership.role!="VIEWER") self.members.push({name:res[i].local.name, email: res[i].local.email, date:thisMembership.created, role:thisMembership.role, approvername: thisMembership.approvername, approvermail: thisMembership.approvermail, assigned:thisMembership.pages.assigned, inprogress:thisMembership.pages.inprogress, submitted:thisMembership.pages.submitted, approved:thisMembership.pages.approved, committed:thisMembership.pages.committed, _id:thisMembership._id, user:res[i], pageinstances: {assigned:[], inprogress:[], committed:[], submitted:[],approved:[], committed:[]}})
+		  }
+		  //now, get the tasks for each member..
+		  async.map(self.members, function(member, callback) {
+			$.post(config.BACKEND_URL+'getMemberTasks?'+'id='+member._id, function(result) {
+			  if (result.assigned.length) {adjustNumbers((result.assigned)); sortBy(result.assigned, ['docName', 'sortable']);}
+			  if (result.approved.length) {adjustNumbers((result.approved)); sortBy(result.approved, ['docName', 'sortable']);}
+			  if (result.inprogress.length) {adjustNumbers((result.inprogress)); sortBy(result.inprogress, ['docName', 'sortable']);}
+			  if (result.submitted.length) {adjustNumbers((result.submitted)); sortBy(result.submitted, ['docName', 'sortable']);}
+			  if (result.committed.length) {adjustNumbers((result.committed)); sortBy(result.committed, ['docName', 'sortable']);}
+			  member.pageinstances=result;
+			  callback(null, res);
+			});
+		  })
+		});
+	 })
   },
   assignApprover: function(member, user) {
     this.uiService.manageModal$.emit({type:'assign-approver', member: member, user: user, community:this.community.attrs.name});

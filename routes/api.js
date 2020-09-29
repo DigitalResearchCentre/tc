@@ -109,6 +109,40 @@ router.post('/community/:id/members/', function(req, res, next) {
   });
 });
 
+router.post('/community/:id/fixMembers/', function(req, res, next) {
+//  console.log("in getting members "+req.params.id)
+  var communityId = req.params.id;
+  Community.findOne({_id: ObjectId(communityId)}, function(err, community) {
+    async.mapSeries(community.members, function(member, callback) {
+      User.findOne({ _id: member}, function(err, user){
+      	//right. now look at all the memberships for this user. If we are missing id and creation date and accesses, put them in
+      	async.mapSeries(user.memberships, function(membership, callback2) {
+			if (String(membership.community)==String(communityId)) {
+			   if (membership._id==undefined) { //really awful way of doing this. But nothing else seems to work
+//					console.log("We have got a membership to upgrade "+membership.community+" user "+membership._id)
+//					console.log(membership);
+//					console.log(membership._id);
+//					console.log(membership._id==undefined);
+					User.collection.update({_id:member, memberships: {$elemMatch: {community: ObjectId(communityId)}}}, {$set:{'memberships.$._id': ObjectId(), 'memberships.$.created':community.created}}, function(err, result) {
+						callback2(null);
+					});
+			   } else {
+				  callback2(null);
+			   }
+			} else {
+				callback2(null);
+			}
+      	}, function (err) {
+        	callback(err, user);
+        })
+      });
+    }, function(err, results) {
+      res.json({success: 1});
+    });
+  });
+});
+
+
 var vMapResource = new Resource(VMap, {id: 'vmap'});
 vMapResource.serve(router, 'vmaps');
 
@@ -658,7 +692,7 @@ router.post('/getDocEntities', function(req, res, next) {
 //get all pages with tasks for this id, return info so we can create links to each page
 router.post('/getMemberTasks', function(req, res, next) {
   Doc.find({"tasks.memberId":req.query.id}, function (err, docs){
-//    console.log("tasks found: "+docs.length)
+    console.log("tasks found: "+docs.length)
     var assigned=[], inprogress=[], submitted=[], approved=[], committed=[];
     if (docs.length) {
       docs.forEach(function(doc){
@@ -674,6 +708,7 @@ router.post('/getMemberTasks', function(req, res, next) {
       })
     }
     //update count of lengths in memberships pages
+    console.log(req.query.id)
     User.collection.update({ "memberships._id":ObjectId(req.query.id)}, {$set:{"memberships.$.pages.inprogress":inprogress.length, "memberships.$.pages.submitted":submitted.length, "memberships.$.pages.approved":approved.length, "memberships.$.pages.committed":committed.length}}, function(err, result){
       res.json({memberId:req.query.id, assigned:assigned, inprogress:inprogress, submitted:submitted, approved:approved, committed:committed});
     })
@@ -1707,18 +1742,36 @@ function deleteAP (deleteAP, callback) {
 router.post('/saveAssignPages', function(req, res, next) {
   var selected=req.body.selected;
   var membership=selected[0].record.memberId;
+  var doc_id=selected[0].pageId;
   var user=selected[0].record.userId;
+  //found a bug.. somehow if tasks: null  not tasks: [] then insert failes
+  //so get the doc back, test for null, if it is null set to []
   async.map(selected, saveAP, function (err) {
-    User.collection.update({_id: ObjectId(user), "memberships._id": ObjectId(membership)}, {$inc: {"memberships.$.pages.assigned":selected.length}}, function (err, result){
-      res.json({error: err});
-    })
+	User.collection.update({_id: ObjectId(user), "memberships._id": ObjectId(membership)}, {$inc: {"memberships.$.pages.assigned":selected.length}}, function (err, result){
+	  res.json({error: err});
+	})
   });
 });
 
 function saveAP (addAP, callback) {
-  Doc.collection.update({_id: ObjectId(addAP.pageId)},{$push:{"tasks":{userId:addAP.record.userId, name: addAP.record.name, status: addAP.record.status, memberId: addAP.record.memberId, date: new Date(), witname:addAP.record.witname}}}, function (err) {
-    callback(err)
-  });
+//  console.log(addAP);
+// check for each page. Is tasks set to null? fix! are there incomplete records? fix!
+//fix get the page and inspect it
+	Doc.findOne({_id:ObjectId(addAP.pageId)}, function (err, page) {
+	  if (page.tasks==null) {
+	  	Doc.collection.update({_id:ObjectId(addAP.pageId)}, {$set: {tasks: []}}, function(err, mydoc){
+		   Doc.collection.update({_id: ObjectId(addAP.pageId)},{$push:{"tasks":{userId:addAP.record.userId, name: addAP.record.name, status: addAP.record.status, memberId: addAP.record.memberId, date: new Date(), witname:addAP.record.witname}}}, function (err) {
+			 callback(err)
+		  });
+	  	})
+	  } else {
+	  	Doc.collection.update({_id:ObjectId(ObjectId(addAP.pageId))}, {$pull: {tasks: {status: {$exists: false }}}}, function(err, result) {
+		   Doc.collection.update({_id: ObjectId(addAP.pageId)},{$push:{"tasks":{userId:addAP.record.userId, name: addAP.record.name, status: addAP.record.status, memberId: addAP.record.memberId, date: new Date(), witname:addAP.record.witname}}}, function (err) {
+			 callback(err)
+		  });
+		});
+	  }
+	});
 }
 
 router.post('/saveCommunityAuxFile', function (req, res, next){

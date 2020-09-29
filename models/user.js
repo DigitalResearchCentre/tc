@@ -37,6 +37,7 @@ var userSchema = Schema({
   memberships: [{
     community: {type: ObjectId, ref: 'Community'},
     role: String,
+    _id: ObjectId,
     approvername: String,
     approverid: String,
     approvermail: String,

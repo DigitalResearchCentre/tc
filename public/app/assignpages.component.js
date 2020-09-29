@@ -32,23 +32,42 @@ var AssignPagesComponent = ng.core.Component({
     this._restService = restService
     this.state = uiService.state;
     this.success="";
+     $.get(config.BACKEND_URL+'getDocNames/?community='+uiService.state.community._id, function(res) {
+		for (var i=0; i<self.state.community.attrs.documents.length; i++) {
+			self.state.community.attrs.documents[i].attrs.name=res[i].name;
+		}
+		//filter those already selected; prepare to deselect, etc, as needed
+	 })
     $('#manageModal').width("541px");
     $('#manageModal').height("600px");
   }],
   ngOnInit: function(){
-    this.community.attrs.documents[0].expand=false;
-    //filter those already selected; prepare to deselect, etc, as needed
-    for (var i=0; i<this.community.attrs.documents.length; i++) {
-      for (var j=0; j<this.community.attrs.documents[i].attrs.children.length; j++) {
-        if (this.community.attrs.documents[i].attrs.children[j].attrs.tasks) {
-          for (var k=0; k<this.community.attrs.documents[i].attrs.children[j].attrs.tasks.length; k++) {
-            if (this.community.attrs.documents[i].attrs.children[j].attrs.tasks[k].userId==this.user._id)
-              this.community.attrs.documents[i].attrs.children[j].isAssigned=true;
-            else this.community.attrs.documents[i].attrs.children[j].isOther=true;
-          }
-        }
-      }
-    }
+  	var self=this;
+    this.state.community.attrs.documents[0].expand=false;
+     $.get(config.BACKEND_URL+'getDocNames/?community='+this.state.community._id, function(res) {
+		for (var i=0; i<self.state.community.attrs.documents.length; i++) {
+			self.state.community.attrs.documents[i].attrs.name=res[i].name;
+		}
+		//filter those already selected; prepare to deselect, etc, as needed
+	 })
+  },
+  ngOnChanges: function(){
+  	for (var i=0; i<this.state.community.attrs.documents.length; i++) {
+  		if (this.state.community.attrs.documents[i].expand)  {
+  			var mydoc=this.state.community.attrs.documents[i];
+  			for (var j=0; j<mydoc.attrs.children.length; j++) {
+			  mydoc.attrs.children[j].isOther=false;
+			  mydoc.attrs.children[j].isAssigned=false
+			  if (mydoc.attrs.children[j].attrs.tasks && mydoc.attrs.children[j].attrs.tasks.length>0) {
+				for (var k=0; k<mydoc.attrs.children[j].attrs.tasks.length; k++) {
+				  if (mydoc.attrs.children[j].attrs.tasks[k].memberId==this.memberId)
+					mydoc.attrs.children[j].isAssigned=true;
+				  else mydoc.attrs.children[j].isOther=true;
+				}
+			  }
+			}
+  		}
+  	}
   },
   toggleDoc: function(doc) {
     doc.expand = !doc.expand;
@@ -58,10 +77,12 @@ var AssignPagesComponent = ng.core.Component({
       this._docService.selectDocument(doc);
       this._docService.refreshDocument(doc).subscribe(function(mydoc) {
         for (var j=0; j<mydoc.attrs.children.length; j++) {
-          if (mydoc.attrs.children[j].attrs.tasks) {
+          mydoc.attrs.children[j].isOther=false;
+          mydoc.attrs.children[j].isAssigned=false
+          if (mydoc.attrs.children[j].attrs.tasks && mydoc.attrs.children[j].attrs.tasks.length>0) {
             for (var k=0; k<mydoc.attrs.children[j].attrs.tasks.length; k++) {
-              if (mydoc.attrs.children[j].attrs.tasks[k].userId==self.user._id)
-                mydoc.attrs.children[j].isAssigned=true;
+              if (mydoc.attrs.children[j].attrs.tasks[k].memberId==self.memberId)
+              	mydoc.attrs.children[j].isAssigned=true;
               else mydoc.attrs.children[j].isOther=true;
             }
           }
