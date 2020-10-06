@@ -29,7 +29,7 @@ var EditVmapsComponent = ng.core.Component({
     this.message="";
     this.success="";
     this.vmaps=[];
-    $('#manageModal').width("620px");
+    $('#manageModal').width("680px");
     $('#manageModal').height("555px");
   }],
   ngOnInit: function() {
@@ -51,6 +51,18 @@ var EditVmapsComponent = ng.core.Component({
    closeModalAP: function() {
     $('#manageModal').modal('hide');
   },
+  deleteVMap: function(vmap) {
+  	var self=this;
+  	 $.post(config.BACKEND_URL+'deleteVMap?community='+this.community.attrs.abbr+'&name='+vmap, function(res) {
+  	  	if (res.success) {
+  	  		for (let i=0; i<self.vmaps.length; i++) {
+  	  			if (self.vmaps[i].name==vmap) {
+  	  				self.vmaps.splice(i, 1);
+  	  			}
+  	  		}
+  	  	}
+  	 });
+  }
 });
 
 

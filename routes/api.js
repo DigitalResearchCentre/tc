@@ -199,6 +199,16 @@ router.post('/getVMap',  function(req, res, next) {
 	});	
 });
 
+router.post('/deleteVMap',  function(req, res, next) {
+	var community=req.query.community, name=req.query.name;
+	VMap.collection.remove({community: community, name: name }, function(err, result) {
+		console.log("result "+result);
+		if (err || !result) res.json({success: 0});
+		else res.json({success:1});
+	});	
+});
+
+
 var vBaseResource = new Resource(VBase, {id: 'vbase'});
 vBaseResource.serve(router, 'vbases');
 
@@ -692,7 +702,7 @@ router.post('/getDocEntities', function(req, res, next) {
 //get all pages with tasks for this id, return info so we can create links to each page
 router.post('/getMemberTasks', function(req, res, next) {
   Doc.find({"tasks.memberId":req.query.id}, function (err, docs){
-    console.log("tasks found: "+docs.length)
+//    console.log("tasks found: "+docs.length)
     var assigned=[], inprogress=[], submitted=[], approved=[], committed=[];
     if (docs.length) {
       docs.forEach(function(doc){

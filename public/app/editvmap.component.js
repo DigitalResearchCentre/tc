@@ -2,10 +2,12 @@ var $ = require('jquery')
   , async = require('async')
   , UIService = require('./services/ui')
   , DocService = require('./services/doc')
+  , RESTService = require('./services/rest')
   , Dropzone = require('dropzone')
   , ElementRef = ng.core.ElementRef
   , config = require('./config')
 ;
+
 
 var EditVmapComponent = ng.core.Component({
   selector: 'tc-managemodal-editvmap',
@@ -19,15 +21,17 @@ var EditVmapComponent = ng.core.Component({
   ]
 }).Class({
   constructor: [
-    UIService, DocService, ElementRef,
+    UIService, DocService, ElementRef, RESTService,
   function(
-    uiService, docService, elementRef
+    uiService, docService, elementRef, restService
   ) {
     this._docService = docService;
     this._elementRef = elementRef;
     this.uiService = uiService;
+    this.restService = restService;
     this.message="";
     this.chosen={name:"", left:"", top:""};
+    this.addwit={name:"", left:50, top:50};
     this.success="";
     this.pdfjsLib = window['pdfjs-dist/build/pdf'];
 	this.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
@@ -39,7 +43,7 @@ var EditVmapComponent = ng.core.Component({
 	});
   }],
   ngOnInit: function() {
-  	var self=this;
+  	this.pdf2=this.vMap.pdflabelled.src;
     $('#manageModal').width($(window).width()-15);
     $('#manageModal').height($(window).height()-15);
     var pdf1=atob(this.vMap.pdfunlabelled.src);
@@ -56,24 +60,6 @@ var EditVmapComponent = ng.core.Component({
 			  viewport: viewport
 			};
 			page.render(renderContext);
-    	});
-    }); 
-    var pdf2=atob(this.vMap.pdflabelled.src);
-    loadingTask = this.pdfjsLib.getDocument({data: pdf2});
-    loadingTask.promise.then(function(pdf) {
-    	pdf.getPage(1).then(function(page) {
-    		var viewport = page.getViewport({scale: 1});
-    		var canvas = document.getElementById('canvas2');
-    		var context = canvas.getContext('2d');
-    		canvas.height = viewport.height;
-    		canvas.width = viewport.width;
-    		var renderContext = {
-			  canvasContext: context,
-			  viewport: viewport
-			};
-			page.render(renderContext);
-			document.getElementById("div1").style.height=document.getElementById("edVmap").offsetHeight-document.getElementById("div1").offsetTop-45+"px";
-			document.getElementById("div2").style.height=document.getElementById("edVmap").offsetHeight-document.getElementById("div1").offsetTop-45+"px";
     	});
     }); 
   },
@@ -112,10 +98,14 @@ var EditVmapComponent = ng.core.Component({
   },
   changeTop: function(){
   	  document.getElementById(this.chosen.name).style.top=this.chosen.top+"px";
+  },
+  addWitWits: function(){
+  	this.vMap.wits.push({name:this.addwit.name, x:parseInt(this.addwit.left, 10), y:parseInt(this.addwit.top,10)});
+  	this.addwit.name="";
+   	this.addwit.left=50;
+   	this.addwit.top=50;
   }
 });
-
-
 
 
 module.exports = EditVmapComponent;

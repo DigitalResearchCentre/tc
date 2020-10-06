@@ -7,16 +7,28 @@
 		 <p>Unlabelled file: {{vMap.pdfunlabelled.name}}  </p>
 		 <p *ngIf="chosen.name==''">Click on sigil in image to edit. </p>
 		 <p *ngIf="chosen.name!=''">{{chosen.name}} left: <input type="text" size="3" [(ngModel)]="chosen.left" (keyup)="changeLeft()"> top: <input type="text" size="3" (keyup)="changeTop()" [(ngModel)]="chosen.top"></p>
+		 <p>Add Sigil: <input type="text" size="6" [(ngModel)]="addwit.name"> 
+		 	<span *ngIf="addwit.name!=''">
+		 		left: <input type="text" size="3" [(ngModel)]="addwit.left" (keyup)="changeLeftAdd()"> 
+		 		top: <input type="text" size="3" (keyup)="changeTopAdd()" [(ngModel)]="addwit.top"> 
+		 		<button type="button" class="btn btn-primary" (click)="addWitWits()">Save</button> 
+		 	</span>
+		 </p>
 		 <div id="div1" style="width: 612px; height: 792px; overflow: auto; transform: rotate(0deg);"> 
 		 	<canvas id="canvas1"></canvas>
-		 		<ul style="list-style-type:none">
-		 			<li *ngFor="#place of vMap.wits" style="display:inline">
-		 				<div (click)="editPlace(place.name)" id="{{place.name}}" style="display: inline; position: absolute; z-index: 999; top:{{place.y}}px; left: {{place.x}}px">
-		 					{{place.name}}
-		 				</div>
-		 				<div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div>
-		 			</li>
-		 		</ul>
+			<ul style="list-style-type:none">
+				<li *ngFor="#place of vMap.wits" style="display:inline">
+					<div (click)="editPlace(place.name)" id="{{place.name}}" style="display: inline; position: absolute; z-index: 999; top:{{place.y}}px; left: {{place.x}}px">
+						{{place.name}}
+					</div>
+					<div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div><div style="display: inline">&nbsp;</div>
+				</li>
+				<li *ngIf="addwit.name!=''">
+					<div id="{{addwit.name}}" style="display: inline; position: absolute; z-index: 999; top:{{addwit.top}}px; left: {{addwit.left}}px">
+						{{addwit.name}}
+					</div>
+				</li>
+			</ul>
 		 </div>
 	</div>
 	<div style="flex-grow: 1; text-align: center">
@@ -28,8 +40,9 @@
 		  <div *ngIf="success.length>0" class="alert alert-success" style="margin-bottom: 10px">
 			{{success}}
 		  </div>
-		 <div id="div2" style="overflow: auto;">
-		  <canvas id="canvas2"></canvas>
+		 <div id="div2" style="overflow: auto;" >
+		  <iframe id="labelledpdf" height="660px" width="100%" src={{pdf2}}>
+   		 </iframe>
 		</div>
 	</div>
 </div>

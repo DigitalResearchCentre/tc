@@ -23,9 +23,9 @@
   </div-->
   <div id="MMADXFdiv" class="form-group" style="margin-top: 5px; text-align: center">
   	<p>PDF without witness labels:</p>
-    <tc-filereaderbinary2 (filechange2)="filechange2($event)"></tc-filereaderbinary2>
-  	<p style="margin-top: 8px">PDF with witness labels:</p>
     <tc-filereaderbinary (filechange)="filechange($event)"></tc-filereaderbinary>
+  	<p style="margin-top: 8px">PDF with witness labels:</p>
+    <tc-filereaderbinary2 (filechange2)="filechange2($event)"></tc-filereaderbinary2>
      <div style="text-align: center; margin-top: 10px">
       <button type="button" class="btn btn-primary" (click)="submit()">Make</button>
     </div>
