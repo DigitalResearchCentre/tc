@@ -3,7 +3,10 @@ var $ = require('jquery')
   , UIService = require('./services/ui')
   , config = require('./config')
   , BrowserFunctionService = require('./services/functions')
+<<<<<<< HEAD
   , DualFunctionService = require('./services/dualfunctions')
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 ;
 
 var makeNexusCollationComponent = ng.core.Component({
@@ -62,12 +65,25 @@ var makeNexusCollationComponent = ng.core.Component({
           self.success="Parsed uploaded file. Now convering to NEXUS";
           $('#manageModal').height("220px");
           self.message="";
+<<<<<<< HEAD
           var result=DualFunctionService.makeNEXUS(text);
           result=result.replace(/<br\/>/gi, "\r").replace(/&nbsp;/gi," ");
     
           BrowserFunctionService.download(result, self.community.attrs.abbr+"-NEXUS", "text/plain");
 		  self.message="";
 		  self.success="Converted to NEXUS. Check your downloads folder.";
+=======
+          var result=makeNEXUS(text);
+          if (result.error!="") {
+            self.message=result.error;
+            self.success="";
+          } else {
+            BrowserFunctionService.download(result.result, self.community.attrs.abbr+"-NEXUS", "text/plain");
+            self.message="";
+            self.success="Converted to NEXUS. Check your downloads folder.";
+            $('#manageModal').height("220px");
+          }
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       }
     });
   }
@@ -75,7 +91,10 @@ var makeNexusCollationComponent = ng.core.Component({
 
 
 //duplicates serverside function
+<<<<<<< HEAD
 //move to dualfunctions some time
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 function makeNEXUS(source) {
   var converted="#NEXUS\rBEGIN DATA;\r";
   var myXMLDOM = new DOMParser().parseFromString(source, "text/xml");
@@ -168,8 +187,30 @@ function makeNEXUS(source) {
   return({error:"", result:converted});
 }
 
+<<<<<<< HEAD
 
 
 
+=======
+function standardChar(source) {
+  var target=new Array(source.length)
+  for (var i=0; i<source.length; i++) {
+    if (source.charCodeAt(i)>127) {
+      target[i]="x";
+    } else target[i]=source[i];
+  }
+  return(target.join(""));
+}
+
+function download(content, filename, contentType)
+{
+    if(!contentType) contentType = 'application/octet-stream';
+    var a = document.createElement('a');
+    var blob = new Blob([content], {'type':contentType});
+    a.href = window.URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+}
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 
 module.exports = makeNexusCollationComponent;

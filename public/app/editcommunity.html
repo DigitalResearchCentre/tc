@@ -9,7 +9,11 @@
 </div>
 <div class="form-group"  style="margin-right:15px; margin-left: 15px" >
     <label>Name</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<<<<<<< HEAD
     <input type="text" style="display: inline-block; border-color:red; border-width: 3px; border-style: solid;" placeholder="(20 characters maximum)"
+=======
+    <input type="text" style="display: inline-block; border-color:red; border-width: 3px; border-style: solid;" placeholder="(20 characters maximum)ds"
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     [(ngModel)]="edit.name">
     <span class="glyphicon glyphicon-asterisk" style="font-size: 15px; font-weight:lighter; color:red" data-toggle="tooltip" title="Mandatory field"></span>
     <seg *ngIf="!community || !community.attrs.abbr" class="">
@@ -105,6 +109,7 @@
   </div>
   <div class="form-group" style="margin-right:15px; margin-left: 15px">
       <label>Collation</label><br/>
+<<<<<<< HEAD
       <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.rebuildents">&nbsp;&nbsp;Rebuild collateable entities on each commit (takes longer)<br/>
       <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.viewsuppliedtext">&nbsp;&nbsp;View supplied text
       <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.viewuncleartext">&nbsp;&nbsp;View unclear text
@@ -112,6 +117,9 @@
       <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.expandabbreviations">&nbsp;&nbsp;Expand abbreviations
       <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.showpunctuation">&nbsp;&nbsp;Show punctuation
       <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.showxml">&nbsp;&nbsp;Show XML
+=======
+      <input type="checkbox" style="margin-left: 10px" [(ngModel)]="edit.rebuildents">&nbsp;&nbsp;Rebuild collateable entities on each commit (takes longer)
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   </div>
   <div class="form-group" style="width:100%; margin-right:15px; margin-left: 15px">
     <form name="communityForm" >

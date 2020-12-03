@@ -51,12 +51,17 @@ var ManageModalComponent = ng.core.Component({
     require('./restoredocument.component'),
     require('./changecontrol.component'),
     require('./choosechange.component'),
+<<<<<<< HEAD
     require('./registerviewer.component'),
     require('./makevarmaps.component'),
     require('./editvmap.component'),
     require('./editvmaps.component'),
     require('./testcollationconversion.component')
  ]
+=======
+    require('./registerviewer.component')
+  ]
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 }).Class({
   constructor: [CommunityService, UIService, RESTService, function(communityService, uiService, restService) {
     this._uiService = uiService;
@@ -259,6 +264,7 @@ var ManageModalComponent = ng.core.Component({
       else if (event.type ==='retrievecollation'){
         self.choice=event.type;
         self.community=event.community;
+<<<<<<< HEAD
       } if (event.type ==='edit-vmap'){
         self.choice=event.type;
         self.vMap=event.vMap;
@@ -269,6 +275,10 @@ var ManageModalComponent = ng.core.Component({
         self.choice=event.type;
         self.community=event.community;
       } else if (event.type ==='editvMaps'){
+=======
+      }
+      else if (event.type ==='makenexuscollation'){
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
         self.choice=event.type;
         self.community=event.community;
       } else if (event.type ==='restoredocument') {
@@ -299,9 +309,12 @@ var ManageModalComponent = ng.core.Component({
       } else if (event.type ==='registerviewer'){
         self.choice=event.type;
         self.community=event.community;
+<<<<<<< HEAD
       } else if (event.type ==='test-collate-conversion') {
       	self.choice=event.type;
       	self.community=event.community;
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       }
       $('#manageModal').modal('show');
     });

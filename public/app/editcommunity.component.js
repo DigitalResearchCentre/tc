@@ -41,10 +41,15 @@ var EditCommunityComponent = ng.core.Component({
     this._uiService.sendCommand$.emit("createChosen");
     if (community && community.attrs.abbr) {
       this.edit = _.clone(community.attrs);
+<<<<<<< HEAD
+=======
+      if (community.attrs.rebuildents==undefined) this.edit.rebuildentes=false;
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       this.community = community;
 //      this.edit.entities=community.attrs.entities;
       this.origname=community.attrs.name;
       this.created=community.attrs.created;
+<<<<<<< HEAD
       if (!community.attrs.hasOwnProperty('rebuildents')) community.attrs.rebuildents=false;
       if (!community.attrs.hasOwnProperty('canrequestview')) community.attrs.canrequestview=true;
       if (!community.attrs.hasOwnProperty('viewsuppliedtext')) community.attrs.viewsuppliedtext=true;
@@ -56,6 +61,10 @@ var EditCommunityComponent = ng.core.Component({
        
        
      var myPreview=$("#PreviewImg")[0];
+=======
+      if (!community.attrs.hasOwnProperty('canrequestview')) community.attrs.canrequestview=true;
+      var myPreview=$("#PreviewImg")[0];
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       if (community.attrs.haspicture && !myPreview) {
         this.picFile.valid=true;
         var image  = document.createElement("IMG");
@@ -80,7 +89,10 @@ var EditCommunityComponent = ng.core.Component({
         haspicture: false,
         entities:[],
         rebuildents: false,
+<<<<<<< HEAD
         viewsuppliedtext: true,
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
         created:Date.now(),
         image: "",
         control: {transcripts:"ALL", tmsg:"", images:"ALL", imsg:"", collations:"ALL", cmsg:""},

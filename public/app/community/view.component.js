@@ -369,7 +369,10 @@ var ViewComponent = ng.core.Component({
     //go get the different versions; collate them; yoho!
     //we just supply the url for the collation editor and it does the rest. hooray.
     //we will add some choices to the community menu: to choose default collation tool (collateX..collation editor..multiple text viewer)
+<<<<<<< HEAD
     //send community settings for show capitalization, etc
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     var self=this;
     this.collationEditor=true;
     var pages=this.state.community.attrs.documents.map(function(page){return(page.attrs.name)});
@@ -411,6 +414,7 @@ var ViewComponent = ng.core.Component({
        	 //collator MUST be registered project leader or creator
        	 if (self.role=="CREATOR" || self.role=="LEADER" ) {
          	self.collationEditor=true;
+<<<<<<< HEAD
          	//add settings for viewing supplied text etc etc
          	//be sure there are properties for collation..
          	if (!this.state.community.attrs.hasOwnProperty('viewsuppliedtext')) this.state.attrs.community.viewsuppliedtext=true;   	
@@ -420,6 +424,9 @@ var ViewComponent = ng.core.Component({
          	if (!this.state.community.attrs.hasOwnProperty('showpunctuation')) this.state.attrs.community.showpunctuation=false;   	
          	if (!this.state.community.attrs.hasOwnProperty('showxml')) this.state.attrs.community.showxml=false;   	
          	var src=config.COLLATE_URL+"/collation/?dbUrl="+config.BACKEND_URL+"&entity="+entity.entityName+"&community="+this.state.community.attrs.abbr+"&user="+self.state.authUser.attrs._id+"&viewsuppliedtext="+this.state.community.attrs.viewsuppliedtext+"&viewuncleartext="+this.state.community.attrs.viewuncleartext+"&viewcapitalization="+this.state.community.attrs.viewcapitalization+"&expandabbreviations="+this.state.community.attrs.expandabbreviations+"&showpunctuation="+this.state.community.attrs.showpunctuation+"&showxml="+this.state.community.attrs.showxml;
+=======
+         	var src=config.COLLATE_URL+"/collation/?dbUrl="+config.BACKEND_URL+"&entity="+entity.entityName+"&community="+this.state.community.attrs.abbr+"&user="+self.state.authUser.attrs._id;
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
          	$('#ce_iframe').attr('src', src);
           } else {
           	alert("Only project leaders or creators can use the collation tool.");

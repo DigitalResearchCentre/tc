@@ -22,11 +22,17 @@ var _ = require('lodash')
   , Entity = models.Entity
   , Revision = models.Revision
   , TEI = models.TEI
+<<<<<<< HEAD
   , VMap = models.VMap
   , RESTError = require('./resterror')
   , ObjectId = mongoose.Types.ObjectId
   , FunctionService = require('../services/functions')
   , DualFunctionService = require('../public/app/services/dualfunctions')
+=======
+  , RESTError = require('./resterror')
+  , ObjectId = mongoose.Types.ObjectId
+  , FunctionService = require('../services/functions')
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   , config=require('../config')
   , $ = require('jquery')
 ;
@@ -73,7 +79,10 @@ router.get('**', function(req, res, next) {
         } else {
           if (bits[0]=="entity") {inentity=true; indoc=false};
           if (bits[0]=="document") {inentity=false; indoc=true};
+<<<<<<< HEAD
           if (bits[0]=="vmap") {processVmap(bits, req, res, authparts[4]); return};
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
           if (inentity) entityparts.push({property:bits[0], value:bits[1]})
           if (indoc) docparts.push({property:bits[0], value:bits[1]})
         }
@@ -152,6 +161,7 @@ router.get('**', function(req, res, next) {
                         });
                       } else res.status(400).send( "Cannot deal with IIIF request format '"+req.query.format+"'");
                     }
+<<<<<<< HEAD
                   } else if (req.query.type=="transcriptInf") {
                   		var seekDocument=detparts[1].slice(9, detparts[1].indexOf(":"));
                   		//get the document this is part of
@@ -210,6 +220,10 @@ router.get('**', function(req, res, next) {
                   }  else if (req.query.type=="attrs") {
                   	res.json(foundDoc);
                   } else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
+=======
+                  }
+                  else res.json({name:foundDoc.name, label:foundDoc.label, nparts: foundDoc.children.length, hasImage: foundDoc.hasOwnProperty("image")});
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
                 }
               })
             }
@@ -328,7 +342,11 @@ function entityRequest(req, res, entities, name, entityparts, i, community, call
                     var endXML="</div></body></text></TEI>".replace(/</gi, "&lt;");
                     startXML+="Collation for "+name+", output for "+req.user.local.name+" ("+req.user.local.email+"), generated at "+today+'</title></titleStmt><publicationStmt><p rend="ital">dummy</p></publicationStmt><sourceDesc>'+witlist+'</sourceDesc></fileDesc></teiHeader><text><body><div>'
                     content=startXML.replace(/</gi, "&lt;")+content+"<br/>"+endXML;
+<<<<<<< HEAD
                     if (req.query.format=="NEXUS") content=DualFunctionService.makeNEXUS(content);
+=======
+                    if (req.query.format=="NEXUS") content=FunctionService.makeNEXUS(content);
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
                     if (missing) content="No collation found for "+missing+"<br/>"+content;
                     res.send(content);
                   });
@@ -604,6 +622,7 @@ function getEntityDocs(community, seekEntity, req, res, docparts, entityparts, c
       else if (req.query.type=="count") {res.json({count: texts.length})}
       else if (req.query.type!="list") {res.status(400).send("Error in query string '"+JSON.stringify(req.query)+"'. Only types count and list accepted in this context")}
       else if (req.query.type=="list") {
+<<<<<<< HEAD
       	//we need to return these in the order in which they are in the master docs
       	Community.findOne({abbr:community}, function(err, myCommunity){
      // 		console.log(myCommunity.documents);
@@ -627,6 +646,16 @@ function getEntityDocs(community, seekEntity, req, res, docparts, entityparts, c
 			  else callback(results.filter(Boolean));
 			});
       	});
+=======
+        async.mapSeries(texts, function(myText, cb){
+          Doc.findOne({_id:myText.docs[0]}, function(err, myDoc){
+            cb(err, {name: myDoc.name})
+          })
+        }, function(err, results){
+          if (err) res.status(400).send("Database error");
+          else callback(results);
+        });
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       }
     });
   } else {//more than one doc part. We must be looking for a page range
@@ -756,9 +785,15 @@ function getXMLText(res, next, community, seekEntity, seekDocument, detString, e
                     if (isXML) foundVersions.push({place: myPage.name, text: teiContent.content})
                     else {
                       if (counter>0) {
+<<<<<<< HEAD
                         content+=","+DualFunctionService.makeJsonList(teiContent.content, foundDoc.name+"("+counter+")");
                       }
                       else  content+=DualFunctionService.makeJsonList(teiContent.content, foundDoc.name);
+=======
+                        content+=","+FunctionService.makeJsonList(teiContent.content, foundDoc.name+"("+counter+")");
+                      }
+                      else  content+=FunctionService.makeJsonList(teiContent.content, foundDoc.name);
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
                       counter++;
                     }
                     cb2(err);
@@ -779,6 +814,7 @@ function getXMLText(res, next, community, seekEntity, seekDocument, detString, e
   })
 }
 
+<<<<<<< HEAD
 function processVmap (bits, req, res, community) {
 	if (bits[1]=="*") {
 		 VMap.find({community: community}, function(err, vmaps) {
@@ -809,5 +845,7 @@ function processVmap (bits, req, res, community) {
 		});
 	}
 }
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 
 module.exports = router;

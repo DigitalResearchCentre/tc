@@ -11,8 +11,11 @@ var mongoose = require('mongoose')
     community: String,
     status: String, // submitted committed previsous_db
     text: String,
+<<<<<<< HEAD
     parent: String,
     name: String,
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     spentTime: Number,
   });
   _.assign(RevisionSchema.statics, {

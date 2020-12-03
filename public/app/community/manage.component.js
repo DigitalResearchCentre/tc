@@ -1,7 +1,10 @@
 var CommunityService = require('../services/community')
   , UIService = require('../services/ui')
   , DocService = require('../services/doc')
+<<<<<<< HEAD
     , async = require('async')
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   , config = require('../config')
 ;
 
@@ -39,8 +42,11 @@ var ManageCommunityComponent = ng.core.Component({
     else if (which=='collationeditor-choosewitnesses') this._uiService.manageModal$.emit({type: "choosebase-choosewitnesses", community: this.community});
     else if (which=='collationeditor-retrievecollation') this._uiService.manageModal$.emit({type: "retrievecollation", community: this.community});
     else if (which=='collationeditor-makenexuscollation') this._uiService.manageModal$.emit({type: "makenexuscollation", community: this.community});
+<<<<<<< HEAD
     else if (which=='collationeditor-createVarMaps') this._uiService.manageModal$.emit({type: "createVarMaps", community: this.community});
     else if (which=='collationeditor-editVarMaps') this._uiService.manageModal$.emit({type: "editvMaps", community: this.community});
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     else this._uiService.manageModal$.emit(which);
   },
   isLeader: function() {
@@ -109,6 +115,7 @@ var ManageCommunityComponent = ng.core.Component({
     this._uiService.manageModal$.emit({
        type: 'create-defaulttranscripts',
      });
+<<<<<<< HEAD
   }, 
   testCollConversion: function() {
   	 this._uiService.manageModal$.emit({
@@ -345,6 +352,8 @@ var ManageCommunityComponent = ng.core.Component({
 			});
 		});
 	}
+=======
+>>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   }
 });
 
