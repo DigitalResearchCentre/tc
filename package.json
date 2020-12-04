@@ -38,7 +38,7 @@
     "jszip": "^3.1.5",
     "libxmljs": "^0.19.3",
     "lodash": "^4.17.15",
-    "mongodb": "^2.2.35",
+    "mongodb": "^3.1.13",
     "mongoose": "^4.13.14",
     "mongoose-beautiful-unique-validation": "^2.0.3",
     "morgan": "^1.9.1",
