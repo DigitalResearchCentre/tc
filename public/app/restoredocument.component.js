@@ -210,11 +210,7 @@ function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
     UpdateDbService("Document", jsoncall, function(result){
       async.mapSeries(brf[1].pages, function (page, cb){
         $.ajax({
-<<<<<<< HEAD
           url:config.BACKEND_URL+'adjustRestorePage?docid='+myDoc._id+"&parent="+myDoc.name,
-=======
-          url:config.BACKEND_URL+'adjustRestorePage?docid='+myDoc._id,
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
           type: 'POST',
           data: JSON.stringify(page),
           accepts: 'application/json',
@@ -222,7 +218,6 @@ function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
           dataType: 'json'
         })
         .done(function(data){
-<<<<<<< HEAD
           if (data.success) {
           	context.success+=" "+page.name;
           } else {
@@ -234,13 +229,6 @@ function adjustRestoredDoc(myDoc, comcommid, brf, context, callback){
         .fail(function( jqXHR, textStatus, errorThrown) {
           context.success+=" System Error in database "+page.name+" "+errorThrown;
           return cb(null);
-=======
-          context.success+=" "+page.name;
-          return cb(null);
-        })
-        .fail(function( jqXHR, textStatus, errorThrown) {
-          cb(errorThrown);
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
         });
       }, function (err){
         if (!err) callback({success:true})

@@ -22,15 +22,12 @@ var CommunitySchema = new Schema({
   alltranscribeall: Boolean,
   haspicture: Boolean,
   rebuildents: Boolean,
-<<<<<<< HEAD
   viewsuppliedtext: Boolean,
   viewuncleartext: Boolean,
   viewcapitalization: Boolean,
   expandabbreviations: Boolean,
   showpunctuation: Boolean,
   showxml: Boolean,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   image: String,
   css: String,
   js: String,

@@ -19,11 +19,7 @@
     "codemirror": "^5.38.0",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^1.1.0",
-<<<<<<< HEAD
     "connect-mongodb-session": "^2.3.1",
-=======
-    "connect-mongodb-session": "^1.4.0",
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     "cookie-parser": "^1.4.1",
     "debug": "^2.6.9",
     "dropzone": "^4.3.0",
@@ -36,12 +32,8 @@
     "font-awesome": "^4.6.1",
     "gridfs-stream": "^1.1.1",
     "jquery": "^3.4.1",
-<<<<<<< HEAD
     "jquery-resizable-dom": "^0.35.0",
     "js-base64": "^2.5.2",
-=======
-    "jquery-resizable-dom": "^0.32.0",
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     "jsdom": "^11.11.0",
     "jszip": "^3.1.5",
     "libxmljs": "^0.19.3",
@@ -60,11 +52,8 @@
     "passport-google-oauth": "^0.2.0",
     "passport-local": "^1.0.0",
     "passport-twitter": "^1.0.4",
-<<<<<<< HEAD
     "pdf.js": "^0.1.0",
     "pdf.js-extract": "^0.1.4",
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     "promise-defer": "^1.0.0",
     "reflect-metadata": "0.1.2",
     "rxjs": "5.0.0-beta.2",
@@ -87,10 +76,7 @@
     "jasmine-core": "^2.99.1",
     "less": "^2.7.3",
     "less-loader": "^2.2.2",
-<<<<<<< HEAD
     "pdfjs-dist": "^2.3.200",
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     "pm2": "^2.10.4",
     "script-loader": "^0.6.1",
     "sort-array": "^2.0.0",

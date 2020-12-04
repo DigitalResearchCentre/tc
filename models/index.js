@@ -11,10 +11,7 @@ var mongoose = require('mongoose')
   , Entity = require('./entity')
   , Collation = require('./collation')
   , VBase = require('./vbase')
-<<<<<<< HEAD
   , VMap = require('./vmap')
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 ;
 
 Doc.Entity = Entity;
@@ -52,9 +49,6 @@ module.exports = {
   Revision: Revision,
   Collation: Collation,
   VBase: VBase,
-<<<<<<< HEAD
   VMap: VMap,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   Action: mongoose.model('Action', ActionSchema),
 };

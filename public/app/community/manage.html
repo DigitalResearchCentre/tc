@@ -30,15 +30,10 @@
                 <li>
                 	<a class="dropdown-item" style="display:inline" (click)="setCollEnts()">Rebuild Collation Entities on Commit</a> 
                 	<span *ngIf="state.community.attrs.rebuildents"> <img class="menuimg" height="11" width="11" src="../../images/checked.png"></span>  
-<<<<<<< HEAD
                 	<span *ngIf="!state.community.attrs.rebuildents"> <img class="menuimg" height="9" width="9" src="../../images/unchecked.png"></span>  </li>
                 <li><a class="dropdown-item" (click)="loadModal('collationeditor-createVarMaps')">Make Variant Map</a></li>
                  <li><a class="dropdown-item" (click)="loadModal('collationeditor-editVarMaps')">Edit Variant Maps</a></li>
              </ul>
-=======
-                	<span *ngIf="!state.community.attrs.rebuildents"> <img class="menuimg" height="9" width="9" src="../../images/unchecked.png"></span>  
-              </ul>
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
             </li>
             <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Community Management<span class="caret"></span></a>
               <ul class="dropdown-menu">
@@ -46,11 +41,7 @@
                 <li ng-show="isCreator()===true||isLeader()===true"><a class="dropdown-item" (click)="deleteCommunity()">Delete Community</a></li>
               </ul>
             </li>
-<<<<<<< HEAD
             <li class="dropdown" *ngIf="state.authUser.attrs.local.email=='peter.robinson@usask.ca' || state.authUser.attrs.local.email=='peter@sd-editions.com'"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super User<span class="caret"></span></a>
-=======
-            <li class="dropdown" *ngIf="state.authUser.attrs.local.email=='peter.robinson@usask.ca'"><a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super User<span class="caret"></span></a>
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
               <ul class="dropdown-menu">
                 <li ng-show="isCreator()===true"><a class="dropdown-item"  (click)="viewAllUsers()">View All Users</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item"  (click)="viewAllCommunities()">View All Communities</a></li>
@@ -58,14 +49,10 @@
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportTranscriptsFromTC1()">Move Transcripts from TC1 to TC2</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="exportDBVersionFromTC1()">Export Transcript from TC1 Database</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="createDefaultTranscripts()">Create Default Transcripts</a></li>
-<<<<<<< HEAD
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="testCollConversion()">Test Collation Conversion</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="removeModOrigJSON()">Remove redundant mod/orig JSON</a></li>
                 <li ng-show="isCreator()===true"><a class="dropdown-item" (click)="removeModOrigXML()">Remove redundant mod/orig XML</a></li>
              </ul>
-=======
-              </ul>
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
             </li>
           </ul>
         </div>

@@ -19,7 +19,6 @@ var Community = _.inherit(Model, {
     autoaccept: false,
     alldolead: false,
     haspicture: false,
-<<<<<<< HEAD
     rebuildents: false,
     viewsuppliedtext: true,
     viewuncleartext: true,
@@ -27,8 +26,6 @@ var Community = _.inherit(Model, {
   	expandabbreviations: true,
   	showpunctuation: false,
  	showxml: false,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     image: false,
     entities: Model.OneToManyField(Entity),
     documents: Model.OneToManyField(Doc),

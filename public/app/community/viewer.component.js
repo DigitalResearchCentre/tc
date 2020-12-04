@@ -37,10 +37,7 @@ var ViewerComponent = ng.core.Component({
     this.isText=false;
     this.state=uiService.state;
     this.state.doNotParse=false;
-<<<<<<< HEAD
 //    this.page=this.state.page;
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     this.isVerticalSplit=true;
     this.isPreviewText=false;
     this.pageStatus={status:"NONE",access:"NONE"};
@@ -147,17 +144,12 @@ var ViewerComponent = ng.core.Component({
   },
   onImageChange: function() {
     var viewer = this.viewer;
-<<<<<<< HEAD
     if (this.page.attrs.facs && this.page.attrs.facs.startsWith("EXTERNAL:")) {
     	this.image=this.page.attrs.facs;
     	this.imageExternal=this.page.attrs.facs.slice(9);
     } else if (this.image) {
       //could be a iiif reference, or a reference to our own iiif server. If the first, begins http...
       //another possibility: could be direct link to library ms page, which needs to go into an IFRAME. In this, case we start with IFRAME/ followed by image address
-=======
-    if (this.image) {
-      //could be a iiif reference, or a reference to our own iiif server. If the first, begins http...
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       if (this.image.startsWith("http")) var url=this.image;
       else var url=config.IIIF_URL + this.image;
       url=url+'/info.json';    //let's hope all iiif follow the standard
@@ -308,11 +300,8 @@ var ViewerComponent = ng.core.Component({
             doc: page.getId(),
             text: dbRevision,
             user: meta.user,
-<<<<<<< HEAD
             name: page.attrs.name,
             parent: self.document.attrs.name,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
             community: community,
             committed: meta.committed,
             status: 'COMMITTED',
@@ -324,11 +313,8 @@ var ViewerComponent = ng.core.Component({
                 doc: page.getId(),
                 text: dbRevision,
                 user: meta.user,
-<<<<<<< HEAD
                 name: page.attrs.name,
             	parent: self.document.attrs.name,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
                 community: community,
                 committed: meta.committed,
                 status: 'IN_PROGRESS',
@@ -379,11 +365,8 @@ var ViewerComponent = ng.core.Component({
         doc: page.getId(),
         text: newText,
         user: meta.user,
-<<<<<<< HEAD
         name: page.attrs.name,
         parent: self.document.attrs.name,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
         community: community,
         committed: meta.committed,
         status: 'CONTINUEPAGE',
@@ -480,11 +463,8 @@ var ViewerComponent = ng.core.Component({
       doc: page.getId(),
       text: text,
       community: community,
-<<<<<<< HEAD
       name: page.attrs.name,
       parent: self.document.attrs.name,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
       status: status,
     }).subscribe(function(revision) {
       self.revisions.unshift(revision);
@@ -546,11 +526,8 @@ var ViewerComponent = ng.core.Component({
         docService.addRevision({
           doc: page.getId(),
           text: contentText,
-<<<<<<< HEAD
           name: page.attrs.name,
           parent: self.document.attrs.name,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
           community: community,
           status: status,
         }).subscribe(function(revision) {
@@ -592,11 +569,8 @@ var ViewerComponent = ng.core.Component({
         docService.addRevision({
           doc: page.getId(),
           text: contentText,
-<<<<<<< HEAD
           name: page.attrs.name,
           parent: self.document.attrs.name,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
           community: community,
           status: status,
         }).subscribe(function(revision) {
@@ -816,10 +790,7 @@ function isPageAssigned(page, user, role) {
 
 function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound etc doesn't like the extra space
 //possibly because we changed his loader to preserve white space in some contexts (within content elements etc)
-<<<<<<< HEAD
 //problem.. at end of page we take out last character. Not clever
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   contentText=contentText.trim();
   var stop=false;
   var endString="", startString="", i=0, j=0;
@@ -851,11 +822,7 @@ function removeWhiteSpace(contentText){ //needed coz Xiaohan's getLeftTextBound 
         }
     }
   }
-<<<<<<< HEAD
   return (startString+contentText.slice(j-1, i+2)+endString);  //was losing last character of the page
-=======
-  return (startString+contentText.slice(j-1, i+1)+endString);
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 }
 
 function sendPreviewText (contentText, context, page) {

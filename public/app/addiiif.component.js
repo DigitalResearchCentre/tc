@@ -111,15 +111,11 @@ var AddIIIFComponent = ng.core.Component({
               self.success='"'+self.doc.iiif+'" successfully read. '+myiiif.sequences[0].canvases.length+' pages found. Now matching the IIIF labels with <pb> attributes in "'+self.document.attrs.name+'" .'
               //match it all here
               //try and match facs attributes first
-<<<<<<< HEAD
               //check case insensitive first
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
               self.success="Matches found for:"
               for (var i=0; i<myiiif.sequences[0].canvases.length; i++) {
                 var canvas=myiiif.sequences[0].canvases[i];
                 var canvaslabel=canvas.label;
-<<<<<<< HEAD
                 var facsDoc=self.document.attrs.children.filter(function (obj){return (obj.attrs.facs && obj.attrs.facs== canvaslabel);});
                 if (!facsDoc[0]) { //try pb elemkents
                 	facsDoc=self.document.attrs.children.filter(function (obj){return (obj.attrs.name && obj.attrs.name== canvaslabel);});
@@ -130,29 +126,13 @@ var AddIIIFComponent = ng.core.Component({
 				if (!facsDoc[0]) { //try pb elemkents case insensitive
                 	facsDoc=self.document.attrs.children.filter(function (obj){return (obj.attrs.name && obj.attrs.name.toLowerCase()== canvaslabel.toLowerCase());});
                 }
-=======
-                var facsDoc=self.document.attrs.children.filter(function (obj){return (obj.attrs.facs && obj.attrs.facs.toLowerCase()== canvaslabel.toLowerCase());});
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
                 if (facsDoc[0])  {
                   canvas.matched=true;
                   for (var j=0; j<facsDoc.length; j++) {
                     self.success+=" "+canvaslabel;
                     matchedLabels.push({_id: facsDoc[j].attrs._id, image: canvas.images[0].resource.service['@id'], name: canvaslabel});
                   }
-<<<<<<< HEAD
                 } 
-=======
-                } else {  //look in pb elements
-                  var nameDoc=self.document.attrs.children.filter(function (obj){return (obj.attrs.name && obj.attrs.name[0].toLowerCase()== canvaslabel.toLowerCase());});
-                  if (nameDoc[0])  {
-                    canvas.matched=true;
-                    for (var j=0; j<nameDoc.length; j++) {
-                      self.success+=" "+canvaslabel;
-                      matchedLabels.push({_id: nameDoc[j].attrs._id, image: canvas.images[0].resource.service['@id'], name: canvaslabel});
-                    }
-                  }
-                }
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
               }
               self.success+=": "+matchedLabels.length+" IIIF canvases matched"
               var unmatched=[];

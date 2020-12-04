@@ -22,19 +22,13 @@ var _ = require('lodash')
   , Collation = models.Collation
   , Entity = models.Entity
   , VBase = models.VBase
-<<<<<<< HEAD
   , VMap = models.VMap
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   , Revision = models.Revision
   , TEI = models.TEI
   , RESTError = require('./resterror')
   , ObjectId = mongoose.Types.ObjectId
   , FunctionService = require('../services/functions')
-<<<<<<< HEAD
   , DualFunctionService = require('../public/app/services/dualfunctions')
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 ;
 
 
@@ -115,7 +109,6 @@ router.post('/community/:id/members/', function(req, res, next) {
   });
 });
 
-<<<<<<< HEAD
 router.post('/community/:id/fixMembers/', function(req, res, next) {
 //  console.log("in getting members "+req.params.id)
   var communityId = req.params.id;
@@ -219,12 +212,6 @@ router.post('/deleteVMap',  function(req, res, next) {
 var vBaseResource = new Resource(VBase, {id: 'vbase'});
 vBaseResource.serve(router, 'vbases');
 
-=======
-var vBaseResource = new Resource(VBase, {id: 'vbase'});
-vBaseResource.serve(router, 'vbases');
-
-
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 router.post('/community/:abbr/vbases/', function(req, res, next) {
   var community = req.params.abbr;
    VBase.find({community: community}, function(err, vbases) {
@@ -731,10 +718,7 @@ router.post('/getMemberTasks', function(req, res, next) {
       })
     }
     //update count of lengths in memberships pages
-<<<<<<< HEAD
     console.log(req.query.id)
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     User.collection.update({ "memberships._id":ObjectId(req.query.id)}, {$set:{"memberships.$.pages.inprogress":inprogress.length, "memberships.$.pages.submitted":submitted.length, "memberships.$.pages.approved":approved.length, "memberships.$.pages.committed":committed.length}}, function(err, result){
       res.json({memberId:req.query.id, assigned:assigned, inprogress:inprogress, submitted:submitted, approved:approved, committed:committed});
     })
@@ -1768,7 +1752,6 @@ function deleteAP (deleteAP, callback) {
 router.post('/saveAssignPages', function(req, res, next) {
   var selected=req.body.selected;
   var membership=selected[0].record.memberId;
-<<<<<<< HEAD
   var doc_id=selected[0].pageId;
   var user=selected[0].record.userId;
   //found a bug.. somehow if tasks: null  not tasks: [] then insert failes
@@ -1777,18 +1760,10 @@ router.post('/saveAssignPages', function(req, res, next) {
 	User.collection.update({_id: ObjectId(user), "memberships._id": ObjectId(membership)}, {$inc: {"memberships.$.pages.assigned":selected.length}}, function (err, result){
 	  res.json({error: err});
 	})
-=======
-  var user=selected[0].record.userId;
-  async.map(selected, saveAP, function (err) {
-    User.collection.update({_id: ObjectId(user), "memberships._id": ObjectId(membership)}, {$inc: {"memberships.$.pages.assigned":selected.length}}, function (err, result){
-      res.json({error: err});
-    })
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   });
 });
 
 function saveAP (addAP, callback) {
-<<<<<<< HEAD
 //  console.log(addAP);
 // check for each page. Is tasks set to null? fix! are there incomplete records? fix!
 //fix get the page and inspect it
@@ -1807,11 +1782,6 @@ function saveAP (addAP, callback) {
 		});
 	  }
 	});
-=======
-  Doc.collection.update({_id: ObjectId(addAP.pageId)},{$push:{"tasks":{userId:addAP.record.userId, name: addAP.record.name, status: addAP.record.status, memberId: addAP.record.memberId, date: new Date(), witname:addAP.record.witname}}}, function (err) {
-    callback(err)
-  });
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 }
 
 router.post('/saveCommunityAuxFile', function (req, res, next){
@@ -2601,10 +2571,7 @@ router.use(function(err, req, res, next) {
   }
 });
 
-<<<<<<< HEAD
 //here we add page references to all revision documents
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 router.get('/getBasicRestore', function(req, res, next){
     Doc.findOne({_id: req.query.docid}, function(err, document) {
       var docinf=[];
@@ -2613,19 +2580,11 @@ router.get('/getBasicRestore', function(req, res, next){
         docinf.push({name:document.name, _id:document._id, teiHeader: document.teiHeader, meta: document.meta})
         async.mapSeries(document.children, function(page, callback) {
           Doc.findOne({ _id: page}, function(err, pageinf){
-<<<<<<< HEAD
 			Revision.collection.update({doc: page}, {$set: {parent: document.name, name: pageinf.name}}, {multi: true}, function(err, result){
  				if (pageinf.tasks && pageinf.tasks.length>0)
 				  callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, tasks: pageinf.tasks, _id: pageinf._id});
 				else callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, _id: pageinf._id});
 			});
-=======
-
-  //          if (pageinf.facs) var facs={facs: pageinf.facs} else var facs=""
-            if (pageinf.tasks && pageinf.tasks.length>0)
-              callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, tasks: pageinf.tasks, _id: pageinf._id});
-            else callback(err, {name:pageinf.name, facs: pageinf.facs, image: pageinf.image, _id: pageinf._id});
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
           });
         }, function(err, results) {
           docinf.push({pages:results});
@@ -2909,10 +2868,7 @@ router.get('/getDocNames', function(req, res, next) {
           cb(err, {name: thisDoc.name, npages: thisDoc.children.length, control: thisDoc.control });
         })
       }, function (err, results){
-<<<<<<< HEAD
       	if (err) res.json({error:"failure in get docnames routine"})
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
         res.json(results);
       })
     }
@@ -3029,18 +2985,11 @@ function getWitness (witness, community, entity, override, recallback) {
 							teiContent.content="";
 							FunctionService.loadTEIContent(thisTei, teiContent).then(function (){
 							  if (teiContent.content!="") {
-<<<<<<< HEAD
 //							  	console.log("TEI content for witness "+witness+": "+teiContent.content)
 								if (counter>1) {
 								  content+=","+DualFunctionService.makeJsonList(teiContent.content, thisWitness)
 								}
 								else content+=DualFunctionService.makeJsonList(teiContent.content, thisWitness);
-=======
-								if (counter>1) {
-								  content+=","+FunctionService.makeJsonList(teiContent.content, thisWitness)
-								}
-								else content+=FunctionService.makeJsonList(teiContent.content, thisWitness);
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 								counter++;
 								cb3(null);
 							  } else cb3(null);
@@ -3070,10 +3019,7 @@ router.post('/getCEWitnesses', function(req, res, next) {
 	var witlist=req.body.witnesses;
 	var base=req.body.base;
 	var entity=req.body.entity;
-<<<<<<< HEAD
 	var override=req.body.override;
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 	var results=[];
 	async.waterfall([
 		function (cb) {
@@ -3087,11 +3033,7 @@ router.post('/getCEWitnesses', function(req, res, next) {
 		}
 	], function (err) {
 		async.mapSeries(witlist, function(witness, callback){
-<<<<<<< HEAD
 			getWitness (witness, thisCommunity, entity, override, function(err, result, thisDoc){
-=======
-			getWitness (witness, thisCommunity, entity, false, function(err, result, thisDoc){
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 				if (!err) {
 				   TEI.update({docs: thisDoc._id, entityName: entity}, {$set: {collateX: result}}, function (err, written){
 					 results.push(result);
@@ -3170,7 +3112,6 @@ router.post('/adjustRestorePage',function(req, res, next) {
     }
   }
   var docid=req.query.docid;
-<<<<<<< HEAD
   var parent=req.query.parent;
   Doc.collection.update({"ancestors.0":ObjectId(docid), name:page.name}, {$set: {facs: page.facs, image: page.image, tasks: page.tasks}}, function(err, result){
   	if (err) {
@@ -3191,14 +3132,6 @@ router.post('/adjustRestorePage',function(req, res, next) {
 		  }
        })
     }
-=======
-  Doc.collection.update({"ancestors.0":ObjectId(docid), name:page.name}, {$set: {facs: page.facs, image: page.image, tasks: page.tasks}}, function(err, result){
-    Doc.findOne({"ancestors.0":ObjectId(docid), name:page.name}, function(err, myDoc){
-      Revision.collection.update({doc:ObjectId(page._id)}, {$set: {doc: ObjectId(myDoc._id)}}, {multi: true}, function(err, result){
-        res.json({success:true})
-      });
-    })
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
   })
 });
 
@@ -3254,13 +3187,9 @@ router.post('/putCollation', function(req, res, next){
   //if there is one already, updates, if not, insertedI
 //  console.log("saving the collation now");
 //  console.log(req.body);
-<<<<<<< HEAD
   if (req.query.adjusted) {var adjusted=req.query.adjusted}
   else {var adjusted=false};
   Collation.update({community:req.query.community, entity:req.query.entity, id:req.query.community+'/'+req.query.entity+'/'+req.query.status, model:"collation", status:req.query.status}, {$set: {ce: req.body.collation.ce, approved:req.query.approved, adjusted:adjusted}}, {upsert: true}, function(err) {
-=======
-  Collation.update({community:req.query.community, entity:req.query.entity, id:req.query.community+'/'+req.query.entity+'/'+req.query.status, model:"collation", status:req.query.status}, {$set: {ce: req.body.collation.ce}}, {upsert: true}, function(err) {
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 //    console.log(err);
     if (!err) res.json({success:true}) ;
     else res.json({success:false});
@@ -3501,7 +3430,6 @@ router.get('/getCollations', function(req, res, next) {
   });
 });
 
-<<<<<<< HEAD
 router.get('/adjustModOrig', function(req, res, next) {
   var fetch=parseInt(req.query.fetch);
   var collations=[];
@@ -3534,6 +3462,4 @@ router.get('/xmlCollations', function(req, res, next) {
   });
 });
 
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
 module.exports = router;

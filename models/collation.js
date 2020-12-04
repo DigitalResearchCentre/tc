@@ -14,10 +14,7 @@ const collationSchema = new Schema({
     to: String,
     ce: String,
     model: String,
-<<<<<<< HEAD
     adjusted: Boolean,
-=======
->>>>>>> c840b2bf3d69979410cfc4d1c229efba35d386d2
     status: String
 });
 
