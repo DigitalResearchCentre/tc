@@ -31,7 +31,7 @@
     "extract-text-webpack-plugin": "^1.0.1",
     "font-awesome": "^4.6.1",
     "gridfs-stream": "^1.1.1",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery-resizable-dom": "^0.35.0",
     "js-base64": "^2.5.2",
     "jsdom": "^11.11.0",
