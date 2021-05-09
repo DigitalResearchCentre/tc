@@ -15,7 +15,7 @@
     "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
     "bootstrap": "^3.4.1",
-    "bson": "^0.4.23",
+    "bson": "^1.1.4",
     "codemirror": "^5.38.0",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^1.1.0",
