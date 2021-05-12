@@ -16,7 +16,7 @@
     "body-parser": "^1.18.3",
     "bootstrap": "^3.4.1",
     "bson": "^0.4.23",
-    "codemirror": "^5.38.0",
+    "codemirror": "^5.58.2",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^1.1.0",
     "connect-mongodb-session": "^2.3.1",
