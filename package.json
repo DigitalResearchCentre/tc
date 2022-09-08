@@ -35,7 +35,7 @@
     "jquery-resizable-dom": "^0.35.0",
     "js-base64": "^2.5.2",
     "jsdom": "^11.11.0",
-    "jszip": "^3.1.5",
+    "jszip": "^3.7.0",
     "libxmljs": "^0.19.3",
     "lodash": "^4.17.15",
     "mongodb": "^2.2.35",
